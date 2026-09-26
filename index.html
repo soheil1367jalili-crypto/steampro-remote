@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SteamPro Remote</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    background:#0d1117;
+    color:#ffffff;
+    font-family:Arial,sans-serif;
+}
+
+.container{
+    width:100%;
+    max-width:520px;
+    margin:auto;
+    padding:18px;
+}
+
+/* HEADER */
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+}
+
+.title{
+    font-size:28px;
+    font-weight:bold;
+}
+
+.subtitle{
+    font-size:12px;
+    color:#8b949e;
+    margin-top:4px;
+}
+
+.connection{
+    padding:8px 12px;
+    border-radius:20px;
+    background:#555;
+    font-size:12px;
+}
+
+.connection.ok{
+    background:#16803c;
+}
+
+.connection.error{
+    background:#9b1c2c;
+}
+
+.connection.wait{
+    background:#806000;
+}
+
+/* CARD */
+
+.card{
+    background:#161b22;
+    border:1px solid #252c35;
+    border-radius:20px;
+    padding:18px;
+    margin-bottom:14px;
+}
+
+/* TEMPERATURE */
+
+.temperatures{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+.temperature{
+    text-align:center;
+}
+
+.temperature-label{
+    color:#9da7b3;
+    font-size:14px;
+}
+
+.temperature-value{
+    font-size:44px;
+    font-weight:bold;
+    margin-top:7px;
+}
+
+.unit{
+    font-size:18px;
+    color:#9da7b3;
+}
+
+/* TIMER */
+
+.timer{
+    text-align:center;
+}
+
+.timer-title{
+    color:#9da7b3;
+    font-size:14px;
+}
+
+.timer-value{
+    font-size:42px;
+    font-weight:bold;
+    margin:8px 0;
+}
+
+.state{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+
+.badge{
+    background:#202731;
+    border-radius:16px;
+    padding:7px 11px;
+    font-size:12px;
+}
+
+/* BUTTONS */
+
+.buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+}
+
+button{
+    border:none;
+    height:62px;
+    border-radius:18px;
+    color:white;
+    font-size:20px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:active{
+    transform:scale(.97);
+}
+
+.start{
+    background:#159447;
+}
+
+.stop{
+    background:#c6283a;
+}
+
+.light{
+    background:#7657c8;
+}
+
+.light.off{
+    background:#343b45;
+}
+
+.full{
+    grid-column:1 / -1;
+}
+
+/* DETAILS */
+
+.details{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:9px;
+}
+
+.detail{
+    background:#1d232c;
+    border-radius:12px;
+    padding:10px;
+    font-size:12px;
+    color:#aeb7c2;
+}
+
+.detail strong{
+    display:block;
+    color:#ffffff;
+    font-size:14px;
+    margin-top:4px;
+}
+
+/* ERROR */
+
+.error{
+    color:#ff8b8b;
+    text-align:center;
+    font-size:13px;
+    min-height:20px;
+    margin-top:12px;
+}
+
+/* LOG */
+
+.log-title{
+    color:#9da7b3;
+    font-size:13px;
+    margin-bottom:8px;
+}
+
+.log{
+    direction:ltr;
+    text-align:left;
+    background:#090c10;
+    border:1px solid #252c35;
+    border-radius:12px;
+    padding:10px;
+    height:150px;
+    overflow-y:auto;
+    font-family:monospace;
+    font-size:11px;
+    color:#aeb7c2;
+    contain:content;
+}
+
+.footer{
+    text-align:center;
+    color:#68717d;
+    font-size:11px;
+    margin:18px 0;
+}
+
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+<!-- HEADER -->
+
+<div class="header">
+
+    <div>
+
+        <div class="title">
+            SteamPro
+        </div>
+
+        <div class="subtitle">
+            Remote Control
+        </div>
+
+    </div>
+
+    <div
+        id="connection"
+        class="connection wait">
+
+        در حال اتصال...
+
+    </div>
+
+</div>
+
+
+
+<!-- TEMPERATURE -->
+
+<div class="card">
+
+    <div class="temperatures">
+
+
+        <div class="temperature">
+
+            <div class="temperature-label">
+                دمای سونا
+            </div>
+
+            <div
+                id="saunaTemp"
+                class="temperature-value">
+
+                --<span class="unit">°C</span>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="temperature">
+
+            <div class="temperature-label">
+                دمای آب
+            </div>
+
+            <div
+                id="waterTemp"
+                class="temperature-value">
+
+                --<span class="unit">°C</span>
+
+            </div>
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- TIMER -->
+
+<div class="card timer">
+
+    <div class="timer-title">
+        زمان باقی‌مانده
+    </div>
+
+    <div
+        id="timer"
+        class="timer-value">
+
+        --:--
+
+    </div>
+
+
+    <div
+        id="state"
+        class="state">
+
+        <span class="badge">
+            خاموش
+        </span>
+
+    </div>
+
+</div>
+
+
+
+<!-- CONTROL BUTTONS -->
+
+<div class="card">
+
+    <div class="buttons">
+
+
+        <button
+            class="start"
+            onclick="sendCommand('START')">
+
+            START
+
+        </button>
+
+
+
+        <button
+            class="stop"
+            onclick="sendCommand('STOP')">
+
+            STOP
+
+        </button>
+
+
+
+        <button
+            id="lightButton"
+            class="light"
+            onclick="toggleLight()">
+
+            💡 چراغ خاموش
+
+        </button>
+
+
+    </div>
+
+</div>
+
+
+
+<!-- DEVICE STATUS -->
+
+<div class="card">
+
+    <div class="details">
+
+
+        <div class="detail">
+
+            هیتر
+
+            <strong id="heater">
+                خاموش
+            </strong>
+
+        </div>
+
+
+
+        <div class="detail">
+
+            ورودی آب
+
+            <strong id="inlet">
+                بسته
+            </strong>
+
+        </div>
+
+
+
+        <div class="detail">
+
+            تخلیه
+
+            <strong id="drain">
+                خاموش
+            </strong>
+
+        </div>
+
+
+
+        <div class="detail">
+
+            پالس
+
+            <strong id="pulse">
+                خاموش
+            </strong>
+
+        </div>
+
+
+
+        <div class="detail">
+
+            سطح بالا
+
+            <strong id="high">
+                --
+            </strong>
+
+        </div>
+
+
+
+        <div class="detail">
+
+            سطح پایین
+
+            <strong id="low">
+                --
+            </strong>
+
+        </div>
+
+
+    </div>
+
+
+    <div
+        id="error"
+        class="error">
+
+    </div>
+
+</div>
+
+
+
+<!-- MQTT LOG -->
+
+<div class="card">
+
+    <div class="log-title">
+        MQTT Log
+    </div>
+
+    <div
+        id="log"
+        class="log">
+
+    </div>
+
+</div>
+
+
+
+<div class="footer">
+
+    SteamPro Remote<br>
+    Device: 841FE8470B24
+
+</div>
+
+
+</div>
+
+
+
+<!-- MQTT.JS -->
+
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+
+<script>
+
+
+// ============================================================
+// MQTT SETTINGS
+// ============================================================
+
+const MQTT_URL =
+    "ws://broker.emqx.io:8083/mqtt";
+
+
+const DEVICE_ID =
+    "841FE8470B24";
+
+
+const TOPIC_COMMAND =
+    "steampro/" +
+    DEVICE_ID +
+    "/command";
+
+
+const TOPIC_STATUS =
+    "steampro/" +
+    DEVICE_ID +
+    "/status";
+
+
+const TOPIC_TEMPERATURE =
+    "steampro/" +
+    DEVICE_ID +
+    "/temperature";
+
+
+const CLIENT_ID =
+    "SteamProRemote_" +
+    Math.random()
+        .toString(16)
+        .substring(2,10);
+
+
+// ============================================================
+// VARIABLES
+// ============================================================
+
+let lastStatus = null;
+
+
+// ------------------------------------------------------------
+// LOCAL TIMER VARIABLES
+// ------------------------------------------------------------
+
+let timerRemaining = 0;
+
+let timerRunning = false;
+
+let lastTimerSync = 0;
+
+
+// ------------------------------------------------------------
+// LOG LIMIT
+// ------------------------------------------------------------
+
+const MAX_LOG_LINES = 30;
+
+let logLines = [];
+
+
+// ============================================================
+// ELEMENT HELPER
+// ============================================================
+
+function element(id){
+
+    return document.getElementById(id);
+
+}
+
+
+// ============================================================
+// LIGHTWEIGHT LOG
+// ============================================================
+
+function log(message){
+
+    const box =
+        element("log");
+
+    const time =
+        new Date()
+        .toLocaleTimeString();
+
+
+    const line =
+        "[" +
+        time +
+        "] " +
+        String(message);
+
+
+    logLines.push(line);
+
+
+    if(
+        logLines.length >
+        MAX_LOG_LINES
+    ){
+
+        logLines.shift();
+
+    }
+
+
+    box.textContent =
+        logLines.join("\n");
+
+
+    box.scrollTop =
+        box.scrollHeight;
+
+}
+
+
+// ============================================================
+// CONNECTION STATUS
+// ============================================================
+
+function setConnection(
+    text,
+    className
+){
+
+    const box =
+        element("connection");
+
+
+    box.innerText =
+        text;
+
+
+    box.className =
+        "connection " +
+        className;
+
+}
+
+
+// ============================================================
+// FORMAT TIMER
+// ============================================================
+
+function formatTime(seconds){
+
+    seconds =
+        Math.max(
+            0,
+            Math.floor(
+                Number(seconds) || 0
+            )
+        );
+
+
+    const minutes =
+        Math.floor(
+            seconds / 60
+        );
+
+
+    const sec =
+        seconds % 60;
+
+
+    return (
+
+        String(minutes)
+            .padStart(2,"0")
+
+        +
+
+        ":"
+
+        +
+
+        String(sec)
+            .padStart(2,"0")
+
+    );
+
+}
+
+
+// ============================================================
+// BOOLEAN TEXT
+// ============================================================
+
+function onOff(
+    value,
+    onText="روشن",
+    offText="خاموش"
+){
+
+    return value
+        ? onText
+        : offText;
+
+}
+
+
+// ============================================================
+// TEMPERATURE
+// ============================================================
+
+function updateTemperature(data){
+
+
+    if(
+        data.sauna !== undefined
+    ){
+
+        element("saunaTemp")
+            .innerHTML =
+
+            Math.round(
+                data.sauna
+            )
+
+            +
+
+            '<span class="unit">°C</span>';
+
+    }
+
+
+
+    if(
+        data.water !== undefined
+    ){
+
+        element("waterTemp")
+            .innerHTML =
+
+            Math.round(
+                data.water
+            )
+
+            +
+
+            '<span class="unit">°C</span>';
+
+    }
+
+}
+
+
+// ============================================================
+// STATUS
+// ============================================================
+
+function updateStatus(data){
+
+    lastStatus =
+        data;
+
+
+    updateTemperature(data);
+
+
+    // ========================================================
+    // TIMER SYNC
+    // ========================================================
+
+    timerRemaining =
+        Math.max(
+            0,
+            Math.floor(
+                Number(
+                    data.remainingSec
+                ) || 0
+            )
+        );
+
+
+    timerRunning =
+        !!data.running;
+
+
+    lastTimerSync =
+        Date.now();
+
+
+    element("timer")
+        .innerText =
+        formatTime(
+            timerRemaining
+        );
+
+
+    // ========================================================
+    // RUNNING STATE
+    // ========================================================
+
+    let stateHTML = "";
+
+
+    if(data.running){
+
+        stateHTML +=
+            '<span class="badge">🟢 در حال کار</span>';
+
+    }
+    else{
+
+        stateHTML +=
+            '<span class="badge">⚪ خاموش</span>';
+
+    }
+
+
+    if(data.test){
+
+        stateHTML +=
+            '<span class="badge">TEST</span>';
+
+    }
+
+
+    if(data.drainActive){
+
+        stateHTML +=
+            '<span class="badge">تخلیه فعال</span>';
+
+    }
+
+
+    element("state")
+        .innerHTML =
+        stateHTML;
+
+
+    // ========================================================
+    // HEATER
+    // ========================================================
+
+    element("heater")
+        .innerText =
+
+        onOff(
+            data.heater
+        );
+
+
+    // ========================================================
+    // INLET
+    // ========================================================
+
+    element("inlet")
+        .innerText =
+
+        onOff(
+            data.inlet,
+            "باز",
+            "بسته"
+        );
+
+
+    // ========================================================
+    // DRAIN
+    // ========================================================
+
+    element("drain")
+        .innerText =
+
+        onOff(
+            data.drain
+        );
+
+
+    // ========================================================
+    // PULSE
+    // ========================================================
+
+    element("pulse")
+        .innerText =
+
+        onOff(
+            data.pulse
+        );
+
+
+    // ========================================================
+    // HIGH LEVEL
+    // ========================================================
+
+    element("high")
+        .innerText =
+
+        onOff(
+            data.high,
+            "آب بالا",
+            "آب پایین"
+        );
+
+
+    // ========================================================
+    // LOW LEVEL
+    // ========================================================
+
+    element("low")
+        .innerText =
+
+        onOff(
+            data.low,
+            "آب حاضر",
+            "آب نیست"
+        );
+
+
+    // ========================================================
+    // LIGHT
+    // ========================================================
+
+    const lightButton =
+        element("lightButton");
+
+
+    if(data.light){
+
+        lightButton.innerText =
+            "💡 چراغ روشن";
+
+
+        lightButton.classList
+            .remove("off");
+
+    }
+    else{
+
+        lightButton.innerText =
+            "💡 چراغ خاموش";
+
+
+        lightButton.classList
+            .add("off");
+
+    }
+
+
+    // ========================================================
+    // ERROR
+    // ========================================================
+
+    if(data.error){
+
+        element("error")
+            .innerText =
+            "⚠ " +
+            data.error;
+
+    }
+    else{
+
+        element("error")
+            .innerText =
+            "";
+
+    }
+
+}
+
+
+// ============================================================
+// LOCAL 1 SECOND TIMER
+// ============================================================
+
+setInterval(function(){
+
+
+    if(!timerRunning){
+
+        return;
+
+    }
+
+
+    const elapsed =
+        Math.floor(
+            (
+                Date.now() -
+                lastTimerSync
+            ) / 1000
+        );
+
+
+    const displayTime =
+        Math.max(
+            0,
+            timerRemaining -
+            elapsed
+        );
+
+
+    element("timer")
+        .innerText =
+        formatTime(
+            displayTime
+        );
+
+
+},1000);
+
+
+// ============================================================
+// MQTT CONNECT
+// ============================================================
+
+log(
+    "Connecting to MQTT..."
+);
+
+
+log(
+    MQTT_URL
+);
+
+
+const client =
+    mqtt.connect(
+        MQTT_URL,
+        {
+
+            clientId:
+                CLIENT_ID,
+
+            clean:true,
+
+            connectTimeout:
+                10000,
+
+            reconnectPeriod:
+                3000
+
+        }
+    );
+
+
+// ============================================================
+// CONNECTED
+// ============================================================
+
+client.on(
+    "connect",
+    function(){
+
+        log(
+            "MQTT CONNECTED!"
+        );
+
+
+        setConnection(
+            "🟢 MQTT متصل",
+            "ok"
+        );
+
+
+        client.subscribe(
+            [
+                TOPIC_STATUS,
+                TOPIC_TEMPERATURE
+            ],
+
+            function(error){
+
+                if(error){
+
+                    log(
+                        "SUBSCRIBE ERROR"
+                    );
+
+                }
+                else{
+
+                    log(
+                        "STATUS + TEMPERATURE SUBSCRIBED"
+                    );
+
+                }
+
+            }
+        );
+
+    }
+);
+
+
+// ============================================================
+// MESSAGE
+// ============================================================
+
+client.on(
+    "message",
+    function(
+        topic,
+        message
+    ){
+
+        const text =
+            message.toString();
+
+
+        // فقط Topic ثبت می‌شود
+        // JSON کامل داخل Log ذخیره نمی‌شود
+
+        log(
+            "RX: " +
+            topic
+        );
+
+
+        try{
+
+            const data =
+                JSON.parse(text);
+
+
+            if(
+                topic ===
+                TOPIC_STATUS
+            ){
+
+                updateStatus(
+                    data
+                );
+
+            }
+
+
+            else if(
+                topic ===
+                TOPIC_TEMPERATURE
+            ){
+
+                updateTemperature(
+                    data
+                );
+
+            }
+
+        }
+
+        catch(error){
+
+            log(
+                "JSON ERROR"
+            );
+
+        }
+
+    }
+);
+
+
+// ============================================================
+// MQTT ERROR
+// ============================================================
+
+client.on(
+    "error",
+    function(error){
+
+        log(
+            "MQTT ERROR: " +
+            error.message
+        );
+
+
+        setConnection(
+            "🔴 MQTT Error",
+            "error"
+        );
+
+    }
+);
+
+
+// ============================================================
+// MQTT CLOSE
+// ============================================================
+
+client.on(
+    "close",
+    function(){
+
+        log(
+            "MQTT connection closed"
+        );
+
+
+        setConnection(
+            "🟠 قطع",
+            "error"
+        );
+
+    }
+);
+
+
+// ============================================================
+// MQTT RECONNECT
+// ============================================================
+
+client.on(
+    "reconnect",
+    function(){
+
+        log(
+            "Trying to reconnect..."
+        );
+
+
+        setConnection(
+            "🟡 اتصال مجدد...",
+            "wait"
+        );
+
+    }
+);
+
+
+// ============================================================
+// SEND COMMAND
+// ============================================================
+
+function sendCommand(
+    command
+){
+
+    if(
+        !client.connected
+    ){
+
+        log(
+            "NOT CONNECTED!"
+        );
+
+        return;
+
+    }
+
+
+    client.publish(
+
+        TOPIC_COMMAND,
+
+        command,
+
+        function(error){
+
+            if(error){
+
+                log(
+                    "COMMAND FAILED"
+                );
+
+            }
+            else{
+
+                log(
+                    "COMMAND SENT: " +
+                    command
+                );
+
+            }
+
+        }
+
+    );
+
+}
+
+
+// ============================================================
+// LIGHT TOGGLE
+// ============================================================
+
+function toggleLight(){
+
+    if(
+        lastStatus &&
+        lastStatus.light
+    ){
+
+        sendCommand(
+            "LIGHT_OFF"
+        );
+
+    }
+    else{
+
+        sendCommand(
+            "LIGHT_ON"
+        );
+
+    }
+
+}
+
+
+</script>
+
+</body>
+</html>
