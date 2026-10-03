@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0a0e14">
 <title>SteamPro Remote</title>
 
@@ -24,59 +24,40 @@
   --purple:#8a6dff;
   --orange:#ff9d6b;
 }
-
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;background:var(--bg-0);color:var(--text);font-family:'Segoe UI',Tahoma,Arial,sans-serif;overflow-x:hidden}
 body{background:radial-gradient(circle at 50% -20%,#1a2c44 0,var(--bg-0) 55%,var(--bg-3) 100%);min-height:100vh}
 button{font:inherit;cursor:pointer;border:none;color:inherit}
-
 .container{max-width:700px;margin:0 auto;padding:14px 14px 60px}
-
-/* ========== HEADER ========== */
 .header{display:flex;justify-content:space-between;align-items:center;padding:8px 4px 14px;gap:10px;flex-wrap:wrap}
 .brand{display:flex;flex-direction:column;flex:1;min-width:0}
-.brand-name{font-size:26px;font-weight:900;letter-spacing:.5px}
-.brand-name span{color:var(--accent)}
+.brand-name{font-size:26px;font-weight:900}.brand-name span{color:var(--accent)}
 .brand-sub{font-size:10px;color:var(--text-2);margin-top:2px;letter-spacing:.8px}
-.header-actions{display:flex;gap:6px;align-items:center}
-.icon-btn{width:38px;height:38px;border-radius:12px;background:var(--bg-1);border:1px solid var(--border);display:grid;place-items:center;font-size:16px;transition:transform .1s,background .2s}
-.icon-btn:active{transform:scale(.92)}
-
 .conn-badge{padding:8px 12px;border-radius:999px;font-size:11px;font-weight:800;background:var(--bg-2);color:var(--text-2);display:flex;align-items:center;gap:6px;white-space:nowrap}
-.conn-dot{width:8px;height:8px;border-radius:50%;background:var(--text-3);transition:background .3s,box-shadow .3s}
+.conn-dot{width:8px;height:8px;border-radius:50%;background:var(--text-3);transition:all .3s}
 .conn-badge.ok{background:rgba(22,185,120,.15);color:var(--accent-2)}
 .conn-badge.ok .conn-dot{background:var(--accent-2);box-shadow:0 0 10px var(--accent-2)}
 .conn-badge.wait{background:rgba(255,196,71,.14);color:var(--warn)}
-.conn-badge.wait .conn-dot{background:var(--warn);box-shadow:0 0 10px var(--warn);animation:pulse-dot 1s infinite}
+.conn-badge.wait .conn-dot{background:var(--warn);animation:pulse-dot 1s infinite}
 .conn-badge.err{background:rgba(255,90,90,.14);color:var(--danger)}
-.conn-badge.err .conn-dot{background:var(--danger);box-shadow:0 0 10px var(--danger)}
-
+.conn-badge.err .conn-dot{background:var(--danger)}
 @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* ========== TABS ========== */
 .tabs{display:flex;gap:4px;background:var(--bg-1);border:1px solid var(--border);border-radius:16px;padding:5px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:1;padding:10px 12px;border-radius:12px;background:transparent;color:var(--text-2);font-size:12px;font-weight:800;white-space:nowrap;transition:background .2s,color .2s}
+.tab{flex:1;padding:10px 12px;border-radius:12px;background:transparent;color:var(--text-2);font-size:12px;font-weight:800;white-space:nowrap;transition:all .2s}
 .tab.active{background:linear-gradient(135deg,#1a8fbe,#2465a8);color:#fff}
-
 .tab-content{display:none}
 .tab-content.active{display:block;animation:fadeIn .3s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-/* ========== CARD ========== */
 .card{background:var(--bg-1);border:1px solid var(--border);border-radius:22px;padding:18px;margin-bottom:12px;box-shadow:0 12px 30px rgba(0,0,0,.15)}
 .section-title{font-size:11px;color:var(--text-2);font-weight:900;letter-spacing:1px;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.section-title .badge-mini{padding:3px 8px;border-radius:999px;font-size:9px;background:var(--bg-2);color:var(--text-2);font-weight:800}
-
-/* ========== TEMP ========== */
+.badge-mini{padding:3px 8px;border-radius:999px;font-size:9px;background:var(--bg-2);color:var(--text-2);font-weight:800}
 .temp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .temp-card{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(66,199,255,.10),rgba(66,199,255,.02));border:1px solid rgba(66,199,255,.15);border-radius:20px;padding:20px 12px;text-align:center}
 .temp-card.water{background:linear-gradient(145deg,rgba(54,223,157,.10),rgba(54,223,157,.02));border-color:rgba(54,223,157,.15)}
 .temp-label{font-size:11px;color:var(--text-2);font-weight:800;letter-spacing:.8px;margin-bottom:10px}
 .temp-value{font-size:48px;font-weight:900;line-height:1;letter-spacing:-1.5px;font-variant-numeric:tabular-nums}
 .temp-value .unit{font-size:16px;color:var(--text-2);font-weight:700}
-
-/* ========== TIMER ========== */
 .timer-card{text-align:center;padding:24px 18px}
 .timer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
 .timer-title{font-size:12px;color:var(--text-2);font-weight:800;letter-spacing:.8px}
@@ -88,19 +69,15 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .timer-ring:before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--bg-1)}
 .timer-inner{position:relative;z-index:1}
 .timer-value{font-size:46px;font-weight:900;letter-spacing:2px;line-height:1;font-variant-numeric:tabular-nums}
-.timer-hint{margin-top:8px;font-size:10px;color:var(--text-3);font-weight:700;letter-spacing:.6px}
-
-/* ========== BUTTONS ========== */
+.timer-hint{margin-top:8px;font-size:10px;color:var(--text-3);font-weight:700}
 .actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.btn-main{height:80px;border-radius:20px;color:#fff;font-size:17px;font-weight:900;letter-spacing:.5px;transition:transform .1s,opacity .2s;box-shadow:0 10px 24px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-main{height:80px;border-radius:20px;color:#fff;font-size:17px;font-weight:900;transition:transform .1s,opacity .2s;box-shadow:0 10px 24px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-main:active{transform:scale(.95)}
 .btn-main:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
 .btn-start{background:linear-gradient(145deg,#20d88d,#079a62)}
 .btn-stop{background:linear-gradient(145deg,#ef5b5b,#bd2525)}
 .btn-light{background:linear-gradient(145deg,#8a6dff,#5b3ddb)}
 .btn-light.off{background:var(--bg-2);color:var(--text-2)}
-
-/* ========== STATUS ========== */
 .status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .status-item{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center;transition:all .3s}
 .status-item.active-on{border-color:rgba(54,223,157,.35);background:rgba(54,223,157,.06)}
@@ -109,33 +86,58 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .status-item .value.on{color:var(--accent-2)}
 .status-item .value.off{color:var(--text-3)}
 .status-item .value.warn{color:var(--warn)}
-.status-item .value.err{color:var(--danger)}
-
-/* ========== FORMS ========== */
+/* MUSIC CONTROLS */
+.music-controls{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
+.music-btn{aspect-ratio:1;border-radius:14px;background:var(--bg-2);color:var(--text);font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;transition:transform .1s;border:1px solid var(--border-2)}
+.music-btn:active{transform:scale(.9)}
+.music-btn.play{background:linear-gradient(145deg,#20d88d,#079a62);color:#fff;border:none}
+.music-btn.stop{background:linear-gradient(145deg,#ef5b5b,#bd2525);color:#fff;border:none}
+.music-info{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
+.music-info-item{background:var(--bg-2);border-radius:12px;padding:10px;text-align:center}
+.music-info-item .label{font-size:9px;color:var(--text-2);margin-bottom:4px;font-weight:700}
+.music-info-item .value{font-size:16px;font-weight:900;color:var(--accent);font-variant-numeric:tabular-nums}
 .form-group{margin-bottom:14px}
 .form-group label{display:block;font-size:11px;color:var(--text-2);margin-bottom:6px;font-weight:700}
-.form-group input,.form-group select{width:100%;padding:12px;border-radius:12px;background:var(--bg-2);color:var(--text);border:1px solid var(--border-2);font-size:14px;outline:none}
+.form-group input,.form-group select{width:100%;padding:12px;border-radius:12px;background:var(--bg-2);color:var(--text);border:1px solid var(--border-2);font-size:14px;outline:none;font-family:inherit}
 .form-group input:focus,.form-group select:focus{border-color:var(--accent)}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-
 .btn-save{width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,#16b978,#0d8a5a);color:#fff;font-weight:900;font-size:15px;margin-top:8px}
 .btn-save:active{transform:scale(.97)}
 .btn-secondary{width:100%;padding:14px;border-radius:14px;background:var(--bg-2);color:var(--text);font-weight:800;font-size:14px;margin-top:8px;border:1px solid var(--border-2)}
 .btn-danger{width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#c93b45,#9f3541);color:#fff;font-weight:800;font-size:14px;margin-top:8px}
-
-/* ========== STATS ========== */
 .heater-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .heater-item{background:linear-gradient(145deg,rgba(255,120,80,.10),rgba(255,120,80,.02));border:1px solid rgba(255,120,80,.15);border-radius:16px;padding:16px 12px;text-align:center}
 .heater-item .label{font-size:10px;color:var(--text-2);margin-bottom:8px;font-weight:700}
 .heater-item .value{font-size:28px;font-weight:900;color:var(--orange);direction:ltr;font-variant-numeric:tabular-nums;letter-spacing:1px}
 .heater-item .unit{font-size:10px;color:var(--text-3);margin-top:6px}
-
-/* ========== ERROR ========== */
 .error-box{margin-top:12px;background:rgba(255,90,90,.10);border:1px solid rgba(255,90,90,.25);border-radius:14px;padding:12px 14px;display:none;align-items:center;gap:10px;color:#ff8b8b;font-size:13px;font-weight:700}
 .error-box.show{display:flex}
-
-/* ========== LOG ========== */
+/* LOCKED OVERLAY */
+.locked-overlay{padding:30px 20px;text-align:center}
+.locked-overlay .lock-icon{font-size:48px;margin-bottom:12px}
+.locked-overlay .lock-title{font-size:18px;font-weight:900;margin-bottom:8px}
+.locked-overlay .lock-sub{font-size:12px;color:var(--text-2);margin-bottom:20px;line-height:1.7}
+.locked-overlay input{width:100%;max-width:280px;padding:14px;border-radius:12px;background:var(--bg-2);color:var(--text);border:1px solid var(--border-2);font-size:16px;text-align:center;margin-bottom:12px;outline:none}
+.locked-overlay input:focus{border-color:var(--accent)}
+.locked-overlay button{width:100%;max-width:280px;padding:14px;border-radius:12px;background:linear-gradient(135deg,#1a8fbe,#2465a8);color:#fff;font-weight:900;font-size:14px}
+.locked-overlay .error-msg{color:var(--danger);font-size:12px;margin-top:10px;font-weight:700;min-height:18px}
+/* AD */
+.ad-card{display:none}
+.ad-card.show{display:block}
+.ad-frame{width:100%;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:var(--bg-3);margin-bottom:12px}
+.ad-frame img{width:100%;height:100%;display:block;object-fit:cover;transition:opacity .4s}
+.ad-frame img.empty{object-fit:contain;padding:20px}
+/* UPLOAD */
+.upload-box{background:var(--bg-2);border:2px dashed var(--border-2);border-radius:16px;padding:20px;text-align:center;margin-bottom:12px;cursor:pointer;transition:all .2s}
+.upload-box:hover{border-color:var(--accent);background:rgba(66,199,255,.05)}
+.upload-box input{display:none}
+.upload-icon{font-size:32px;margin-bottom:8px}
+.upload-text{font-size:13px;font-weight:700;color:var(--text)}
+.upload-sub{font-size:10px;color:var(--text-3);margin-top:4px}
+.ad-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ad-thumb{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--bg-3)}
+.ad-thumb img{width:100%;height:100%;object-fit:cover}
+.ad-thumb .delete{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:rgba(201,59,69,.9);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;font-weight:900}
 .log{background:var(--bg-3);border:1px solid var(--border);border-radius:14px;padding:12px;height:180px;overflow-y:auto;font-family:'Courier New',monospace;font-size:11px;color:var(--text-2);direction:ltr;text-align:left;line-height:1.7}
 .log::-webkit-scrollbar{width:6px}
 .log::-webkit-scrollbar-thumb{background:var(--bg-2);border-radius:3px}
@@ -145,16 +147,11 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .log-line.tx{color:var(--accent-2)}
 .log-line.warn{color:var(--warn)}
 .log-line.err{color:var(--danger)}
-
-/* ========== TOAST ========== */
 .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg-1);border:1px solid var(--border-2);border-radius:14px;padding:12px 18px;font-size:13px;font-weight:700;box-shadow:0 12px 30px rgba(0,0,0,.4);transition:transform .3s;z-index:9999;max-width:90vw}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:rgba(54,223,157,.4);color:var(--accent-2)}
 .toast.err{border-color:rgba(255,90,90,.4);color:var(--danger)}
-
-/* ========== FOOTER ========== */
 .footer{text-align:center;color:var(--text-3);font-size:10px;margin-top:18px;line-height:1.8;direction:ltr}
-
 @media (max-width:400px){
   .temp-value{font-size:38px}
   .timer-ring{width:180px;height:180px}
@@ -168,7 +165,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 <body>
 <div class="container">
 
-  <!-- HEADER -->
   <div class="header">
     <div class="brand">
       <div class="brand-name">Steam<span>Pro</span></div>
@@ -180,25 +176,23 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
     </div>
   </div>
 
-  <!-- SETTINGS BAR (DEVICE ID) -->
   <div class="card" style="padding:12px 14px">
     <div style="display:flex;gap:8px;align-items:center">
-      <input id="deviceIdInput" placeholder="DEVICE ID (MAC بدون دونقطه)" style="flex:1;padding:10px;border-radius:10px;background:var(--bg-2);color:var(--text);border:1px solid var(--border-2);font-size:12px;direction:ltr;font-family:monospace">
+      <input id="deviceIdInput" placeholder="DEVICE ID" style="flex:1;padding:10px;border-radius:10px;background:var(--bg-2);color:var(--text);border:1px solid var(--border-2);font-size:12px;direction:ltr;font-family:monospace">
       <button class="btn-secondary" style="width:auto;padding:10px 14px;margin:0" onclick="saveDeviceId()">ذخیره</button>
     </div>
   </div>
 
-  <!-- TABS -->
   <div class="tabs">
     <button class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 داشبورد</button>
-    <button class="tab" data-tab="user" onclick="switchTab('user')">👤 کاربر</button>
+    <button class="tab" data-tab="music" onclick="switchTab('music')">🎵 پلیر</button>
     <button class="tab" data-tab="tech" onclick="switchTab('tech')">🔧 فنی</button>
+    <button class="tab" data-tab="ads" onclick="switchTab('ads')">📢 تبلیغات</button>
     <button class="tab" data-tab="info" onclick="switchTab('info')">ℹ️ اطلاعات</button>
   </div>
 
-  <!-- ============ TAB: DASHBOARD ============ -->
+  <!-- ============ DASHBOARD ============ -->
   <div class="tab-content active" id="tab-dashboard">
-
     <div class="card">
       <div class="temp-grid">
         <div class="temp-card">
@@ -246,7 +240,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
         <div class="status-item" id="itemLow"><div class="label">سطح پایین</div><div class="value off" id="stLow">--</div></div>
         <div class="status-item"><div class="label">حجم صدا</div><div class="value" id="stVolume">--</div></div>
       </div>
-
       <div class="error-box" id="errorBox">
         <span>⚠️</span>
         <span id="errorText"></span>
@@ -254,136 +247,197 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
     </div>
   </div>
 
-  <!-- ============ TAB: USER SETTINGS ============ -->
-  <div class="tab-content" id="tab-user">
+  <!-- ============ MUSIC PLAYER ============ -->
+  <div class="tab-content" id="tab-music">
     <div class="card">
-      <div class="section-title">تنظیمات کاربر</div>
+      <div class="section-title">
+        پخش‌کننده موسیقی
+        <span class="badge-mini" id="dfStatus">--</span>
+      </div>
 
-      <div class="form-grid">
-        <div class="form-group">
-          <label>مدت کارکرد (دقیقه)</label>
-          <input id="u_run" type="number" min="1" max="120">
+      <div class="music-controls">
+        <button class="music-btn" onclick="sendCommand('PREV')" title="قبلی">⏮</button>
+        <button class="music-btn play" onclick="sendCommand('PLAY')" title="پخش">▶</button>
+        <button class="music-btn stop" onclick="sendCommand('MUSIC_STOP')" title="توقف">■</button>
+        <button class="music-btn" onclick="sendCommand('NEXT')" title="بعدی">⏭</button>
+        <button class="music-btn" onclick="loadSettings()" title="بروزرسانی">🔄</button>
+      </div>
+
+      <div class="music-info">
+        <div class="music-info-item">
+          <div class="label">آهنگ فعلی</div>
+          <div class="value" id="musicTrack">--</div>
         </div>
-        <div class="form-group">
-          <label>دمای هدف سونا (°C)</label>
-          <input id="u_starget" type="number" min="10" max="90" step="1">
+        <div class="music-info-item">
+          <div class="label">کل آهنگ‌ها</div>
+          <div class="value" id="musicTotal">--</div>
+        </div>
+        <div class="music-info-item">
+          <div class="label">حجم صدا</div>
+          <div class="value" id="musicVolume">--</div>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>رله پالس</label>
-        <select id="u_pulse">
-          <option value="1">روشن</option>
-          <option value="0">خاموش</option>
-        </select>
+      <div class="form-group" style="margin-top:16px">
+        <label>تنظیم حجم صدا (0-30)</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="music-btn" style="width:60px;height:60px;aspect-ratio:auto;font-size:24px" onclick="sendCommand('VOL_DOWN')">−</button>
+          <input id="volSlider" type="range" min="0" max="30" value="15" style="flex:1;padding:0;background:transparent;border:none" onchange="setVolume(this.value)">
+          <button class="music-btn" style="width:60px;height:60px;aspect-ratio:auto;font-size:24px" onclick="sendCommand('VOL_UP')">+</button>
+        </div>
       </div>
-
-      <button class="btn-save" onclick="saveUserSettings()">💾 ذخیره تنظیمات کاربر</button>
-      <button class="btn-secondary" onclick="loadSettings()">🔄 بارگذاری مجدد</button>
     </div>
   </div>
 
-  <!-- ============ TAB: TECH SETTINGS ============ -->
+  <!-- ============ TECH SETTINGS ============ -->
   <div class="tab-content" id="tab-tech">
-    <div class="card">
-      <div class="section-title">تنظیمات فنی</div>
-
-      <div class="form-group">
-        <label>فعال بودن تایمر</label>
-        <select id="t_timer">
-          <option value="1">روشن</option>
-          <option value="0">خاموش</option>
-        </select>
+    <!-- LOCKED -->
+    <div class="card" id="techLocked">
+      <div class="locked-overlay">
+        <div class="lock-icon">🔐</div>
+        <div class="lock-title">تنظیمات فنی قفل است</div>
+        <div class="lock-sub">برای دسترسی، رمز منو را وارد کنید</div>
+        <input id="authInput" type="password" placeholder="رمز" maxlength="12">
+        <button onclick="doAuth()">ورود</button>
+        <div class="error-msg" id="authError"></div>
       </div>
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label>مدت کارکرد (دقیقه)</label>
-          <input id="t_run" type="number" min="1" max="120">
-        </div>
-        <div class="form-group">
-          <label>دمای هدف سونا (°C)</label>
-          <input id="t_starget" type="number" step="0.1">
-        </div>
-        <div class="form-group">
-          <label>هیسترزیس (°C)</label>
-          <input id="t_shyst" type="number" step="0.1">
-        </div>
-        <div class="form-group">
-          <label>دمای شروع تخلیه (°C)</label>
-          <input id="t_dstart" type="number" step="0.1">
-        </div>
-        <div class="form-group">
-          <label>مدت تخلیه (ثانیه)</label>
-          <input id="t_dsec" type="number" min="1" max="3600">
-        </div>
-        <div class="form-group">
-          <label>حداکثر دمای آب (°C)</label>
-          <input id="t_maxw" type="number" step="0.1">
-        </div>
-        <div class="form-group">
-          <label>Timeout پر شدن (ثانیه)</label>
-          <input id="t_fillto" type="number" min="10" max="600">
-        </div>
-        <div class="form-group">
-          <label>حجم صدا (0-30)</label>
-          <input id="t_volume" type="number" min="0" max="30">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>رله پالس</label>
-        <select id="t_pulse">
-          <option value="1">روشن</option>
-          <option value="0">خاموش</option>
-        </select>
-      </div>
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label>زمان ON پالس (دقیقه)</label>
-          <input id="t_pon" type="number" min="1" max="60">
-        </div>
-        <div class="form-group">
-          <label>زمان OFF پالس (دقیقه)</label>
-          <input id="t_poff" type="number" min="1" max="60">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>فعال بودن تبلیغات</label>
-        <select id="t_adEnabled">
-          <option value="1">روشن</option>
-          <option value="0">خاموش</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>مدت هر عکس (ثانیه)</label>
-        <input id="t_adInterval" type="number" min="3" max="60">
-      </div>
-
-      <button class="btn-save" onclick="saveTechSettings()">💾 ذخیره تنظیمات فنی</button>
     </div>
 
-    <div class="card">
-      <div class="section-title">رمز منو</div>
-      <div class="form-group">
-        <label>رمز جدید (4 تا 12 کاراکتر)</label>
-        <input id="newPass" type="password" maxlength="12">
-      </div>
-      <button class="btn-secondary" onclick="changePassword()">🔐 تغییر رمز</button>
-    </div>
+    <!-- UNLOCKED -->
+    <div id="techUnlocked" style="display:none">
+      <div class="card">
+        <div class="section-title">
+          تنظیمات فنی
+          <span class="badge-mini" style="color:var(--accent-2)">باز</span>
+        </div>
 
-    <div class="card">
-      <div class="section-title">ریست سرویس</div>
-      <button class="btn-danger" onclick="resetService()">♻️ ریست شمارنده سرویس هیتر</button>
+        <div class="form-group">
+          <label>فعال بودن تایمر</label>
+          <select id="t_timer">
+            <option value="1">روشن</option>
+            <option value="0">خاموش</option>
+          </select>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>مدت کارکرد (دقیقه)</label>
+            <input id="t_run" type="number" min="1" max="120">
+          </div>
+          <div class="form-group">
+            <label>دمای هدف سونا (°C)</label>
+            <input id="t_starget" type="number" min="10" max="90" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>هیسترزیس (°C)</label>
+            <input id="t_shyst" type="number" step="0.1" min="0">
+          </div>
+          <div class="form-group">
+            <label>دمای شروع تخلیه (°C)</label>
+            <input id="t_dstart" type="number" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>مدت تخلیه (ثانیه)</label>
+            <input id="t_dsec" type="number" min="1" max="3600">
+          </div>
+          <div class="form-group">
+            <label>حداکثر دمای آب (°C)</label>
+            <input id="t_maxw" type="number" step="0.1">
+          </div>
+          <div class="form-group">
+            <label>Timeout پر شدن (ثانیه)</label>
+            <input id="t_fillto" type="number" min="10" max="600">
+          </div>
+          <div class="form-group">
+            <label>حجم صدا (0-30)</label>
+            <input id="t_volume" type="number" min="0" max="30">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>رله پالس</label>
+          <select id="t_pulse">
+            <option value="1">روشن</option>
+            <option value="0">خاموش</option>
+          </select>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>زمان ON پالس (دقیقه)</label>
+            <input id="t_pon" type="number" min="1" max="60">
+          </div>
+          <div class="form-group">
+            <label>زمان OFF پالس (دقیقه)</label>
+            <input id="t_poff" type="number" min="1" max="60">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>فعال بودن تبلیغات</label>
+          <select id="t_adEnabled">
+            <option value="1">روشن</option>
+            <option value="0">خاموش</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>مدت هر عکس (ثانیه)</label>
+          <input id="t_adInterval" type="number" min="3" max="60">
+        </div>
+
+        <button class="btn-save" onclick="saveTechSettings()">💾 ذخیره</button>
+        <button class="btn-secondary" onclick="loadSettings()">🔄 بارگذاری</button>
+      </div>
+
+      <div class="card">
+        <div class="section-title">رمز منو</div>
+        <div class="form-group">
+          <label>رمز جدید (4 تا 12 کاراکتر)</label>
+          <input id="newPass" type="password" maxlength="12">
+        </div>
+        <button class="btn-secondary" onclick="changePassword()">🔐 تغییر رمز</button>
+      </div>
+
+      <div class="card">
+        <div class="section-title">ریست سرویس</div>
+        <button class="btn-danger" onclick="resetService()">♻️ ریست شمارنده سرویس هیتر</button>
+      </div>
+
+      <div class="card">
+        <button class="btn-secondary" onclick="lockTech()">🔒 قفل کردن دوباره</button>
+      </div>
     </div>
   </div>
 
-  <!-- ============ TAB: INFO ============ -->
-  <div class="tab-content" id="tab-info">
+  <!-- ============ ADS ============ -->
+  <div class="tab-content" id="tab-ads">
+    <div class="card">
+      <div class="section-title">
+        تبلیغات
+        <span class="badge-mini" id="adStatusBadge">--</span>
+      </div>
 
+      <div class="ad-card show" id="adPreviewCard">
+        <div class="ad-frame">
+          <img id="adPreviewImg" class="empty" alt="">
+        </div>
+        <div style="text-align:center;font-size:11px;color:var(--text-2)" id="adPreviewInfo">عکسی آپلود نشده</div>
+      </div>
+
+      <label class="upload-box">
+        <input type="file" accept="image/jpeg,image/png" multiple onchange="uploadAds(this)">
+        <div class="upload-icon">📸</div>
+        <div class="upload-text">افزودن عکس تبلیغاتی</div>
+        <div class="upload-sub">JPEG یا PNG · حداکثر 5 عکس</div>
+      </label>
+
+      <div class="ad-thumbs" id="adThumbs"></div>
+    </div>
+  </div>
+
+  <!-- ============ INFO ============ -->
+  <div class="tab-content" id="tab-info">
     <div class="card">
       <div class="section-title">آمار کارکرد هیتر</div>
       <div class="heater-grid">
@@ -407,8 +461,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
         <div class="status-item"><div class="label">DEVICE ID</div><div class="value" id="infoDevice" style="font-size:10px;direction:ltr;font-family:monospace">--</div></div>
         <div class="status-item"><div class="label">تعداد پیام</div><div class="value" id="infoMsgCount">0</div></div>
         <div class="status-item"><div class="label">آخرین پیام</div><div class="value" id="infoLastMsg" style="font-size:11px">--</div></div>
-        <div class="status-item"><div class="label">آهنگ فعلی</div><div class="value" id="infoTrack">--</div></div>
-        <div class="status-item"><div class="label">کل آهنگ‌ها</div><div class="value" id="infoTracks">--</div></div>
       </div>
     </div>
 
@@ -427,7 +479,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 
 <div class="toast" id="toast"></div>
 
-<!-- MQTT.JS -->
 <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
 
 <script>
@@ -460,7 +511,13 @@ let lastTimerSync = 0;
 let client = null;
 let msgCount = 0;
 let lastMsgTime = 0;
-let settingsReceived = false;
+let heaterWasOnAtLastMsg = false;
+let heaterBaseTimeAtLastMsg = 0;
+let heaterBaseServiceAtLastMsg = 0;
+let isAuthed = false;
+let adImages = [];  // {id, dataUrl}
+let adCurrentIndex = 0;
+let adSliderTimer = null;
 
 const MAX_LOG_LINES = 60;
 let logLines = [];
@@ -526,16 +583,12 @@ function onOff(v){ return v ? "روشن" : "خاموش"; }
 function openClose(v){ return v ? "باز" : "بسته"; }
 function highLow(v){ return v ? "پر" : "کم"; }
 
-// ============================================================
-// TOAST
-// ============================================================
-let toastTimer = null;
 function toast(msg, cls = ""){
   const t = $("toast");
   t.innerText = msg;
   t.className = "toast show " + cls;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove("show"), 2500);
 }
 
 // ============================================================
@@ -544,6 +597,7 @@ function toast(msg, cls = ""){
 function switchTab(name){
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
   document.querySelectorAll(".tab-content").forEach(c => c.classList.toggle("active", c.id === "tab-" + name));
+  if(name === "ads") renderAdThumbs();
 }
 
 // ============================================================
@@ -551,10 +605,7 @@ function switchTab(name){
 // ============================================================
 function saveDeviceId(){
   const v = $("deviceIdInput").value.trim().toUpperCase();
-  if(v.length < 6){
-    toast("شناسه باید حداقل 6 کاراکتر باشد", "err");
-    return;
-  }
+  if(v.length < 6){ toast("شناسه باید حداقل 6 کاراکتر باشد", "err"); return; }
   localStorage.setItem("steampro_device_id", v);
   toast("ذخیره شد. رفرش...", "ok");
   setTimeout(() => location.reload(), 800);
@@ -587,7 +638,7 @@ function updateTemperature(data){
 }
 
 // ============================================================
-// STATUS UPDATE
+// STATUS
 // ============================================================
 function updateStatus(data){
   lastStatus = data;
@@ -596,9 +647,12 @@ function updateStatus(data){
   $("infoMsgCount").innerText = msgCount;
   $("infoLastMsg").innerText = new Date().toLocaleTimeString();
 
+  heaterWasOnAtLastMsg = !!data.heater;
+  heaterBaseTimeAtLastMsg = data.heaterTotalSec || 0;
+  heaterBaseServiceAtLastMsg = data.heaterServiceSec || 0;
+
   updateTemperature(data);
 
-  // TIMER
   const isTest = !!data.test;
   const timerEnabled = data.timerEnabled !== false;
   timerTotal = isTest ? 600 : ((data.runMinutes || 0) * 60);
@@ -620,14 +674,12 @@ function updateStatus(data){
     drawTimerRing(timerRemaining, timerTotal);
   }
 
-  // STATE BADGE
   const badge = $("stateBadge");
   if(data.running && isTest){ badge.innerText = "تست"; badge.className = "state-badge test"; }
   else if(data.running){ badge.innerText = "در حال کار"; badge.className = "state-badge run"; }
   else if(data.drainActive){ badge.innerText = "تخلیه"; badge.className = "state-badge drain"; }
   else { badge.innerText = "آماده"; badge.className = "state-badge"; }
 
-  // BUTTONS
   const startBtn = $("startBtn");
   const stopBtn = $("stopBtn");
   if(data.running){
@@ -649,7 +701,6 @@ function updateStatus(data){
     lightBtn.innerText = "💡 چراغ خاموش";
   }
 
-  // STATUS
   setVal("stHeater", onOff(data.heater), data.heater ? "on" : "off", "itemHeater");
   setVal("stInlet", openClose(data.inlet), data.inlet ? "on" : "off", "itemInlet");
   setVal("stDrain", onOff(data.drain), data.drain ? "on" : "off", "itemDrain");
@@ -660,15 +711,17 @@ function updateStatus(data){
   setVal("stLow", highLow(data.low), data.low ? "on" : "off", "itemLow");
   $("stVolume").innerText = data.volume ?? "--";
 
-  // STATS
-  $("heaterTotal").innerText = formatHeaterTime(data.heaterTotalSec || 0);
-  $("heaterService").innerText = formatHeaterTime(data.heaterServiceSec || 0);
+  updateHeaterStats();
 
-  // INFO
-  $("infoTrack").innerText = data.currentTrack ?? "--";
-  $("infoTracks").innerText = data.totalTracks ?? "--";
+  $("musicTrack").innerText = data.currentTrack ?? "--";
+  $("musicTotal").innerText = data.totalTracks ?? "--";
+  $("musicVolume").innerText = data.volume ?? "--";
+  $("volSlider").value = data.volume ?? 15;
 
-  // ERROR
+  const dfB = $("dfStatus");
+  dfB.innerText = data.dfReady ? "آماده" : "قطع";
+  dfB.style.color = data.dfReady ? "var(--accent-2)" : "var(--danger)";
+
   const errBox = $("errorBox");
   if(data.error && data.error.length > 0){
     errBox.classList.add("show");
@@ -679,17 +732,25 @@ function updateStatus(data){
 }
 
 // ============================================================
-// SETTINGS UPDATE
+// LIVE HEATER STATS
+// ============================================================
+function updateHeaterStats(){
+  if(!lastStatus){ $("heaterTotal").innerText = "--:--"; $("heaterService").innerText = "--:--"; return; }
+  let total = heaterBaseTimeAtLastMsg;
+  let service = heaterBaseServiceAtLastMsg;
+  if(heaterWasOnAtLastMsg && lastMsgTime){
+    const elapsed = Math.floor((Date.now() - lastMsgTime) / 1000);
+    total += elapsed;
+    service += elapsed;
+  }
+  $("heaterTotal").innerText = formatHeaterTime(total);
+  $("heaterService").innerText = formatHeaterTime(service);
+}
+
+// ============================================================
+// SETTINGS
 // ============================================================
 function updateSettings(data){
-  settingsReceived = true;
-
-  // User settings
-  $("u_run").value = data.run ?? 15;
-  $("u_starget").value = Math.round(data.starget ?? 45);
-  $("u_pulse").value = data.pulse ? "1" : "0";
-
-  // Tech settings
   $("t_timer").value = data.timer ? "1" : "0";
   $("t_run").value = data.run ?? 15;
   $("t_starget").value = data.starget ?? 45;
@@ -704,10 +765,52 @@ function updateSettings(data){
   $("t_poff").value = data.poff ?? 1;
   $("t_adEnabled").value = data.adEnabled ? "1" : "0";
   $("t_adInterval").value = data.adInterval ?? 10;
+  $("adStatusBadge").innerText = data.adEnabled ? "روشن" : "خاموش";
+  $("adStatusBadge").style.color = data.adEnabled ? "var(--accent-2)" : "var(--text-2)";
 }
 
 // ============================================================
-// LOCAL TIMER TICK
+// AUTH
+// ============================================================
+function doAuth(){
+  const p = $("authInput").value.trim();
+  if(!p){ $("authError").innerText = "رمز را وارد کنید"; return; }
+  if(!client || !client.connected){ $("authError").innerText = "MQTT وصل نیست"; return; }
+
+  client.publish(TOPIC_SETTINGS, "AUTH:" + p);
+  log("TX: AUTH:***", "tx");
+  $("authError").innerText = "در حال بررسی...";
+  $("authError").style.color = "var(--text-2)";
+}
+
+function onAuthResult(ok){
+  if(ok){
+    isAuthed = true;
+    $("techLocked").style.display = "none";
+    $("techUnlocked").style.display = "block";
+    $("authInput").value = "";
+    $("authError").innerText = "";
+    log("AUTH OK", "info");
+    toast("دسترسی باز شد", "ok");
+    loadSettings();
+  } else {
+    $("authError").innerText = "رمز اشتباه است";
+    $("authError").style.color = "var(--danger)";
+    log("AUTH FAIL", "err");
+  }
+}
+
+function lockTech(){
+  isAuthed = false;
+  $("techLocked").style.display = "block";
+  $("techUnlocked").style.display = "none";
+  $("authInput").value = "";
+  $("authError").innerText = "";
+  toast("قفل شد", "ok");
+}
+
+// ============================================================
+// LOCAL TICKS
 // ============================================================
 setInterval(() => {
   if(!timerRunning || !lastStatus) return;
@@ -717,12 +820,20 @@ setInterval(() => {
   drawTimerRing(displayTime, timerTotal);
 }, 1000);
 
+setInterval(updateHeaterStats, 1000);
+
 // ============================================================
 // INIT
 // ============================================================
 (function init(){
   rebuildTopics();
   $("deviceIdInput").value = DEVICE_ID;
+
+  // بارگذاری عکس‌ها از localStorage
+  try {
+    const saved = localStorage.getItem("steampro_ads_" + DEVICE_ID);
+    if(saved) adImages = JSON.parse(saved);
+  } catch(e){ adImages = []; }
 
   log("Connecting to MQTT...", "info");
   log("Device: " + DEVICE_ID, "info");
@@ -744,11 +855,9 @@ setInterval(() => {
     $("infoMqtt").className = "value on";
     client.subscribe([TOPIC_STATUS, TOPIC_TEMPERATURE, TOPIC_SETTINGS], (err) => {
       if(err){ log("SUBSCRIBE ERROR", "err"); return; }
-      log("SUBSCRIBED: status, temperature, settings", "info");
-      // درخواست تنظیمات فعلی
+      log("SUBSCRIBED", "info");
       setTimeout(() => {
         client.publish(TOPIC_SETTINGS, "GET_SETTINGS");
-        log("TX: GET_SETTINGS", "tx");
       }, 500);
     });
   });
@@ -765,11 +874,19 @@ setInterval(() => {
         if(data.run !== undefined) updateSettings(data);
       }
     } catch(e){
-      log("JSON PARSE ERROR", "err");
+      // پیام غیر JSON (مثل AUTH_OK یا OK)
+      if(topic === TOPIC_SETTINGS){
+        if(text === "AUTH_OK") onAuthResult(true);
+        else if(text === "AUTH_FAIL") onAuthResult(false);
+        else if(text === "OK") log("SETTING SAVED", "info");
+        else if(text === "SAVED") log("ALL SAVED", "info");
+        else if(text === "ERROR:LOCKED") log("LOCKED - AUTH first", "warn");
+        else if(text.startsWith("ERROR:")) log("ERROR: " + text, "err");
+      }
     }
   });
 
-  client.on("error", (e) => {
+  client.on("error", () => {
     log("MQTT ERROR", "err");
     setConnection("خطا", "err");
     $("infoMqtt").innerText = "خطا";
@@ -795,13 +912,9 @@ setInterval(() => {
 // COMMANDS
 // ============================================================
 function sendCommand(cmd){
-  if(!client || !client.connected){
-    log("NOT CONNECTED", "err");
-    toast("اتصال MQTT برقرار نیست", "err");
-    return;
-  }
+  if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
   client.publish(TOPIC_COMMAND, cmd, (err) => {
-    if(err){ log("CMD FAILED: " + cmd, "err"); toast("ارسال ناموفق", "err"); }
+    if(err){ log("CMD FAILED: " + cmd, "err"); }
     else { log("TX: " + cmd, "tx"); }
   });
 }
@@ -812,13 +925,11 @@ function toggleLight(){
 }
 
 // ============================================================
-// SAVE SETTINGS
+// SETTINGS SEND
 // ============================================================
 function sendSetting(key, value){
-  if(!client || !client.connected){
-    toast("اتصال MQTT برقرار نیست", "err");
-    return;
-  }
+  if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
+  if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
   const cmd = "SET:" + key + "=" + value;
   client.publish(TOPIC_SETTINGS, cmd, (err) => {
     if(err){ log("SET FAILED: " + key, "err"); toast("ذخیره نشد", "err"); }
@@ -827,28 +938,16 @@ function sendSetting(key, value){
 }
 
 function loadSettings(){
-  if(!client || !client.connected){
-    toast("اتصال MQTT برقرار نیست", "err");
-    return;
-  }
+  if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
   client.publish(TOPIC_SETTINGS, "GET_SETTINGS", (err) => {
     if(!err) log("TX: GET_SETTINGS", "tx");
   });
-}
-
-function saveUserSettings(){
-  const run = $("u_run").value;
-  const starget = $("u_starget").value;
-  const pulse = $("u_pulse").value;
-
-  sendSetting("run", run);
-  setTimeout(() => sendSetting("starget", starget), 200);
-  setTimeout(() => sendSetting("pulse", pulse), 400);
-
-  toast("تنظیمات ارسال شد", "ok");
+  toast("درخواست ارسال شد", "ok");
 }
 
 function saveTechSettings(){
+  if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
+
   const settings = [
     ["timer", $("t_timer").value],
     ["run", $("t_run").value],
@@ -867,27 +966,172 @@ function saveTechSettings(){
   ];
 
   settings.forEach(([k, v], i) => {
-    setTimeout(() => sendSetting(k, v), i * 200);
+    setTimeout(() => sendSetting(k, v), i * 150);
   });
 
   toast("تنظیمات فنی ارسال شد", "ok");
 }
 
+function setVolume(v){
+  sendSetting("volume", v);
+  toast("حجم صدا: " + v, "ok");
+}
+
 function changePassword(){
+  if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
   const p = $("newPass").value.trim();
-  if(p.length < 4 || p.length > 12){
-    toast("رمز باید 4 تا 12 کاراکتر باشد", "err");
-    return;
-  }
+  if(p.length < 4 || p.length > 12){ toast("رمز باید 4 تا 12 کاراکتر", "err"); return; }
   sendSetting("menupass", p);
   $("newPass").value = "";
   toast("رمز تغییر کرد", "ok");
 }
 
 function resetService(){
+  if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
   if(!confirm("شمارنده سرویس هیتر ریست شود؟")) return;
   sendSetting("resetservice", "1");
+  setTimeout(() => { heaterBaseServiceAtLastMsg = 0; updateHeaterStats(); }, 1000);
   toast("ریست شد", "ok");
+}
+
+// ============================================================
+// ADS (Local Storage)
+// ============================================================
+function saveAdsToStorage(){
+  try {
+    localStorage.setItem("steampro_ads_" + DEVICE_ID, JSON.stringify(adImages));
+  } catch(e){
+    toast("حافظه پر است، عکس‌ها ذخیره نشدند", "err");
+  }
+}
+
+async function resizeImage(file){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 900, maxH = 506;
+        const scale = Math.min(1, maxW / img.width, maxH / img.height);
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        let quality = 0.75;
+        function tryBlob(){
+          canvas.toBlob(blob => {
+            if(!blob){ reject(); return; }
+            if(blob.size <= 100000 || quality <= 0.4){
+              const fr = new FileReader();
+              fr.onload = () => resolve(fr.result);
+              fr.readAsDataURL(blob);
+              return;
+            }
+            quality -= 0.1;
+            tryBlob();
+          }, "image/jpeg", quality);
+        }
+        tryBlob();
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadAds(input){
+  const files = Array.from(input.files || []);
+  if(!files.length) return;
+
+  if(adImages.length + files.length > 5){
+    toast("حداکثر 5 عکس می‌توانید اضافه کنید", "err");
+    return;
+  }
+
+  toast("در حال آماده‌سازی...", "ok");
+
+  for(const file of files){
+    try {
+      const dataUrl = await resizeImage(file);
+      adImages.push({ id: Date.now() + Math.random(), dataUrl });
+    } catch(e){
+      toast("خطا در پردازش عکس", "err");
+    }
+  }
+
+  saveAdsToStorage();
+  renderAdThumbs();
+  input.value = "";
+  toast("عکس‌ها ذخیره شدند", "ok");
+}
+
+function deleteAd(id){
+  if(!confirm("این عکس حذف شود؟")) return;
+  adImages = adImages.filter(a => a.id !== id);
+  saveAdsToStorage();
+  renderAdThumbs();
+  toast("حذف شد", "ok");
+}
+
+function deleteAllAds(){
+  if(!confirm("همه عکس‌ها حذف شوند؟")) return;
+  adImages = [];
+  saveAdsToStorage();
+  renderAdThumbs();
+  toast("همه حذف شدند", "ok");
+}
+
+function renderAdThumbs(){
+  const box = $("adThumbs");
+  if(!adImages.length){
+    box.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-3);font-size:12px;padding:20px">هنوز عکسی آپلود نشده</div>';
+    $("adPreviewImg").src = "";
+    $("adPreviewImg").className = "empty";
+    $("adPreviewInfo").innerText = "عکسی آپلود نشده";
+    return;
+  }
+
+  box.innerHTML = "";
+  adImages.forEach((ad) => {
+    const div = document.createElement("div");
+    div.className = "ad-thumb";
+    div.innerHTML = `<img src="${ad.dataUrl}"><div class="delete" onclick="deleteAd(${ad.id})">×</div>`;
+    box.appendChild(div);
+  });
+
+  startAdSlider();
+}
+
+function startAdSlider(){
+  if(adSliderTimer) clearInterval(adSliderTimer);
+  if(!adImages.length) return;
+  adCurrentIndex = 0;
+  showAdSlide();
+  adSliderTimer = setInterval(showAdSlide, 8000);
+}
+
+function showAdSlide(){
+  if(!adImages.length) return;
+  const ad = adImages[adCurrentIndex];
+  const img = $("adPreviewImg");
+  img.style.opacity = "0";
+  setTimeout(() => {
+    img.src = ad.dataUrl;
+    img.className = "";
+    img.style.opacity = "1";
+    adCurrentIndex = (adCurrentIndex + 1) % adImages.length;
+    $("adPreviewInfo").innerText = `عکس ${adCurrentIndex + 1} از ${adImages.length}`;
+  }, 200);
+}
+
+// ============================================================
+// PWA
+// ============================================================
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("/sw.js").catch(()=>{});
 }
 </script>
 </body>
