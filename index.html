@@ -377,7 +377,7 @@ let adSliderTimer = null;
 let adReceived = {};
 let adMetaCount = 0;
 let adMetaReceived = 0;
-let adsLoaded = false;
+let adsRequested = false;
 
 const MAX_LOG_LINES = 60;
 let logLines = [];
@@ -632,6 +632,14 @@ function handleAdTopic(topic, text){
     
     if(adReceived[idx].receivedCount !== adReceived[idx].totalParts){
       log("IMG " + idx + " INCOMPLETE! " + adReceived[idx].receivedCount + "/" + adReceived[idx].totalParts, "err");
+      // درخواست دوباره بعد از 2 ثانیه
+      setTimeout(() => {
+        if(client && client.connected && !adsRequested){
+          adsRequested = true;
+          log("Retrying ads...", "warn");
+          client.publish(TOPIC_SETTINGS, "GET_ADS");
+        }
+      }, 2000);
       return;
     }
     
@@ -656,6 +664,7 @@ function handleAdTopic(topic, text){
     if(adMetaReceived >= adMetaCount){
       log("ALL ADS RECEIVED ✓", "info");
       $("adLoading").style.display = "none";
+      adsRequested = false;
       if(adImages.length > 0 && adEnabled){
         startAdSlider();
         showAdBanner();
@@ -880,6 +889,7 @@ function refreshAds(){
   adReceived = {};
   adMetaCount = 0;
   adMetaReceived = 0;
+  adsRequested = false;
   $("adLoading").style.display = "flex";
   $("adImage").style.display = "none";
   client.publish(TOPIC_SETTINGS, "GET_ADS");
