@@ -52,6 +52,18 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .card{background:var(--bg-1);border:1px solid var(--border);border-radius:22px;padding:18px;margin-bottom:12px;box-shadow:0 12px 30px rgba(0,0,0,.15)}
 .section-title{font-size:11px;color:var(--text-2);font-weight:900;letter-spacing:1px;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .badge-mini{padding:3px 8px;border-radius:999px;font-size:9px;background:var(--bg-2);color:var(--text-2);font-weight:800}
+/* AD BANNER */
+.ad-banner{display:none;padding:0;overflow:hidden;background:var(--bg-1);border:1px solid var(--border);border-radius:22px;margin-bottom:12px;box-shadow:0 12px 30px rgba(0,0,0,.15)}
+.ad-banner.show{display:block;animation:fadeIn .5s}
+.ad-banner-frame{width:100%;aspect-ratio:16/9;background:var(--bg-3);position:relative;overflow:hidden}
+.ad-banner-frame img{width:100%;height:100%;display:block;object-fit:cover;transition:opacity .5s}
+.ad-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:6px 10px;background:rgba(0,0,0,.5);border-radius:999px;backdrop-filter:blur(8px)}
+.ad-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);transition:all .3s}
+.ad-dot.active{background:#fff;width:22px;border-radius:4px}
+.ad-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:13px;font-weight:700;flex-direction:column;gap:8px}
+.spinner{width:36px;height:36px;border:3px solid var(--border-2);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* TEMP */
 .temp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .temp-card{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(66,199,255,.10),rgba(66,199,255,.02));border:1px solid rgba(66,199,255,.15);border-radius:20px;padding:20px 12px;text-align:center}
 .temp-card.water{background:linear-gradient(145deg,rgba(54,223,157,.10),rgba(54,223,157,.02));border-color:rgba(54,223,157,.15)}
@@ -86,7 +98,7 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .status-item .value.on{color:var(--accent-2)}
 .status-item .value.off{color:var(--text-3)}
 .status-item .value.warn{color:var(--warn)}
-/* MUSIC CONTROLS */
+/* MUSIC */
 .music-controls{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
 .music-btn{aspect-ratio:1;border-radius:14px;background:var(--bg-2);color:var(--text);font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;transition:transform .1s;border:1px solid var(--border-2)}
 .music-btn:active{transform:scale(.9)}
@@ -96,6 +108,7 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .music-info-item{background:var(--bg-2);border-radius:12px;padding:10px;text-align:center}
 .music-info-item .label{font-size:9px;color:var(--text-2);margin-bottom:4px;font-weight:700}
 .music-info-item .value{font-size:16px;font-weight:900;color:var(--accent);font-variant-numeric:tabular-nums}
+/* FORMS */
 .form-group{margin-bottom:14px}
 .form-group label{display:block;font-size:11px;color:var(--text-2);margin-bottom:6px;font-weight:700}
 .form-group input,.form-group select{width:100%;padding:12px;border-radius:12px;background:var(--bg-2);color:var(--text);border:1px solid var(--border-2);font-size:14px;outline:none;font-family:inherit}
@@ -112,7 +125,7 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .heater-item .unit{font-size:10px;color:var(--text-3);margin-top:6px}
 .error-box{margin-top:12px;background:rgba(255,90,90,.10);border:1px solid rgba(255,90,90,.25);border-radius:14px;padding:12px 14px;display:none;align-items:center;gap:10px;color:#ff8b8b;font-size:13px;font-weight:700}
 .error-box.show{display:flex}
-/* LOCKED OVERLAY */
+/* LOCK */
 .locked-overlay{padding:30px 20px;text-align:center}
 .locked-overlay .lock-icon{font-size:48px;margin-bottom:12px}
 .locked-overlay .lock-title{font-size:18px;font-weight:900;margin-bottom:8px}
@@ -121,23 +134,7 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .locked-overlay input:focus{border-color:var(--accent)}
 .locked-overlay button{width:100%;max-width:280px;padding:14px;border-radius:12px;background:linear-gradient(135deg,#1a8fbe,#2465a8);color:#fff;font-weight:900;font-size:14px}
 .locked-overlay .error-msg{color:var(--danger);font-size:12px;margin-top:10px;font-weight:700;min-height:18px}
-/* AD */
-.ad-card{display:none}
-.ad-card.show{display:block}
-.ad-frame{width:100%;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:var(--bg-3);margin-bottom:12px}
-.ad-frame img{width:100%;height:100%;display:block;object-fit:cover;transition:opacity .4s}
-.ad-frame img.empty{object-fit:contain;padding:20px}
-/* UPLOAD */
-.upload-box{background:var(--bg-2);border:2px dashed var(--border-2);border-radius:16px;padding:20px;text-align:center;margin-bottom:12px;cursor:pointer;transition:all .2s}
-.upload-box:hover{border-color:var(--accent);background:rgba(66,199,255,.05)}
-.upload-box input{display:none}
-.upload-icon{font-size:32px;margin-bottom:8px}
-.upload-text{font-size:13px;font-weight:700;color:var(--text)}
-.upload-sub{font-size:10px;color:var(--text-3);margin-top:4px}
-.ad-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.ad-thumb{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:var(--bg-3)}
-.ad-thumb img{width:100%;height:100%;object-fit:cover}
-.ad-thumb .delete{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;background:rgba(201,59,69,.9);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;font-weight:900}
+/* LOG */
 .log{background:var(--bg-3);border:1px solid var(--border);border-radius:14px;padding:12px;height:180px;overflow-y:auto;font-family:'Courier New',monospace;font-size:11px;color:var(--text-2);direction:ltr;text-align:left;line-height:1.7}
 .log::-webkit-scrollbar{width:6px}
 .log::-webkit-scrollbar-thumb{background:var(--bg-2);border-radius:3px}
@@ -176,23 +173,28 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
     </div>
   </div>
 
-  <div class="card" style="padding:12px 14px">
-    <div style="display:flex;gap:8px;align-items:center">
-      <input id="deviceIdInput" placeholder="DEVICE ID" style="flex:1;padding:10px;border-radius:10px;background:var(--bg-2);color:var(--text);border:1px solid var(--border-2);font-size:12px;direction:ltr;font-family:monospace">
-      <button class="btn-secondary" style="width:auto;padding:10px 14px;margin:0" onclick="saveDeviceId()">ذخیره</button>
-    </div>
-  </div>
-
   <div class="tabs">
     <button class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 داشبورد</button>
     <button class="tab" data-tab="music" onclick="switchTab('music')">🎵 پلیر</button>
     <button class="tab" data-tab="tech" onclick="switchTab('tech')">🔧 فنی</button>
-    <button class="tab" data-tab="ads" onclick="switchTab('ads')">📢 تبلیغات</button>
     <button class="tab" data-tab="info" onclick="switchTab('info')">ℹ️ اطلاعات</button>
   </div>
 
   <!-- ============ DASHBOARD ============ -->
   <div class="tab-content active" id="tab-dashboard">
+
+    <!-- AD BANNER (بالای همه چیز) -->
+    <div class="ad-banner" id="adBanner">
+      <div class="ad-banner-frame">
+        <div class="ad-loading" id="adLoading">
+          <div class="spinner"></div>
+          <div>در حال دریافت تبلیغات...</div>
+        </div>
+        <img id="adImage" style="display:none" alt="">
+        <div class="ad-dots" id="adDots" style="display:none"></div>
+      </div>
+    </div>
+
     <div class="card">
       <div class="temp-grid">
         <div class="temp-card">
@@ -247,14 +249,13 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
     </div>
   </div>
 
-  <!-- ============ MUSIC PLAYER ============ -->
+  <!-- ============ MUSIC ============ -->
   <div class="tab-content" id="tab-music">
     <div class="card">
       <div class="section-title">
         پخش‌کننده موسیقی
         <span class="badge-mini" id="dfStatus">--</span>
       </div>
-
       <div class="music-controls">
         <button class="music-btn" onclick="sendCommand('PREV')" title="قبلی">⏮</button>
         <button class="music-btn play" onclick="sendCommand('PLAY')" title="پخش">▶</button>
@@ -262,36 +263,24 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
         <button class="music-btn" onclick="sendCommand('NEXT')" title="بعدی">⏭</button>
         <button class="music-btn" onclick="loadSettings()" title="بروزرسانی">🔄</button>
       </div>
-
       <div class="music-info">
-        <div class="music-info-item">
-          <div class="label">آهنگ فعلی</div>
-          <div class="value" id="musicTrack">--</div>
-        </div>
-        <div class="music-info-item">
-          <div class="label">کل آهنگ‌ها</div>
-          <div class="value" id="musicTotal">--</div>
-        </div>
-        <div class="music-info-item">
-          <div class="label">حجم صدا</div>
-          <div class="value" id="musicVolume">--</div>
-        </div>
+        <div class="music-info-item"><div class="label">آهنگ فعلی</div><div class="value" id="musicTrack">--</div></div>
+        <div class="music-info-item"><div class="label">کل آهنگ‌ها</div><div class="value" id="musicTotal">--</div></div>
+        <div class="music-info-item"><div class="label">حجم صدا</div><div class="value" id="musicVolume">--</div></div>
       </div>
-
       <div class="form-group" style="margin-top:16px">
-        <label>تنظیم حجم صدا (0-30)</label>
+        <label>حجم صدا</label>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="music-btn" style="width:60px;height:60px;aspect-ratio:auto;font-size:24px" onclick="sendCommand('VOL_DOWN')">−</button>
-          <input id="volSlider" type="range" min="0" max="30" value="15" style="flex:1;padding:0;background:transparent;border:none" onchange="setVolume(this.value)">
+          <input id="volSlider" type="range" min="0" max="30" value="15" style="flex:1" onchange="setVolume(this.value)">
           <button class="music-btn" style="width:60px;height:60px;aspect-ratio:auto;font-size:24px" onclick="sendCommand('VOL_UP')">+</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ============ TECH SETTINGS ============ -->
+  <!-- ============ TECH ============ -->
   <div class="tab-content" id="tab-tech">
-    <!-- LOCKED -->
     <div class="card" id="techLocked">
       <div class="locked-overlay">
         <div class="lock-icon">🔐</div>
@@ -303,99 +292,43 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
       </div>
     </div>
 
-    <!-- UNLOCKED -->
     <div id="techUnlocked" style="display:none">
       <div class="card">
-        <div class="section-title">
-          تنظیمات فنی
-          <span class="badge-mini" style="color:var(--accent-2)">باز</span>
-        </div>
-
+        <div class="section-title">تنظیمات فنی</div>
         <div class="form-group">
           <label>فعال بودن تایمر</label>
-          <select id="t_timer">
-            <option value="1">روشن</option>
-            <option value="0">خاموش</option>
-          </select>
+          <select id="t_timer"><option value="1">روشن</option><option value="0">خاموش</option></select>
         </div>
-
         <div class="form-grid">
-          <div class="form-group">
-            <label>مدت کارکرد (دقیقه)</label>
-            <input id="t_run" type="number" min="1" max="120">
-          </div>
-          <div class="form-group">
-            <label>دمای هدف سونا (°C)</label>
-            <input id="t_starget" type="number" min="10" max="90" step="0.1">
-          </div>
-          <div class="form-group">
-            <label>هیسترزیس (°C)</label>
-            <input id="t_shyst" type="number" step="0.1" min="0">
-          </div>
-          <div class="form-group">
-            <label>دمای شروع تخلیه (°C)</label>
-            <input id="t_dstart" type="number" step="0.1">
-          </div>
-          <div class="form-group">
-            <label>مدت تخلیه (ثانیه)</label>
-            <input id="t_dsec" type="number" min="1" max="3600">
-          </div>
-          <div class="form-group">
-            <label>حداکثر دمای آب (°C)</label>
-            <input id="t_maxw" type="number" step="0.1">
-          </div>
-          <div class="form-group">
-            <label>Timeout پر شدن (ثانیه)</label>
-            <input id="t_fillto" type="number" min="10" max="600">
-          </div>
-          <div class="form-group">
-            <label>حجم صدا (0-30)</label>
-            <input id="t_volume" type="number" min="0" max="30">
-          </div>
+          <div class="form-group"><label>مدت کارکرد (دقیقه)</label><input id="t_run" type="number" min="1" max="120"></div>
+          <div class="form-group"><label>دمای هدف سونا (°C)</label><input id="t_starget" type="number" min="10" max="90" step="0.1"></div>
+          <div class="form-group"><label>هیسترزیس (°C)</label><input id="t_shyst" type="number" step="0.1"></div>
+          <div class="form-group"><label>دمای شروع تخلیه (°C)</label><input id="t_dstart" type="number" step="0.1"></div>
+          <div class="form-group"><label>مدت تخلیه (ثانیه)</label><input id="t_dsec" type="number" min="1" max="3600"></div>
+          <div class="form-group"><label>حداکثر دمای آب (°C)</label><input id="t_maxw" type="number" step="0.1"></div>
+          <div class="form-group"><label>Timeout پر شدن (ثانیه)</label><input id="t_fillto" type="number" min="10" max="600"></div>
+          <div class="form-group"><label>حجم صدا</label><input id="t_volume" type="number" min="0" max="30"></div>
         </div>
-
         <div class="form-group">
           <label>رله پالس</label>
-          <select id="t_pulse">
-            <option value="1">روشن</option>
-            <option value="0">خاموش</option>
-          </select>
+          <select id="t_pulse"><option value="1">روشن</option><option value="0">خاموش</option></select>
         </div>
-
         <div class="form-grid">
-          <div class="form-group">
-            <label>زمان ON پالس (دقیقه)</label>
-            <input id="t_pon" type="number" min="1" max="60">
-          </div>
-          <div class="form-group">
-            <label>زمان OFF پالس (دقیقه)</label>
-            <input id="t_poff" type="number" min="1" max="60">
-          </div>
+          <div class="form-group"><label>زمان ON پالس (دقیقه)</label><input id="t_pon" type="number" min="1" max="60"></div>
+          <div class="form-group"><label>زمان OFF پالس (دقیقه)</label><input id="t_poff" type="number" min="1" max="60"></div>
         </div>
-
         <div class="form-group">
           <label>فعال بودن تبلیغات</label>
-          <select id="t_adEnabled">
-            <option value="1">روشن</option>
-            <option value="0">خاموش</option>
-          </select>
+          <select id="t_adEnabled"><option value="1">روشن</option><option value="0">خاموش</option></select>
         </div>
-
-        <div class="form-group">
-          <label>مدت هر عکس (ثانیه)</label>
-          <input id="t_adInterval" type="number" min="3" max="60">
-        </div>
-
+        <div class="form-group"><label>مدت هر عکس (ثانیه)</label><input id="t_adInterval" type="number" min="3" max="60"></div>
         <button class="btn-save" onclick="saveTechSettings()">💾 ذخیره</button>
         <button class="btn-secondary" onclick="loadSettings()">🔄 بارگذاری</button>
       </div>
 
       <div class="card">
         <div class="section-title">رمز منو</div>
-        <div class="form-group">
-          <label>رمز جدید (4 تا 12 کاراکتر)</label>
-          <input id="newPass" type="password" maxlength="12">
-        </div>
+        <div class="form-group"><label>رمز جدید (4 تا 12 کاراکتر)</label><input id="newPass" type="password" maxlength="12"></div>
         <button class="btn-secondary" onclick="changePassword()">🔐 تغییر رمز</button>
       </div>
 
@@ -405,34 +338,13 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
       </div>
 
       <div class="card">
+        <div class="section-title">تبلیغات</div>
+        <button class="btn-secondary" onclick="refreshAds()">🔄 بارگذاری مجدد تبلیغات از ESP</button>
+      </div>
+
+      <div class="card">
         <button class="btn-secondary" onclick="lockTech()">🔒 قفل کردن دوباره</button>
       </div>
-    </div>
-  </div>
-
-  <!-- ============ ADS ============ -->
-  <div class="tab-content" id="tab-ads">
-    <div class="card">
-      <div class="section-title">
-        تبلیغات
-        <span class="badge-mini" id="adStatusBadge">--</span>
-      </div>
-
-      <div class="ad-card show" id="adPreviewCard">
-        <div class="ad-frame">
-          <img id="adPreviewImg" class="empty" alt="">
-        </div>
-        <div style="text-align:center;font-size:11px;color:var(--text-2)" id="adPreviewInfo">عکسی آپلود نشده</div>
-      </div>
-
-      <label class="upload-box">
-        <input type="file" accept="image/jpeg,image/png" multiple onchange="uploadAds(this)">
-        <div class="upload-icon">📸</div>
-        <div class="upload-text">افزودن عکس تبلیغاتی</div>
-        <div class="upload-sub">JPEG یا PNG · حداکثر 5 عکس</div>
-      </label>
-
-      <div class="ad-thumbs" id="adThumbs"></div>
     </div>
   </div>
 
@@ -441,33 +353,23 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
     <div class="card">
       <div class="section-title">آمار کارکرد هیتر</div>
       <div class="heater-grid">
-        <div class="heater-item">
-          <div class="label">کل کارکرد</div>
-          <div class="value" id="heaterTotal">--:--</div>
-          <div class="unit">ساعت : دقیقه</div>
-        </div>
-        <div class="heater-item">
-          <div class="label">از آخرین سرویس</div>
-          <div class="value" id="heaterService">--:--</div>
-          <div class="unit">ساعت : دقیقه</div>
-        </div>
+        <div class="heater-item"><div class="label">کل کارکرد</div><div class="value" id="heaterTotal">--:--</div><div class="unit">ساعت : دقیقه</div></div>
+        <div class="heater-item"><div class="label">از آخرین سرویس</div><div class="value" id="heaterService">--:--</div><div class="unit">ساعت : دقیقه</div></div>
       </div>
     </div>
-
     <div class="card">
       <div class="section-title">اطلاعات اتصال</div>
       <div class="status-grid" style="grid-template-columns:1fr 1fr">
         <div class="status-item"><div class="label">MQTT</div><div class="value" id="infoMqtt">--</div></div>
-        <div class="status-item"><div class="label">DEVICE ID</div><div class="value" id="infoDevice" style="font-size:10px;direction:ltr;font-family:monospace">--</div></div>
-        <div class="status-item"><div class="label">تعداد پیام</div><div class="value" id="infoMsgCount">0</div></div>
-        <div class="status-item"><div class="label">آخرین پیام</div><div class="value" id="infoLastMsg" style="font-size:11px">--</div></div>
+        <div class="status-item"><div class="label">DEVICE</div><div class="value" id="infoDevice" style="font-size:10px;direction:ltr;font-family:monospace">--</div></div>
+        <div class="status-item"><div class="label">پیام‌ها</div><div class="value" id="infoMsgCount">0</div></div>
+        <div class="status-item"><div class="label">آخرین</div><div class="value" id="infoLastMsg" style="font-size:11px">--</div></div>
       </div>
     </div>
-
     <div class="card">
-      <div class="section-title">گزارش اتصال</div>
+      <div class="section-title">گزارش</div>
       <div class="log" id="log"></div>
-      <button class="btn-secondary" onclick="clearLog()">پاک کردن گزارش</button>
+      <button class="btn-secondary" onclick="clearLog()">پاک کردن</button>
     </div>
   </div>
 
@@ -486,36 +388,32 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 // CONFIG
 // ============================================================
 const MQTT_URL = "wss://broker.emqx.io:8084/mqtt";
-const DEFAULT_DEVICE_ID = "841FE8470B24";
+const DEVICE_ID = "841FE8470B24";  // ← اینجا DEVICE_ID خودت رو بذار
 
-let DEVICE_ID = localStorage.getItem("steampro_device_id") || DEFAULT_DEVICE_ID;
-let TOPIC_COMMAND, TOPIC_STATUS, TOPIC_TEMPERATURE, TOPIC_SETTINGS;
+const TOPIC_COMMAND     = "steampro/" + DEVICE_ID + "/command";
+const TOPIC_STATUS      = "steampro/" + DEVICE_ID + "/status";
+const TOPIC_TEMPERATURE = "steampro/" + DEVICE_ID + "/temperature";
+const TOPIC_SETTINGS    = "steampro/" + DEVICE_ID + "/settings";
 
-function rebuildTopics(){
-  TOPIC_COMMAND     = "steampro/" + DEVICE_ID + "/command";
-  TOPIC_STATUS      = "steampro/" + DEVICE_ID + "/status";
-  TOPIC_TEMPERATURE = "steampro/" + DEVICE_ID + "/temperature";
-  TOPIC_SETTINGS    = "steampro/" + DEVICE_ID + "/settings";
-  document.getElementById("footerDevice").innerText = "DEVICE: " + DEVICE_ID;
-  document.getElementById("infoDevice").innerText = DEVICE_ID;
-}
+document.getElementById("footerDevice").innerText = "DEVICE: " + DEVICE_ID;
+document.getElementById("infoDevice").innerText = DEVICE_ID;
 
 // ============================================================
 // STATE
 // ============================================================
 let lastStatus = null;
-let timerRemaining = 0;
-let timerTotal = 0;
-let timerRunning = false;
-let lastTimerSync = 0;
+let timerRemaining = 0, timerTotal = 0, timerRunning = false, lastTimerSync = 0;
 let client = null;
-let msgCount = 0;
-let lastMsgTime = 0;
-let heaterWasOnAtLastMsg = false;
-let heaterBaseTimeAtLastMsg = 0;
-let heaterBaseServiceAtLastMsg = 0;
+let msgCount = 0, lastMsgTime = 0;
+let heaterWasOnAtLastMsg = false, heaterBaseTimeAtLastMsg = 0, heaterBaseServiceAtLastMsg = 0;
 let isAuthed = false;
-let adImages = [];  // {id, dataUrl}
+let adEnabled = false, adInterval = 10;
+
+// Ad transfer state
+let adReceiveBuffer = {};
+let adExpectedCount = 0;
+let adReceivedCount = 0;
+let adImages = [];   // [{id, dataUrl}]
 let adCurrentIndex = 0;
 let adSliderTimer = null;
 
@@ -541,9 +439,7 @@ function log(msg, type = "info"){
 
 function renderLog(){
   const box = $("log");
-  box.innerHTML = logLines.map(l =>
-    `<span class="log-line ${l.type}">[${l.time}] ${escapeHtml(l.msg)}</span>`
-  ).join("");
+  box.innerHTML = logLines.map(l => `<span class="log-line ${l.type}">[${l.time}] ${escapeHtml(l.msg)}</span>`).join("");
   box.scrollTop = box.scrollHeight;
 }
 
@@ -555,17 +451,13 @@ function clearLog(){ logLines = []; renderLog(); }
 
 function formatTime(sec){
   sec = Math.max(0, Math.floor(Number(sec) || 0));
-  const m = Math.floor(sec / 60);
-  const s = sec % 60;
-  return String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
+  return String(Math.floor(sec/60)).padStart(2,"0") + ":" + String(sec%60).padStart(2,"0");
 }
 
 function formatHeaterTime(sec){
   sec = Math.max(0, Math.floor(Number(sec) || 0));
-  const totalMin = Math.floor(sec / 60);
-  const h = Math.floor(totalMin / 60);
-  const m = totalMin % 60;
-  return h + ":" + String(m).padStart(2,"0");
+  const tm = Math.floor(sec/60);
+  return Math.floor(tm/60) + ":" + String(tm%60).padStart(2,"0");
 }
 
 function setVal(id, text, cls, itemId){
@@ -597,18 +489,6 @@ function toast(msg, cls = ""){
 function switchTab(name){
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
   document.querySelectorAll(".tab-content").forEach(c => c.classList.toggle("active", c.id === "tab-" + name));
-  if(name === "ads") renderAdThumbs();
-}
-
-// ============================================================
-// DEVICE ID
-// ============================================================
-function saveDeviceId(){
-  const v = $("deviceIdInput").value.trim().toUpperCase();
-  if(v.length < 6){ toast("شناسه باید حداقل 6 کاراکتر باشد", "err"); return; }
-  localStorage.setItem("steampro_device_id", v);
-  toast("ذخیره شد. رفرش...", "ok");
-  setTimeout(() => location.reload(), 800);
 }
 
 // ============================================================
@@ -616,22 +496,14 @@ function saveDeviceId(){
 // ============================================================
 function drawTimerRing(remaining, total){
   const ring = $("timerRing");
-  if(total <= 0){
-    ring.style.background = "conic-gradient(var(--bg-2) 0deg 360deg)";
-    return;
-  }
+  if(total <= 0){ ring.style.background = "conic-gradient(var(--bg-2) 0deg 360deg)"; return; }
   remaining = Math.max(0, Math.min(total, remaining));
-  const pct = (remaining / total) * 100;
-  const deg = pct * 3.6;
-  const hue = pct * 1.2;
+  const deg = (remaining/total) * 360;
+  const hue = (remaining/total) * 120;
   const color = "hsl(" + hue + ",85%,55%)";
-  ring.style.background =
-    "conic-gradient(" + color + " 0deg " + deg + "deg, rgba(255,255,255,.06) " + deg + "deg 360deg)";
+  ring.style.background = "conic-gradient(" + color + " 0deg " + deg + "deg, rgba(255,255,255,.06) " + deg + "deg 360deg)";
 }
 
-// ============================================================
-// TEMPERATURE
-// ============================================================
 function updateTemperature(data){
   if(data.sauna !== undefined) $("saunaTemp").innerText = Math.round(data.sauna);
   if(data.water !== undefined) $("waterTemp").innerText = Math.round(data.water);
@@ -661,17 +533,11 @@ function updateStatus(data){
   lastTimerSync = Date.now();
 
   if(!timerEnabled && !isTest && !data.running){
-    $("timerValue").innerText = "OFF";
-    $("timerHint").innerText = "TIMER DISABLED";
-    drawTimerRing(0, 0);
+    $("timerValue").innerText = "OFF"; $("timerHint").innerText = "TIMER DISABLED"; drawTimerRing(0,0);
   } else if(!data.running){
-    $("timerValue").innerText = formatTime(timerTotal);
-    $("timerHint").innerText = "SET RUN TIME";
-    drawTimerRing(timerTotal, timerTotal);
+    $("timerValue").innerText = formatTime(timerTotal); $("timerHint").innerText = "SET RUN TIME"; drawTimerRing(timerTotal, timerTotal);
   } else {
-    $("timerValue").innerText = formatTime(timerRemaining);
-    $("timerHint").innerText = isTest ? "TEST MODE" : "TIME REMAINING";
-    drawTimerRing(timerRemaining, timerTotal);
+    $("timerValue").innerText = formatTime(timerRemaining); $("timerHint").innerText = isTest ? "TEST MODE" : "TIME REMAINING"; drawTimerRing(timerRemaining, timerTotal);
   }
 
   const badge = $("stateBadge");
@@ -680,26 +546,17 @@ function updateStatus(data){
   else if(data.drainActive){ badge.innerText = "تخلیه"; badge.className = "state-badge drain"; }
   else { badge.innerText = "آماده"; badge.className = "state-badge"; }
 
-  const startBtn = $("startBtn");
-  const stopBtn = $("stopBtn");
+  const startBtn = $("startBtn"), stopBtn = $("stopBtn");
   if(data.running){
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
+    startBtn.disabled = true; stopBtn.disabled = false;
     startBtn.innerText = isTest ? "▶ تست" : "▶ در حال کار";
   } else {
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
-    startBtn.innerText = "▶ شروع";
+    startBtn.disabled = false; stopBtn.disabled = true; startBtn.innerText = "▶ شروع";
   }
 
   const lightBtn = $("lightBtn");
-  if(data.light){
-    lightBtn.className = "btn-main btn-light";
-    lightBtn.innerText = "💡 چراغ روشن";
-  } else {
-    lightBtn.className = "btn-main btn-light off";
-    lightBtn.innerText = "💡 چراغ خاموش";
-  }
+  if(data.light){ lightBtn.className = "btn-main btn-light"; lightBtn.innerText = "💡 چراغ روشن"; }
+  else { lightBtn.className = "btn-main btn-light off"; lightBtn.innerText = "💡 چراغ خاموش"; }
 
   setVal("stHeater", onOff(data.heater), data.heater ? "on" : "off", "itemHeater");
   setVal("stInlet", openClose(data.inlet), data.inlet ? "on" : "off", "itemInlet");
@@ -723,33 +580,31 @@ function updateStatus(data){
   dfB.style.color = data.dfReady ? "var(--accent-2)" : "var(--danger)";
 
   const errBox = $("errorBox");
-  if(data.error && data.error.length > 0){
-    errBox.classList.add("show");
-    $("errorText").innerText = data.error;
-  } else {
-    errBox.classList.remove("show");
+  if(data.error && data.error.length > 0){ errBox.classList.add("show"); $("errorText").innerText = data.error; }
+  else errBox.classList.remove("show");
+
+  // ad settings
+  const newAdEnabled = !!data.adEnabled;
+  const newAdInterval = data.adInterval || 10;
+  if(newAdEnabled !== adEnabled || newAdInterval !== adInterval){
+    adEnabled = newAdEnabled;
+    adInterval = newAdInterval;
+    if(adEnabled && adImages.length > 0){ startAdSlider(); showAdBanner(); }
+    else if(!adEnabled){ hideAdBanner(); }
   }
 }
 
-// ============================================================
-// LIVE HEATER STATS
-// ============================================================
 function updateHeaterStats(){
   if(!lastStatus){ $("heaterTotal").innerText = "--:--"; $("heaterService").innerText = "--:--"; return; }
-  let total = heaterBaseTimeAtLastMsg;
-  let service = heaterBaseServiceAtLastMsg;
+  let total = heaterBaseTimeAtLastMsg, service = heaterBaseServiceAtLastMsg;
   if(heaterWasOnAtLastMsg && lastMsgTime){
     const elapsed = Math.floor((Date.now() - lastMsgTime) / 1000);
-    total += elapsed;
-    service += elapsed;
+    total += elapsed; service += elapsed;
   }
   $("heaterTotal").innerText = formatHeaterTime(total);
   $("heaterService").innerText = formatHeaterTime(service);
 }
 
-// ============================================================
-// SETTINGS
-// ============================================================
 function updateSettings(data){
   $("t_timer").value = data.timer ? "1" : "0";
   $("t_run").value = data.run ?? 15;
@@ -765,8 +620,118 @@ function updateSettings(data){
   $("t_poff").value = data.poff ?? 1;
   $("t_adEnabled").value = data.adEnabled ? "1" : "0";
   $("t_adInterval").value = data.adInterval ?? 10;
-  $("adStatusBadge").innerText = data.adEnabled ? "روشن" : "خاموش";
-  $("adStatusBadge").style.color = data.adEnabled ? "var(--accent-2)" : "var(--text-2)";
+}
+
+// ============================================================
+// AD RECEIVE
+// ============================================================
+function onAdsMessage(text){
+  if(text.startsWith("ADS_START:")){
+    adExpectedCount = parseInt(text.substring(10)) || 0;
+    adReceivedCount = 0;
+    adReceiveBuffer = {};
+    log("ADS START: " + adExpectedCount + " images", "info");
+    if(adExpectedCount === 0){
+      hideAdBanner();
+      $("adLoading").style.display = "none";
+    } else {
+      showAdBanner();
+      $("adLoading").style.display = "flex";
+    }
+    return;
+  }
+
+  if(text === "ADS_END"){
+    log("ADS END", "info");
+    // ساخت آرایه از بافر
+    adImages = [];
+    Object.keys(adReceiveBuffer).sort((a,b) => parseInt(a) - parseInt(b)).forEach(id => {
+      const dataUrl = "data:image/jpeg;base64," + adReceiveBuffer[id];
+      adImages.push({ id: parseInt(id), dataUrl });
+    });
+    adReceiveBuffer = {};
+    log("Received " + adImages.length + " ads", "info");
+
+    if(adImages.length > 0 && adEnabled){
+      $("adLoading").style.display = "none";
+      startAdSlider();
+      showAdBanner();
+    } else {
+      $("adLoading").style.display = "none";
+      if(adImages.length === 0) hideAdBanner();
+    }
+    return;
+  }
+
+  if(text.startsWith("AD_START:")){
+    // AD_START:id:totalSize
+    const parts = text.substring(9).split(":");
+    const id = parts[0];
+    adReceiveBuffer[id] = "";
+    return;
+  }
+
+  if(text.startsWith("AD_DATA:")){
+    // AD_DATA:id:partNum:data
+    const rest = text.substring(8);
+    const colon1 = rest.indexOf(":");
+    if(colon1 < 0) return;
+    const id = rest.substring(0, colon1);
+    const rest2 = rest.substring(colon1 + 1);
+    const colon2 = rest2.indexOf(":");
+    if(colon2 < 0) return;
+    const chunk = rest2.substring(colon2 + 1);
+    if(!adReceiveBuffer[id]) adReceiveBuffer[id] = "";
+    adReceiveBuffer[id] += chunk;
+    return;
+  }
+
+  if(text.startsWith("AD_END:")){
+    adReceivedCount++;
+    log("AD " + adReceivedCount + "/" + adExpectedCount + " done", "info");
+    return;
+  }
+}
+
+// ============================================================
+// AD BANNER
+// ============================================================
+function showAdBanner(){ $("adBanner").classList.add("show"); }
+function hideAdBanner(){ $("adBanner").classList.remove("show"); if(adSliderTimer){clearInterval(adSliderTimer);adSliderTimer=null;} }
+
+function startAdSlider(){
+  if(adSliderTimer) clearInterval(adSliderTimer);
+  if(adImages.length === 0) return;
+
+  adCurrentIndex = 0;
+  // دات‌ها
+  const dots = $("adDots");
+  dots.innerHTML = "";
+  dots.style.display = "flex";
+  adImages.forEach((_, i) => {
+    const d = document.createElement("div");
+    d.className = "ad-dot" + (i === 0 ? " active" : "");
+    dots.appendChild(d);
+  });
+
+  $("adImage").style.display = "block";
+  showAdSlide();
+  adSliderTimer = setInterval(showAdSlide, Math.max(3, adInterval) * 1000);
+}
+
+function showAdSlide(){
+  if(adImages.length === 0) return;
+  const img = $("adImage");
+  img.style.opacity = "0";
+  setTimeout(() => {
+    img.src = adImages[adCurrentIndex].dataUrl;
+    img.style.opacity = "1";
+    // آپدیت دات‌ها
+    document.querySelectorAll(".ad-dot").forEach((d, i) => {
+      d.classList.toggle("active", i === adCurrentIndex);
+    });
+    adCurrentIndex = (adCurrentIndex + 1) % adImages.length;
+  }, 300);
 }
 
 // ============================================================
@@ -776,7 +741,6 @@ function doAuth(){
   const p = $("authInput").value.trim();
   if(!p){ $("authError").innerText = "رمز را وارد کنید"; return; }
   if(!client || !client.connected){ $("authError").innerText = "MQTT وصل نیست"; return; }
-
   client.publish(TOPIC_SETTINGS, "AUTH:" + p);
   log("TX: AUTH:***", "tx");
   $("authError").innerText = "در حال بررسی...";
@@ -810,32 +774,10 @@ function lockTech(){
 }
 
 // ============================================================
-// LOCAL TICKS
-// ============================================================
-setInterval(() => {
-  if(!timerRunning || !lastStatus) return;
-  const elapsed = Math.floor((Date.now() - lastTimerSync) / 1000);
-  const displayTime = Math.max(0, timerRemaining - elapsed);
-  $("timerValue").innerText = formatTime(displayTime);
-  drawTimerRing(displayTime, timerTotal);
-}, 1000);
-
-setInterval(updateHeaterStats, 1000);
-
-// ============================================================
 // INIT
 // ============================================================
 (function init(){
-  rebuildTopics();
-  $("deviceIdInput").value = DEVICE_ID;
-
-  // بارگذاری عکس‌ها از localStorage
-  try {
-    const saved = localStorage.getItem("steampro_ads_" + DEVICE_ID);
-    if(saved) adImages = JSON.parse(saved);
-  } catch(e){ adImages = []; }
-
-  log("Connecting to MQTT...", "info");
+  log("Connecting...", "info");
   log("Device: " + DEVICE_ID, "info");
 
   const CLIENT_ID = "SteamProRemote_" + Math.random().toString(16).substring(2,10);
@@ -858,30 +800,34 @@ setInterval(updateHeaterStats, 1000);
       log("SUBSCRIBED", "info");
       setTimeout(() => {
         client.publish(TOPIC_SETTINGS, "GET_SETTINGS");
+        log("TX: GET_SETTINGS", "tx");
       }, 500);
+      setTimeout(() => {
+        client.publish(TOPIC_SETTINGS, "GET_ADS");
+        log("TX: GET_ADS", "tx");
+      }, 1000);
     });
   });
 
   client.on("message", (topic, message) => {
     const text = message.toString();
-    const shortTopic = topic.split("/").pop();
-    log("RX: " + shortTopic, "rx");
     try {
       const data = JSON.parse(text);
+      const shortTopic = topic.split("/").pop();
+      log("RX: " + shortTopic, "rx");
       if(topic === TOPIC_STATUS) updateStatus(data);
       else if(topic === TOPIC_TEMPERATURE) updateTemperature(data);
-      else if(topic === TOPIC_SETTINGS) {
-        if(data.run !== undefined) updateSettings(data);
-      }
+      else if(topic === TOPIC_SETTINGS && data.run !== undefined) updateSettings(data);
     } catch(e){
-      // پیام غیر JSON (مثل AUTH_OK یا OK)
+      // پیام متنی
       if(topic === TOPIC_SETTINGS){
         if(text === "AUTH_OK") onAuthResult(true);
         else if(text === "AUTH_FAIL") onAuthResult(false);
+        else if(text.startsWith("ADS_") || text.startsWith("AD_")) onAdsMessage(text);
         else if(text === "OK") log("SETTING SAVED", "info");
         else if(text === "SAVED") log("ALL SAVED", "info");
-        else if(text === "ERROR:LOCKED") log("LOCKED - AUTH first", "warn");
-        else if(text.startsWith("ERROR:")) log("ERROR: " + text, "err");
+        else if(text === "ERROR:LOCKED") log("LOCKED", "warn");
+        else if(text.startsWith("ERROR:")) log("ERR: " + text, "err");
       }
     }
   });
@@ -894,7 +840,7 @@ setInterval(updateHeaterStats, 1000);
   });
 
   client.on("close", () => {
-    log("MQTT CLOSED", "warn");
+    log("CLOSED", "warn");
     setConnection("قطع", "err");
     $("infoMqtt").innerText = "قطع";
     $("infoMqtt").className = "value err";
@@ -903,10 +849,21 @@ setInterval(updateHeaterStats, 1000);
   client.on("reconnect", () => {
     log("Reconnecting...", "warn");
     setConnection("اتصال مجدد...", "wait");
-    $("infoMqtt").innerText = "اتصال...";
-    $("infoMqtt").className = "value warn";
   });
 })();
+
+// ============================================================
+// LOCAL TICKS
+// ============================================================
+setInterval(() => {
+  if(!timerRunning || !lastStatus) return;
+  const elapsed = Math.floor((Date.now() - lastTimerSync) / 1000);
+  const displayTime = Math.max(0, timerRemaining - elapsed);
+  $("timerValue").innerText = formatTime(displayTime);
+  drawTimerRing(displayTime, timerTotal);
+}, 1000);
+
+setInterval(updateHeaterStats, 1000);
 
 // ============================================================
 // COMMANDS
@@ -915,7 +872,7 @@ function sendCommand(cmd){
   if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
   client.publish(TOPIC_COMMAND, cmd, (err) => {
     if(err){ log("CMD FAILED: " + cmd, "err"); }
-    else { log("TX: " + cmd, "tx"); }
+    else log("TX: " + cmd, "tx");
   });
 }
 
@@ -924,58 +881,49 @@ function toggleLight(){
   else sendCommand("LIGHT_ON");
 }
 
-// ============================================================
-// SETTINGS SEND
-// ============================================================
 function sendSetting(key, value){
   if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
   if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
   const cmd = "SET:" + key + "=" + value;
   client.publish(TOPIC_SETTINGS, cmd, (err) => {
     if(err){ log("SET FAILED: " + key, "err"); toast("ذخیره نشد", "err"); }
-    else { log("TX: " + cmd, "tx"); }
+    else log("TX: " + cmd, "tx");
   });
 }
 
 function loadSettings(){
   if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
-  client.publish(TOPIC_SETTINGS, "GET_SETTINGS", (err) => {
-    if(!err) log("TX: GET_SETTINGS", "tx");
-  });
-  toast("درخواست ارسال شد", "ok");
+  client.publish(TOPIC_SETTINGS, "GET_SETTINGS");
+  log("TX: GET_SETTINGS", "tx");
+}
+
+function refreshAds(){
+  if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
+  adImages = [];
+  adReceiveBuffer = {};
+  $("adLoading").style.display = "flex";
+  $("adImage").style.display = "none";
+  client.publish(TOPIC_SETTINGS, "GET_ADS");
+  log("TX: GET_ADS", "tx");
+  toast("در حال بارگذاری...", "ok");
 }
 
 function saveTechSettings(){
   if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
-
   const settings = [
-    ["timer", $("t_timer").value],
-    ["run", $("t_run").value],
-    ["starget", $("t_starget").value],
-    ["shyst", $("t_shyst").value],
-    ["dstart", $("t_dstart").value],
-    ["dsec", $("t_dsec").value],
-    ["maxw", $("t_maxw").value],
-    ["fillto", $("t_fillto").value],
-    ["volume", $("t_volume").value],
-    ["pulse", $("t_pulse").value],
-    ["pon", $("t_pon").value],
-    ["poff", $("t_poff").value],
-    ["adEnabled", $("t_adEnabled").value],
-    ["adInterval", $("t_adInterval").value]
+    ["timer", $("t_timer").value], ["run", $("t_run").value],
+    ["starget", $("t_starget").value], ["shyst", $("t_shyst").value],
+    ["dstart", $("t_dstart").value], ["dsec", $("t_dsec").value],
+    ["maxw", $("t_maxw").value], ["fillto", $("t_fillto").value],
+    ["volume", $("t_volume").value], ["pulse", $("t_pulse").value],
+    ["pon", $("t_pon").value], ["poff", $("t_poff").value],
+    ["adEnabled", $("t_adEnabled").value], ["adInterval", $("t_adInterval").value]
   ];
-
-  settings.forEach(([k, v], i) => {
-    setTimeout(() => sendSetting(k, v), i * 150);
-  });
-
-  toast("تنظیمات فنی ارسال شد", "ok");
+  settings.forEach(([k, v], i) => setTimeout(() => sendSetting(k, v), i * 150));
+  toast("تنظیمات ارسال شد", "ok");
 }
 
-function setVolume(v){
-  sendSetting("volume", v);
-  toast("حجم صدا: " + v, "ok");
-}
+function setVolume(v){ sendSetting("volume", v); }
 
 function changePassword(){
   if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
@@ -988,150 +936,10 @@ function changePassword(){
 
 function resetService(){
   if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
-  if(!confirm("شمارنده سرویس هیتر ریست شود؟")) return;
+  if(!confirm("ریست شود؟")) return;
   sendSetting("resetservice", "1");
   setTimeout(() => { heaterBaseServiceAtLastMsg = 0; updateHeaterStats(); }, 1000);
   toast("ریست شد", "ok");
-}
-
-// ============================================================
-// ADS (Local Storage)
-// ============================================================
-function saveAdsToStorage(){
-  try {
-    localStorage.setItem("steampro_ads_" + DEVICE_ID, JSON.stringify(adImages));
-  } catch(e){
-    toast("حافظه پر است، عکس‌ها ذخیره نشدند", "err");
-  }
-}
-
-async function resizeImage(file){
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const maxW = 900, maxH = 506;
-        const scale = Math.min(1, maxW / img.width, maxH / img.height);
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(img.width * scale));
-        canvas.height = Math.max(1, Math.round(img.height * scale));
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        let quality = 0.75;
-        function tryBlob(){
-          canvas.toBlob(blob => {
-            if(!blob){ reject(); return; }
-            if(blob.size <= 100000 || quality <= 0.4){
-              const fr = new FileReader();
-              fr.onload = () => resolve(fr.result);
-              fr.readAsDataURL(blob);
-              return;
-            }
-            quality -= 0.1;
-            tryBlob();
-          }, "image/jpeg", quality);
-        }
-        tryBlob();
-      };
-      img.onerror = reject;
-      img.src = reader.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-async function uploadAds(input){
-  const files = Array.from(input.files || []);
-  if(!files.length) return;
-
-  if(adImages.length + files.length > 5){
-    toast("حداکثر 5 عکس می‌توانید اضافه کنید", "err");
-    return;
-  }
-
-  toast("در حال آماده‌سازی...", "ok");
-
-  for(const file of files){
-    try {
-      const dataUrl = await resizeImage(file);
-      adImages.push({ id: Date.now() + Math.random(), dataUrl });
-    } catch(e){
-      toast("خطا در پردازش عکس", "err");
-    }
-  }
-
-  saveAdsToStorage();
-  renderAdThumbs();
-  input.value = "";
-  toast("عکس‌ها ذخیره شدند", "ok");
-}
-
-function deleteAd(id){
-  if(!confirm("این عکس حذف شود؟")) return;
-  adImages = adImages.filter(a => a.id !== id);
-  saveAdsToStorage();
-  renderAdThumbs();
-  toast("حذف شد", "ok");
-}
-
-function deleteAllAds(){
-  if(!confirm("همه عکس‌ها حذف شوند؟")) return;
-  adImages = [];
-  saveAdsToStorage();
-  renderAdThumbs();
-  toast("همه حذف شدند", "ok");
-}
-
-function renderAdThumbs(){
-  const box = $("adThumbs");
-  if(!adImages.length){
-    box.innerHTML = '<div style="grid-column:1/-1;text-align:center;color:var(--text-3);font-size:12px;padding:20px">هنوز عکسی آپلود نشده</div>';
-    $("adPreviewImg").src = "";
-    $("adPreviewImg").className = "empty";
-    $("adPreviewInfo").innerText = "عکسی آپلود نشده";
-    return;
-  }
-
-  box.innerHTML = "";
-  adImages.forEach((ad) => {
-    const div = document.createElement("div");
-    div.className = "ad-thumb";
-    div.innerHTML = `<img src="${ad.dataUrl}"><div class="delete" onclick="deleteAd(${ad.id})">×</div>`;
-    box.appendChild(div);
-  });
-
-  startAdSlider();
-}
-
-function startAdSlider(){
-  if(adSliderTimer) clearInterval(adSliderTimer);
-  if(!adImages.length) return;
-  adCurrentIndex = 0;
-  showAdSlide();
-  adSliderTimer = setInterval(showAdSlide, 8000);
-}
-
-function showAdSlide(){
-  if(!adImages.length) return;
-  const ad = adImages[adCurrentIndex];
-  const img = $("adPreviewImg");
-  img.style.opacity = "0";
-  setTimeout(() => {
-    img.src = ad.dataUrl;
-    img.className = "";
-    img.style.opacity = "1";
-    adCurrentIndex = (adCurrentIndex + 1) % adImages.length;
-    $("adPreviewInfo").innerText = `عکس ${adCurrentIndex + 1} از ${adImages.length}`;
-  }, 200);
-}
-
-// ============================================================
-// PWA
-// ============================================================
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("/sw.js").catch(()=>{});
 }
 </script>
 </body>
