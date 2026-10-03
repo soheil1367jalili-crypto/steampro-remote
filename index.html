@@ -8,21 +8,11 @@
 
 <style>
 :root{
-  --bg-0:#0a0e14;
-  --bg-1:#111823;
-  --bg-2:#0f1722;
-  --bg-3:#05080d;
-  --border:rgba(255,255,255,.06);
-  --border-2:rgba(255,255,255,.09);
-  --text:#e6edf5;
-  --text-2:#8fa2b8;
-  --text-3:#5f7085;
-  --accent:#42c7ff;
-  --accent-2:#36df9d;
-  --warn:#ffc447;
-  --danger:#ff7777;
-  --purple:#8a6dff;
-  --orange:#ff9d6b;
+  --bg-0:#0a0e14;--bg-1:#111823;--bg-2:#0f1722;--bg-3:#05080d;
+  --border:rgba(255,255,255,.06);--border-2:rgba(255,255,255,.09);
+  --text:#e6edf5;--text-2:#8fa2b8;--text-3:#5f7085;
+  --accent:#42c7ff;--accent-2:#36df9d;--warn:#ffc447;--danger:#ff7777;
+  --purple:#8a6dff;--orange:#ff9d6b;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;padding:0;background:var(--bg-0);color:var(--text);font-family:'Segoe UI',Tahoma,Arial,sans-serif;overflow-x:hidden}
@@ -52,7 +42,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .card{background:var(--bg-1);border:1px solid var(--border);border-radius:22px;padding:18px;margin-bottom:12px;box-shadow:0 12px 30px rgba(0,0,0,.15)}
 .section-title{font-size:11px;color:var(--text-2);font-weight:900;letter-spacing:1px;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .badge-mini{padding:3px 8px;border-radius:999px;font-size:9px;background:var(--bg-2);color:var(--text-2);font-weight:800}
-/* AD BANNER */
 .ad-banner{display:none;padding:0;overflow:hidden;background:var(--bg-1);border:1px solid var(--border);border-radius:22px;margin-bottom:12px;box-shadow:0 12px 30px rgba(0,0,0,.15)}
 .ad-banner.show{display:block;animation:fadeIn .5s}
 .ad-banner-frame{width:100%;aspect-ratio:16/9;background:var(--bg-3);position:relative;overflow:hidden}
@@ -63,7 +52,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .ad-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:13px;font-weight:700;flex-direction:column;gap:8px}
 .spinner{width:36px;height:36px;border:3px solid var(--border-2);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-/* TEMP */
 .temp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .temp-card{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(66,199,255,.10),rgba(66,199,255,.02));border:1px solid rgba(66,199,255,.15);border-radius:20px;padding:20px 12px;text-align:center}
 .temp-card.water{background:linear-gradient(145deg,rgba(54,223,157,.10),rgba(54,223,157,.02));border-color:rgba(54,223,157,.15)}
@@ -98,7 +86,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .status-item .value.on{color:var(--accent-2)}
 .status-item .value.off{color:var(--text-3)}
 .status-item .value.warn{color:var(--warn)}
-/* MUSIC */
 .music-controls{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
 .music-btn{aspect-ratio:1;border-radius:14px;background:var(--bg-2);color:var(--text);font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;transition:transform .1s;border:1px solid var(--border-2)}
 .music-btn:active{transform:scale(.9)}
@@ -108,7 +95,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .music-info-item{background:var(--bg-2);border-radius:12px;padding:10px;text-align:center}
 .music-info-item .label{font-size:9px;color:var(--text-2);margin-bottom:4px;font-weight:700}
 .music-info-item .value{font-size:16px;font-weight:900;color:var(--accent);font-variant-numeric:tabular-nums}
-/* FORMS */
 .form-group{margin-bottom:14px}
 .form-group label{display:block;font-size:11px;color:var(--text-2);margin-bottom:6px;font-weight:700}
 .form-group input,.form-group select{width:100%;padding:12px;border-radius:12px;background:var(--bg-2);color:var(--text);border:1px solid var(--border-2);font-size:14px;outline:none;font-family:inherit}
@@ -125,7 +111,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .heater-item .unit{font-size:10px;color:var(--text-3);margin-top:6px}
 .error-box{margin-top:12px;background:rgba(255,90,90,.10);border:1px solid rgba(255,90,90,.25);border-radius:14px;padding:12px 14px;display:none;align-items:center;gap:10px;color:#ff8b8b;font-size:13px;font-weight:700}
 .error-box.show{display:flex}
-/* LOCK */
 .locked-overlay{padding:30px 20px;text-align:center}
 .locked-overlay .lock-icon{font-size:48px;margin-bottom:12px}
 .locked-overlay .lock-title{font-size:18px;font-weight:900;margin-bottom:8px}
@@ -134,7 +119,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .locked-overlay input:focus{border-color:var(--accent)}
 .locked-overlay button{width:100%;max-width:280px;padding:14px;border-radius:12px;background:linear-gradient(135deg,#1a8fbe,#2465a8);color:#fff;font-weight:900;font-size:14px}
 .locked-overlay .error-msg{color:var(--danger);font-size:12px;margin-top:10px;font-weight:700;min-height:18px}
-/* LOG */
 .log{background:var(--bg-3);border:1px solid var(--border);border-radius:14px;padding:12px;height:180px;overflow-y:auto;font-family:'Courier New',monospace;font-size:11px;color:var(--text-2);direction:ltr;text-align:left;line-height:1.7}
 .log::-webkit-scrollbar{width:6px}
 .log::-webkit-scrollbar-thumb{background:var(--bg-2);border-radius:3px}
@@ -180,10 +164,7 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
     <button class="tab" data-tab="info" onclick="switchTab('info')">ℹ️ اطلاعات</button>
   </div>
 
-  <!-- ============ DASHBOARD ============ -->
   <div class="tab-content active" id="tab-dashboard">
-
-    <!-- AD BANNER (بالای همه چیز) -->
     <div class="ad-banner" id="adBanner">
       <div class="ad-banner-frame">
         <div class="ad-loading" id="adLoading">
@@ -242,26 +223,19 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
         <div class="status-item" id="itemLow"><div class="label">سطح پایین</div><div class="value off" id="stLow">--</div></div>
         <div class="status-item"><div class="label">حجم صدا</div><div class="value" id="stVolume">--</div></div>
       </div>
-      <div class="error-box" id="errorBox">
-        <span>⚠️</span>
-        <span id="errorText"></span>
-      </div>
+      <div class="error-box" id="errorBox"><span>⚠️</span><span id="errorText"></span></div>
     </div>
   </div>
 
-  <!-- ============ MUSIC ============ -->
   <div class="tab-content" id="tab-music">
     <div class="card">
-      <div class="section-title">
-        پخش‌کننده موسیقی
-        <span class="badge-mini" id="dfStatus">--</span>
-      </div>
+      <div class="section-title">پخش‌کننده موسیقی<span class="badge-mini" id="dfStatus">--</span></div>
       <div class="music-controls">
-        <button class="music-btn" onclick="sendCommand('PREV')" title="قبلی">⏮</button>
-        <button class="music-btn play" onclick="sendCommand('PLAY')" title="پخش">▶</button>
-        <button class="music-btn stop" onclick="sendCommand('MUSIC_STOP')" title="توقف">■</button>
-        <button class="music-btn" onclick="sendCommand('NEXT')" title="بعدی">⏭</button>
-        <button class="music-btn" onclick="loadSettings()" title="بروزرسانی">🔄</button>
+        <button class="music-btn" onclick="sendCommand('PREV')">⏮</button>
+        <button class="music-btn play" onclick="sendCommand('PLAY')">▶</button>
+        <button class="music-btn stop" onclick="sendCommand('MUSIC_STOP')">■</button>
+        <button class="music-btn" onclick="sendCommand('NEXT')">⏭</button>
+        <button class="music-btn" onclick="loadSettings()">🔄</button>
       </div>
       <div class="music-info">
         <div class="music-info-item"><div class="label">آهنگ فعلی</div><div class="value" id="musicTrack">--</div></div>
@@ -279,7 +253,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
     </div>
   </div>
 
-  <!-- ============ TECH ============ -->
   <div class="tab-content" id="tab-tech">
     <div class="card" id="techLocked">
       <div class="locked-overlay">
@@ -295,10 +268,7 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
     <div id="techUnlocked" style="display:none">
       <div class="card">
         <div class="section-title">تنظیمات فنی</div>
-        <div class="form-group">
-          <label>فعال بودن تایمر</label>
-          <select id="t_timer"><option value="1">روشن</option><option value="0">خاموش</option></select>
-        </div>
+        <div class="form-group"><label>فعال بودن تایمر</label><select id="t_timer"><option value="1">روشن</option><option value="0">خاموش</option></select></div>
         <div class="form-grid">
           <div class="form-group"><label>مدت کارکرد (دقیقه)</label><input id="t_run" type="number" min="1" max="120"></div>
           <div class="form-group"><label>دمای هدف سونا (°C)</label><input id="t_starget" type="number" min="10" max="90" step="0.1"></div>
@@ -309,18 +279,12 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
           <div class="form-group"><label>Timeout پر شدن (ثانیه)</label><input id="t_fillto" type="number" min="10" max="600"></div>
           <div class="form-group"><label>حجم صدا</label><input id="t_volume" type="number" min="0" max="30"></div>
         </div>
-        <div class="form-group">
-          <label>رله پالس</label>
-          <select id="t_pulse"><option value="1">روشن</option><option value="0">خاموش</option></select>
-        </div>
+        <div class="form-group"><label>رله پالس</label><select id="t_pulse"><option value="1">روشن</option><option value="0">خاموش</option></select></div>
         <div class="form-grid">
           <div class="form-group"><label>زمان ON پالس (دقیقه)</label><input id="t_pon" type="number" min="1" max="60"></div>
           <div class="form-group"><label>زمان OFF پالس (دقیقه)</label><input id="t_poff" type="number" min="1" max="60"></div>
         </div>
-        <div class="form-group">
-          <label>فعال بودن تبلیغات</label>
-          <select id="t_adEnabled"><option value="1">روشن</option><option value="0">خاموش</option></select>
-        </div>
+        <div class="form-group"><label>فعال بودن تبلیغات</label><select id="t_adEnabled"><option value="1">روشن</option><option value="0">خاموش</option></select></div>
         <div class="form-group"><label>مدت هر عکس (ثانیه)</label><input id="t_adInterval" type="number" min="3" max="60"></div>
         <button class="btn-save" onclick="saveTechSettings()">💾 ذخیره</button>
         <button class="btn-secondary" onclick="loadSettings()">🔄 بارگذاری</button>
@@ -348,7 +312,6 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
     </div>
   </div>
 
-  <!-- ============ INFO ============ -->
   <div class="tab-content" id="tab-info">
     <div class="card">
       <div class="section-title">آمار کارکرد هیتر</div>
@@ -388,7 +351,7 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 // CONFIG
 // ============================================================
 const MQTT_URL = "wss://broker.emqx.io:8084/mqtt";
-const DEVICE_ID = "841FE8470B24";  // ← اینجا DEVICE_ID خودت رو بذار
+const DEVICE_ID = "841FE8470B24";
 
 const TOPIC_COMMAND     = "steampro/" + DEVICE_ID + "/command";
 const TOPIC_STATUS      = "steampro/" + DEVICE_ID + "/status";
@@ -408,14 +371,12 @@ let msgCount = 0, lastMsgTime = 0;
 let heaterWasOnAtLastMsg = false, heaterBaseTimeAtLastMsg = 0, heaterBaseServiceAtLastMsg = 0;
 let isAuthed = false;
 let adEnabled = false, adInterval = 10;
-
-// Ad transfer state
-let adReceiveBuffer = {};
-let adExpectedCount = 0;
-let adReceivedCount = 0;
-let adImages = [];   // [{id, dataUrl}]
+let adImages = [];
 let adCurrentIndex = 0;
 let adSliderTimer = null;
+let adReceived = {};
+let adMetaCount = 0;
+let adMetaReceived = 0;
 
 const MAX_LOG_LINES = 60;
 let logLines = [];
@@ -483,17 +444,11 @@ function toast(msg, cls = ""){
   t._timer = setTimeout(() => t.classList.remove("show"), 2500);
 }
 
-// ============================================================
-// TABS
-// ============================================================
 function switchTab(name){
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
   document.querySelectorAll(".tab-content").forEach(c => c.classList.toggle("active", c.id === "tab-" + name));
 }
 
-// ============================================================
-// TIMER RING
-// ============================================================
 function drawTimerRing(remaining, total){
   const ring = $("timerRing");
   if(total <= 0){ ring.style.background = "conic-gradient(var(--bg-2) 0deg 360deg)"; return; }
@@ -583,7 +538,6 @@ function updateStatus(data){
   if(data.error && data.error.length > 0){ errBox.classList.add("show"); $("errorText").innerText = data.error; }
   else errBox.classList.remove("show");
 
-  // ad settings
   const newAdEnabled = !!data.adEnabled;
   const newAdInterval = data.adInterval || 10;
   if(newAdEnabled !== adEnabled || newAdInterval !== adInterval){
@@ -625,77 +579,89 @@ function updateSettings(data){
 // ============================================================
 // AD RECEIVE
 // ============================================================
-function onAdsMessage(text){
-  if(text.startsWith("ADS_START:")){
-    adExpectedCount = parseInt(text.substring(10)) || 0;
-    adReceivedCount = 0;
-    adReceiveBuffer = {};
-    log("ADS START: " + adExpectedCount + " images", "info");
-    if(adExpectedCount === 0){
-      hideAdBanner();
-      $("adLoading").style.display = "none";
-    } else {
-      showAdBanner();
-      $("adLoading").style.display = "flex";
+function handleAdTopic(topic, text){
+  const parts = topic.split("/");
+  const last = parts[parts.length - 1];
+  
+  if(last === "meta"){
+    if(text.startsWith("META:")){
+      adMetaCount = parseInt(text.substring(5)) || 0;
+      adMetaReceived = 0;
+      adReceived = {};
+      log("AD META: " + adMetaCount + " images", "info");
+      
+      if(adMetaCount === 0){
+        hideAdBanner();
+        $("adLoading").style.display = "none";
+      } else {
+        showAdBanner();
+        $("adLoading").style.display = "flex";
+      }
     }
     return;
   }
-
-  if(text === "ADS_END"){
-    log("ADS END", "info");
-    // ساخت آرایه از بافر
-    adImages = [];
-    Object.keys(adReceiveBuffer).sort((a,b) => parseInt(a) - parseInt(b)).forEach(id => {
-      const dataUrl = "data:image/jpeg;base64," + adReceiveBuffer[id];
-      adImages.push({ id: parseInt(id), dataUrl });
-    });
-    adReceiveBuffer = {};
-    log("Received " + adImages.length + " ads", "info");
-
-    if(adImages.length > 0 && adEnabled){
-      $("adLoading").style.display = "none";
-      startAdSlider();
-      showAdBanner();
-    } else {
-      $("adLoading").style.display = "none";
-      if(adImages.length === 0) hideAdBanner();
+  
+  const idx = parseInt(last);
+  if(isNaN(idx)) return;
+  
+  if(text.startsWith("IMG:")){
+    const p = text.substring(4).split(":");
+    const totalParts = parseInt(p[1]) || 0;
+    const size = parseInt(p[2]) || 0;
+    
+    adReceived[idx] = { totalParts: totalParts, size: size, chunks: {}, receivedCount: 0, done: false };
+    log("IMG " + idx + " starting (" + totalParts + " parts)", "info");
+  }
+  else if(text.startsWith("P:")){
+    const rest = text.substring(2);
+    const colon = rest.indexOf(":");
+    if(colon < 0) return;
+    const partNum = parseInt(rest.substring(0, colon));
+    const chunk = rest.substring(colon + 1);
+    
+    if(!adReceived[idx]) return;
+    if(adReceived[idx].chunks[partNum] !== undefined) return;
+    
+    adReceived[idx].chunks[partNum] = chunk;
+    adReceived[idx].receivedCount++;
+  }
+  else if(text.startsWith("END:")){
+    if(!adReceived[idx]) return;
+    adReceived[idx].done = true;
+    
+    if(adReceived[idx].receivedCount !== adReceived[idx].totalParts){
+      log("IMG " + idx + " INCOMPLETE! " + adReceived[idx].receivedCount + "/" + adReceived[idx].totalParts, "err");
+      return;
     }
-    return;
-  }
-
-  if(text.startsWith("AD_START:")){
-    // AD_START:id:totalSize
-    const parts = text.substring(9).split(":");
-    const id = parts[0];
-    adReceiveBuffer[id] = "";
-    return;
-  }
-
-  if(text.startsWith("AD_DATA:")){
-    // AD_DATA:id:partNum:data
-    const rest = text.substring(8);
-    const colon1 = rest.indexOf(":");
-    if(colon1 < 0) return;
-    const id = rest.substring(0, colon1);
-    const rest2 = rest.substring(colon1 + 1);
-    const colon2 = rest2.indexOf(":");
-    if(colon2 < 0) return;
-    const chunk = rest2.substring(colon2 + 1);
-    if(!adReceiveBuffer[id]) adReceiveBuffer[id] = "";
-    adReceiveBuffer[id] += chunk;
-    return;
-  }
-
-  if(text.startsWith("AD_END:")){
-    adReceivedCount++;
-    log("AD " + adReceivedCount + "/" + adExpectedCount + " done", "info");
-    return;
+    
+    let b64 = "";
+    for(let p = 0; p < adReceived[idx].totalParts; p++){
+      if(adReceived[idx].chunks[p] === undefined){
+        log("IMG " + idx + " MISSING PART " + p, "err");
+        return;
+      }
+      b64 += adReceived[idx].chunks[p];
+    }
+    
+    const dataUrl = "data:image/jpeg;base64," + b64;
+    adImages = adImages.filter(a => a.id !== idx);
+    adImages.push({ id: idx, dataUrl: dataUrl });
+    adImages.sort((a, b) => a.id - b.id);
+    
+    adMetaReceived++;
+    log("IMG " + idx + " COMPLETE ✓", "info");
+    
+    if(adMetaReceived >= adMetaCount){
+      log("ALL ADS RECEIVED ✓", "info");
+      $("adLoading").style.display = "none";
+      if(adImages.length > 0 && adEnabled){
+        startAdSlider();
+        showAdBanner();
+      }
+    }
   }
 }
 
-// ============================================================
-// AD BANNER
-// ============================================================
 function showAdBanner(){ $("adBanner").classList.add("show"); }
 function hideAdBanner(){ $("adBanner").classList.remove("show"); if(adSliderTimer){clearInterval(adSliderTimer);adSliderTimer=null;} }
 
@@ -704,7 +670,6 @@ function startAdSlider(){
   if(adImages.length === 0) return;
 
   adCurrentIndex = 0;
-  // دات‌ها
   const dots = $("adDots");
   dots.innerHTML = "";
   dots.style.display = "flex";
@@ -726,7 +691,6 @@ function showAdSlide(){
   setTimeout(() => {
     img.src = adImages[adCurrentIndex].dataUrl;
     img.style.opacity = "1";
-    // آپدیت دات‌ها
     document.querySelectorAll(".ad-dot").forEach((d, i) => {
       d.classList.toggle("active", i === adCurrentIndex);
     });
@@ -795,9 +759,16 @@ function lockTech(){
     setConnection("متصل", "ok");
     $("infoMqtt").innerText = "متصل";
     $("infoMqtt").className = "value on";
-    client.subscribe([TOPIC_STATUS, TOPIC_TEMPERATURE, TOPIC_SETTINGS], (err) => {
+
+    const AD_TOPICS = [TOPIC_STATUS, TOPIC_TEMPERATURE, TOPIC_SETTINGS];
+    AD_TOPICS.push("steampro/" + DEVICE_ID + "/ad/meta");
+    for(let i = 0; i < 5; i++){
+      AD_TOPICS.push("steampro/" + DEVICE_ID + "/ad/" + i);
+    }
+
+    client.subscribe(AD_TOPICS, (err) => {
       if(err){ log("SUBSCRIBE ERROR", "err"); return; }
-      log("SUBSCRIBED", "info");
+      log("SUBSCRIBED to all topics", "info");
       setTimeout(() => {
         client.publish(TOPIC_SETTINGS, "GET_SETTINGS");
         log("TX: GET_SETTINGS", "tx");
@@ -811,19 +782,24 @@ function lockTech(){
 
   client.on("message", (topic, message) => {
     const text = message.toString();
+    
+    if(topic.startsWith("steampro/" + DEVICE_ID + "/ad/")){
+      handleAdTopic(topic, text);
+      return;
+    }
+    
+    const shortTopic = topic.split("/").pop();
+    log("RX: " + shortTopic, "rx");
+    
     try {
       const data = JSON.parse(text);
-      const shortTopic = topic.split("/").pop();
-      log("RX: " + shortTopic, "rx");
       if(topic === TOPIC_STATUS) updateStatus(data);
       else if(topic === TOPIC_TEMPERATURE) updateTemperature(data);
       else if(topic === TOPIC_SETTINGS && data.run !== undefined) updateSettings(data);
     } catch(e){
-      // پیام متنی
       if(topic === TOPIC_SETTINGS){
         if(text === "AUTH_OK") onAuthResult(true);
         else if(text === "AUTH_FAIL") onAuthResult(false);
-        else if(text.startsWith("ADS_") || text.startsWith("AD_")) onAdsMessage(text);
         else if(text === "OK") log("SETTING SAVED", "info");
         else if(text === "SAVED") log("ALL SAVED", "info");
         else if(text === "ERROR:LOCKED") log("LOCKED", "warn");
@@ -900,7 +876,7 @@ function loadSettings(){
 function refreshAds(){
   if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
   adImages = [];
-  adReceiveBuffer = {};
+  adReceived = {};
   $("adLoading").style.display = "flex";
   $("adImage").style.display = "none";
   client.publish(TOPIC_SETTINGS, "GET_ADS");
