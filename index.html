@@ -1,152 +1,6604 @@
-<!DOCTYPE html>
+#include <WiFi.h>
+#include <WebServer.h>
+#include <Preferences.h>
+#include <DFRobotDFPlayerMini.h>
+#include <HardwareSerial.h>
+#include "esp_wifi.h"
+#include <LittleFS.h>
+#include <PubSubClient.h>
 
-<html lang="fa" dir="rtl">
+// ============================================================
+// STEAMPRO
+// ESP32 WROOM-32U
+// ============================================================
+
+// ---------------- PIN ----------------
+#define PIN_SAUNA     34
+#define PIN_WATER     35
+#define PIN_LOW       32
+#define PIN_HIGH      33
+
+#define PIN_HEATER    25
+#define PIN_INLET     26
+#define PIN_DRAIN     27
+#define PIN_LIGHT     13
+#define PIN_PULSE     23
+#define PIN_TEST      14
+
+#define DF_RX         16
+#define DF_TX         17
+
+// ---------------- WIFI ----------------
+const char* AP_SSID = "SteamPro";
+const char* AP_PASS = "12345678";
+
+IPAddress apIP(192,168,4,1);
+IPAddress gateway(192,168,4,1);
+IPAddress subnet(255,255,255,0);
+
+// ---------------- WIFI STA (INTERNET / ROUTER) ----------------
+String wifiSSID = "";
+String wifiPassword = "";
+
+String wifiPendingSSID = "";
+String wifiPendingPassword = "";
+bool wifiConnectPending = false;
+unsigned long wifiConnectStart = 0;
+
+bool wifiAutoConnectStarted = false;
+const unsigned long WIFI_CONNECT_TIMEOUT_MS = 20000UL;
+
+// ---------------- OBJECTS ----------------
+WebServer server(80);
+Preferences prefs;
+
+HardwareSerial DFSerial(2);
+DFRobotDFPlayerMini dfPlayer;
+
+// ============================================================
+// RUNTIME
+// ============================================================
+
+bool running = false;
+bool testMode = false;
+
+bool fillActive = false;
+bool drainActive = false;
+
+bool drainPending = false;
+bool drainCycleDone = false;
+
+bool lightOn = false;
+bool pulseState = false;
+
+float saunaTemp = 0;
+float waterTemp = 0;
+
+unsigned long runStart = 0;
+unsigned long fillStart = 0;
+unsigned long drainStart = 0;
+unsigned long pulseStart = 0;
+unsigned long testStart = 0;
+
+// ---------------- WATER LEVEL STATE ----------------
+
+bool inletOpenPending = false;
+unsigned long inletOpenRequestStart = 0;
+
+bool inletClosePending = false;
+unsigned long inletCloseRequestStart = 0;
+
+// ---------------- HEATER LEVEL STATE ----------------
+
+bool heaterOffPending = false;
+unsigned long heaterOffRequestStart = 0;
+
+bool lastTestButton = HIGH;
+
+String errorMessage = "";
+
+// ---------------- MENU PASSWORD ----------------
+
+String menuPassword = "1234";
+bool menuUnlocked = false;
+unsigned long menuLastAccess = 0;
+const unsigned long MENU_TIMEOUT = 10UL * 60UL * 1000UL;
+
+bool dfReady = false;
+bool musicPlaying = false;
+
+int currentTrack = 1;
+int totalTracks = 0;
+
+
+// ============================================================
+// MQTT REMOTE CONTROL
+// ============================================================
+
+const char* MQTT_SERVER = "broker.emqx.io";
+const uint16_t MQTT_PORT = 1883;
+
+WiFiClient mqttWiFiClient;
+PubSubClient mqtt(mqttWiFiClient);
+
+String mqttDeviceId = "";
+String mqttClientId = "";
+String mqttTopicCommand = "";
+String mqttTopicStatus = "";
+String mqttTopicTemperature = "";
+
+bool mqttReady = false;
+
+// Forward declarations used by MQTT callbacks
+void startDevice();
+void stopDevice();
+void toggleLight();
+String getStatusJSON();
+unsigned long mqttLastConnectAttempt = 0;
+unsigned long mqttLastPublish = 0;
+const unsigned long MQTT_RECONNECT_MS = 5000UL;
+const unsigned long MQTT_PUBLISH_MS = 1000UL;
+
+String mqttBuildTopic(const char* suffix) {
+  return String("steampro/") + mqttDeviceId + "/" + suffix;
+}
+
+void mqttCallback(char* topic, byte* payload, unsigned int length) {
+  String message;
+  for (unsigned int i = 0; i < length; i++)
+    message += (char)payload[i];
+
+  message.trim();
+
+  Serial.println();
+  Serial.println("===== MQTT MESSAGE =====");
+  Serial.print("Topic: ");
+  Serial.println(topic);
+  Serial.print("Message: ");
+  Serial.println(message);
+
+  if (String(topic) != mqttTopicCommand) {
+    Serial.println(">>> UNKNOWN TOPIC");
+    Serial.println("========================");
+    return;
+  }
+
+  // Remote commands use the same core functions as the local web UI.
+  if (message == "START") {
+    if (!running)
+      startDevice();
+    Serial.println(">>> REMOTE START");
+  }
+  else if (message == "STOP") {
+    if (running)
+      stopDevice();
+    Serial.println(">>> REMOTE STOP");
+  }
+  else if (message == "LIGHT_ON") {
+    lightOn = true;
+    out(PIN_LIGHT, true);
+    Serial.println(">>> REMOTE LIGHT ON");
+  }
+  else if (message == "LIGHT_OFF") {
+    lightOn = false;
+    out(PIN_LIGHT, false);
+    Serial.println(">>> REMOTE LIGHT OFF");
+  }
+  else if (message == "LIGHT_TOGGLE") {
+    toggleLight();
+    Serial.println(">>> REMOTE LIGHT TOGGLE");
+  }
+  else {
+    Serial.println(">>> UNKNOWN COMMAND");
+  }
+
+  Serial.println("========================");
+}
+
+void mqttPrepareTopics() {
+  String mac = WiFi.macAddress();
+  mac.replace(":", "");
+  mac.toUpperCase();
+
+  mqttDeviceId = mac;
+  mqttClientId = String("SteamPro_") + mqttDeviceId;
+  mqttTopicCommand = mqttBuildTopic("command");
+  mqttTopicStatus = mqttBuildTopic("status");
+  mqttTopicTemperature = mqttBuildTopic("temperature");
+}
+
+void mqttConnect() {
+  if (WiFi.status() != WL_CONNECTED) {
+    mqttReady = false;
+    return;
+  }
+
+  if (mqtt.connected()) {
+    mqttReady = true;
+    return;
+  }
+
+  if (millis() - mqttLastConnectAttempt < MQTT_RECONNECT_MS)
+    return;
+
+  mqttLastConnectAttempt = millis();
+
+  Serial.println();
+  Serial.println("Connecting to MQTT...");
+  Serial.print("Broker: ");
+  Serial.println(MQTT_SERVER);
+  Serial.print("Device ID: ");
+  Serial.println(mqttDeviceId);
+
+  if (mqtt.connect(mqttClientId.c_str())) {
+    mqttReady = true;
+
+    if (mqtt.subscribe(mqttTopicCommand.c_str()))
+      Serial.println("MQTT COMMAND SUBSCRIBE OK");
+    else
+      Serial.println("MQTT COMMAND SUBSCRIBE FAILED");
+
+    Serial.println("MQTT CONNECTED!");
+  }
+  else {
+    mqttReady = false;
+    Serial.print("MQTT failed, state = ");
+    Serial.println(mqtt.state());
+  }
+}
+
+void mqttPublishStatus() {
+  if (!mqtt.connected()) {
+    mqttReady = false;
+    return;
+  }
+
+  if (millis() - mqttLastPublish < MQTT_PUBLISH_MS)
+    return;
+
+  mqttLastPublish = millis();
+
+  String payload = getStatusJSON();
+  mqtt.publish(mqttTopicStatus.c_str(), payload.c_str(), true);
+
+  String tempPayload = "{\"sauna\":" + String((int)round(saunaTemp)) +
+                       ",\"water\":" + String((int)round(waterTemp)) +
+                       ",\"device\":\"" + mqttDeviceId + "\"}";
+
+  mqtt.publish(mqttTopicTemperature.c_str(), tempPayload.c_str(), true);
+}
+
+void processMQTT() {
+  if (WiFi.status() != WL_CONNECTED) {
+    mqttReady = false;
+    if (mqtt.connected())
+      mqtt.disconnect();
+    return;
+  }
+
+  mqttConnect();
+
+  if (mqtt.connected()) {
+    mqtt.loop();
+    mqttPublishStatus();
+  }
+}
+
+// ============================================================
+// SETTINGS
+// ============================================================
+
+bool timerEnabled = true;
+uint16_t runMinutes = 15;
+
+float saunaTargetTemp = 45.0;
+float saunaHysteresis = 2.0;
+
+float drainStartTemp = 50.0;
+uint16_t drainSeconds = 300;
+
+float maxWaterTemp = 70.0;
+uint16_t fillTimeoutSec = 120;
+
+bool pulseEnabled = true;
+uint16_t pulseOnMin = 1;
+uint16_t pulseOffMin = 1;
+
+uint8_t dfVolume = 15;
+
+// ---------------- ADVERTISEMENT ----------------
+const uint8_t MAX_AD_IMAGES = 5;
+const size_t MAX_AD_FILE_SIZE = 200UL * 1024UL;
+bool adEnabled = false;
+uint16_t adIntervalSec = 10;
+
+// ---------------- TEMPERATURE LIMITS ----------------
+#define SAUNA_TEMP_MIN      10.0
+#define SAUNA_TEMP_MAX      90.0
+
+#define DRAIN_TEMP_MIN      20.0
+#define DRAIN_TEMP_MAX      90.0
+
+#define WATER_TEMP_MIN      50.0
+#define WATER_TEMP_MAX      150.0
+
+
+
+// ============================================================
+// WATER LEVEL DELAY
+// ============================================================
+
+const unsigned long LEVEL_DELAY_MS = 3000UL;
+const unsigned long HEATER_LEVEL_DELAY_MS = 3000UL;
+
+// ============================================================
+// HEATER HOUR COUNTERS
+// ============================================================
+
+// کل زمان کار هیتر - دائمی
+uint64_t totalHeaterSeconds = 0;
+
+// زمان کار هیتر از آخرین سرویس - قابل ریست
+uint64_t serviceHeaterSeconds = 0;
+
+// وضعیت قبلی هیتر
+bool heaterWasOn = false;
+
+// زمان شروع روشن بودن فعلی هیتر
+unsigned long heaterOnStartMillis = 0;
+
+// آخرین زمان ذخیره کنتور در NVS
+unsigned long heaterCounterSaveMillis = 0;
+
+// هر چند ثانیه یک بار کنتور در حافظه ذخیره شود
+const unsigned long HEATER_COUNTER_SAVE_MS = 30000UL;
+
+// ============================================================
+// OUTPUT
+// ============================================================
+
+void out(int pin, bool state) {
+  digitalWrite(pin, state ? HIGH : LOW);
+}
+
+// ============================================================
+// SAVE HEATER COUNTERS
+// ============================================================
+
+void saveHeaterCounters() {
+
+  prefs.begin("steampro", false);
+
+  prefs.putULong64(
+    "htotal",
+    totalHeaterSeconds
+  );
+
+  prefs.putULong64(
+    "hservice",
+    serviceHeaterSeconds
+  );
+
+  prefs.end();
+
+  heaterCounterSaveMillis = millis();
+}
+
+// ============================================================
+// LOAD HEATER COUNTERS
+// ============================================================
+
+void loadHeaterCounters() {
+
+  prefs.begin("steampro", true);
+
+  totalHeaterSeconds =
+    prefs.getULong64("htotal", 0);
+
+  serviceHeaterSeconds =
+    prefs.getULong64("hservice", 0);
+
+  prefs.end();
+
+  heaterWasOn = false;
+  heaterOnStartMillis = 0;
+  heaterCounterSaveMillis = millis();
+}
+
+// ============================================================
+// UPDATE HEATER COUNTER
+// ============================================================
+
+void processHeaterCounter() {
+
+  bool heaterNow =
+    digitalRead(PIN_HEATER) == HIGH;
+
+  // ----------------------------------------------------------
+  // HEATER JUST TURNED ON
+  // ----------------------------------------------------------
+
+  if (heaterNow && !heaterWasOn) {
+
+    heaterWasOn = true;
+
+    heaterOnStartMillis = millis();
+
+    return;
+  }
+
+  // ----------------------------------------------------------
+  // HEATER IS STILL ON
+  // ----------------------------------------------------------
+
+  if (heaterNow && heaterWasOn) {
+
+    unsigned long elapsedMs =
+      millis() - heaterOnStartMillis;
+
+    if (elapsedMs >= 1000UL) {
+
+      uint64_t elapsedSec =
+        elapsedMs / 1000ULL;
+
+      totalHeaterSeconds += elapsedSec;
+
+      serviceHeaterSeconds += elapsedSec;
+
+      heaterOnStartMillis +=
+        (unsigned long)(elapsedSec * 1000ULL);
+
+    }
+
+    // ذخیره دوره‌ای
+    if (millis() - heaterCounterSaveMillis >=
+        HEATER_COUNTER_SAVE_MS) {
+
+      saveHeaterCounters();
+    }
+
+    return;
+  }
+
+  // ----------------------------------------------------------
+  // HEATER JUST TURNED OFF
+  // ----------------------------------------------------------
+
+  if (!heaterNow && heaterWasOn) {
+
+    unsigned long elapsedMs =
+      millis() - heaterOnStartMillis;
+
+    if (elapsedMs >= 1000UL) {
+
+      uint64_t elapsedSec =
+        elapsedMs / 1000ULL;
+
+      totalHeaterSeconds += elapsedSec;
+
+      serviceHeaterSeconds += elapsedSec;
+    }
+
+    heaterWasOn = false;
+
+    heaterOnStartMillis = 0;
+
+    // بلافاصله بعد از خاموش شدن ذخیره کن
+    saveHeaterCounters();
+
+    return;
+  }
+}
+
+// ============================================================
+// FORMAT HEATER TIME
+// ============================================================
+
+String formatHeaterTime(uint64_t seconds) {
+
+  uint64_t totalMinutes =
+    seconds / 60ULL;
+
+  uint64_t hours =
+    totalMinutes / 60ULL;
+
+  uint64_t minutes =
+    totalMinutes % 60ULL;
+
+  String result;
+
+  result += String((unsigned long)hours);
+  result += ":";
+  result +=
+    (minutes < 10 ? "0" : "");
+  result += String((unsigned long)minutes);
+
+  return result;
+}
+
+// ============================================================
+// RESET SERVICE COUNTER
+// ============================================================
+
+void resetServiceHeaterCounter() {
+
+  // اگر هیتر همین الان روشن است،
+  // زمان مصرف شده تا این لحظه ابتدا ثبت شود
+  if (heaterWasOn) {
+
+    unsigned long elapsedMs =
+      millis() - heaterOnStartMillis;
+
+    if (elapsedMs >= 1000UL) {
+
+      uint64_t elapsedSec =
+        elapsedMs / 1000ULL;
+
+      totalHeaterSeconds += elapsedSec;
+
+      serviceHeaterSeconds += elapsedSec;
+
+      heaterOnStartMillis +=
+        (unsigned long)(elapsedSec * 1000ULL);
+    }
+  }
+
+  serviceHeaterSeconds = 0;
+
+  saveHeaterCounters();
+}
+
+// ============================================================
+// ALL OFF
+// ============================================================
+
+void allOff() {
+
+  out(PIN_HEATER, false);
+  out(PIN_INLET, false);
+  out(PIN_DRAIN, false);
+  out(PIN_LIGHT, false);
+  out(PIN_PULSE, false);
+
+  fillActive = false;
+  drainActive = false;
+  lightOn = false;
+  pulseState = false;
+
+  inletOpenPending = false;
+  inletClosePending = false;
+
+  heaterOffPending = false;
+  heaterOffRequestStart = 0;
+}
+
+// ============================================================
+// SETTINGS SAVE
+// ============================================================
+
+void saveSettings() {
+
+  prefs.begin("steampro", false);
+
+  prefs.putBool("timer", timerEnabled);
+  prefs.putUShort("run", runMinutes);
+
+  prefs.putFloat("starget", saunaTargetTemp);
+  prefs.putFloat("shyst", saunaHysteresis);
+
+  prefs.putFloat("dstart", drainStartTemp);
+  prefs.putUShort("dsec", drainSeconds);
+
+  prefs.putFloat("maxw", maxWaterTemp);
+  prefs.putUShort("fillto", fillTimeoutSec);
+
+  prefs.putBool("pulse", pulseEnabled);
+  prefs.putUShort("pon", pulseOnMin);
+prefs.putUShort("poff", pulseOffMin);
+
+  prefs.putUChar("volume", dfVolume);
+
+  prefs.putBool("adEnabled", adEnabled);
+  prefs.putUShort("adInt", adIntervalSec);
+
+  prefs.putString("menupass", menuPassword);
+
+  prefs.end();
+}
+
+// ============================================================
+// WIFI CREDENTIALS
+// ============================================================
+
+void loadWiFiCredentials() {
+  prefs.begin("steampro", true);
+  wifiSSID = prefs.getString("wifiSSID", "");
+  wifiPassword = prefs.getString("wifiPass", "");
+  prefs.end();
+}
+
+void saveWiFiCredentials(const String& ssid, const String& password) {
+  prefs.begin("steampro", false);
+  prefs.putString("wifiSSID", ssid);
+  prefs.putString("wifiPass", password);
+  prefs.end();
+
+  wifiSSID = ssid;
+  wifiPassword = password;
+}
+
+void clearWiFiCredentials() {
+  prefs.begin("steampro", false);
+  prefs.remove("wifiSSID");
+  prefs.remove("wifiPass");
+  prefs.end();
+
+  wifiSSID = "";
+  wifiPassword = "";
+}
+
+void startSavedWiFiConnection() {
+  if (wifiSSID.length() == 0)
+    return;
+
+  Serial.print("Connecting to saved WiFi: ");
+  Serial.println(wifiSSID);
+
+  WiFi.begin(wifiSSID.c_str(), wifiPassword.c_str());
+  wifiAutoConnectStarted = true;
+  wifiConnectStart = millis();
+}
+
+void processWiFiConnection() {
+  if (WiFi.status() == WL_CONNECTED) {
+    wifiConnectPending = false;
+    return;
+  }
+
+  if (!wifiConnectPending)
+    return;
+
+  if (millis() - wifiConnectStart < WIFI_CONNECT_TIMEOUT_MS)
+    return;
+
+  wifiConnectPending = false;
+  WiFi.disconnect(false, false);
+
+  Serial.println("WiFi connection timeout.");
+}
+
+String wifiStatusJSON() {
+  String s = "{";
+
+  s += "\"connected\":";
+  s += (WiFi.status() == WL_CONNECTED) ? "true" : "false";
+
+  s += ",\"ssid\":\"";
+  s += (WiFi.status() == WL_CONNECTED) ? WiFi.SSID() : wifiSSID;
+  s += "\"";
+
+  s += ",\"ip\":\"";
+  s += (WiFi.status() == WL_CONNECTED) ? WiFi.localIP().toString() : "";
+  s += "\"";
+
+  s += ",\"rssi\":";
+  s += String(WiFi.status() == WL_CONNECTED ? WiFi.RSSI() : 0);
+
+  s += ",\"rssiPercent\":";
+  s += String(WiFi.status() == WL_CONNECTED ? rssiPercent(WiFi.RSSI()) : 0);
+
+  s += ",\"pending\":";
+  s += wifiConnectPending ? "true" : "false";
+
+  s += ",\"saved\":";
+  s += (wifiSSID.length() > 0) ? "true" : "false";
+
+  s += "}";
+
+  return s;
+}
+
+// ============================================================
+// WIFI WEB HANDLERS
+// ============================================================
+
+void handleWiFiPage() {
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+
+    menuUnlocked = false;
+
+    server.send(
+      403,
+      "text/plain; charset=utf-8",
+      "LOCKED"
+    );
+
+    return;
+  }
+
+  menuLastAccess = millis();
+
+  server.send(
+    200,
+    "text/html; charset=utf-8",
+    wifiSettingsPage()
+  );
+}
+
+void handleWiFiScan() {
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+
+    menuUnlocked = false;
+    server.send(403, "application/json", "{\"error\":\"LOCKED\"}");
+    return;
+  }
+
+  menuLastAccess = millis();
+
+  int n = WiFi.scanNetworks(false, true);
+
+  String json = "[";
+
+  for (int i = 0; i < n; i++) {
+    if (i > 0)
+      json += ",";
+
+    String ssid = WiFi.SSID(i);
+
+    // Basic JSON escaping for SSID
+    ssid.replace("\\", "\\\\");
+    ssid.replace("\"", "\\\"");
+
+    json += "{\"ssid\":\"";
+    json += ssid;
+    json += "\",\"rssi\":";
+    json += String(WiFi.RSSI(i));
+    json += ",\"secure\":";
+    json += (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? "false" : "true";
+    json += "}";
+  }
+
+  json += "]";
+
+  WiFi.scanDelete();
+
+  server.send(
+    200,
+    "application/json",
+    json
+  );
+}
+
+void handleWiFiConnect() {
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+
+    menuUnlocked = false;
+    server.send(403, "application/json", "{\"ok\":false,\"error\":\"LOCKED\"}");
+    return;
+  }
+
+  menuLastAccess = millis();
+
+  if (!server.hasArg("ssid")) {
+    server.send(400, "application/json", "{\"ok\":false,\"error\":\"NO_SSID\"}");
+    return;
+  }
+
+  wifiPendingSSID = server.arg("ssid");
+  wifiPendingPassword =
+    server.hasArg("pass") ? server.arg("pass") : "";
+
+  WiFi.disconnect(false, false);
+  delay(50);
+
+  WiFi.begin(
+    wifiPendingSSID.c_str(),
+    wifiPendingPassword.c_str()
+  );
+
+  wifiConnectPending = true;
+  wifiConnectStart = millis();
+
+  // Save immediately so a successful connection survives reboot.
+  // If connection fails, the next boot will retry the same network.
+  saveWiFiCredentials(
+    wifiPendingSSID,
+    wifiPendingPassword
+  );
+
+  server.send(
+    200,
+    "application/json",
+    "{\"ok\":true}"
+  );
+}
+
+void handleWiFiDisconnect() {
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+
+    menuUnlocked = false;
+    server.send(403, "application/json", "{\"ok\":false,\"error\":\"LOCKED\"}");
+    return;
+  }
+
+  menuLastAccess = millis();
+
+  wifiConnectPending = false;
+  WiFi.disconnect(false, false);
+
+  server.send(
+    200,
+    "application/json",
+    "{\"ok\":true}"
+  );
+}
+
+void handleWiFiForget() {
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+
+    menuUnlocked = false;
+    server.send(403, "application/json", "{\"ok\":false,\"error\":\"LOCKED\"}");
+    return;
+  }
+
+  menuLastAccess = millis();
+
+  wifiConnectPending = false;
+  WiFi.disconnect(false, false);
+  clearWiFiCredentials();
+
+  server.send(
+    200,
+    "application/json",
+    "{\"ok\":true}"
+  );
+}
+
+void handleWiFiStatus() {
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+
+    menuUnlocked = false;
+    server.send(403, "application/json", "{\"error\":\"LOCKED\"}");
+    return;
+  }
+
+  menuLastAccess = millis();
+
+  server.send(
+    200,
+    "application/json",
+    wifiStatusJSON()
+  );
+}
+
+// ============================================================
+// WIFI SETTINGS PAGE
+// ============================================================
+
+String wifiSettingsPage() {
+
+  String html = R"rawliteral(
+<!DOCTYPE html>
+<html lang="fa">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#07111f">
+<title>SteamPro WiFi</title>
 
-<title>SteamPro Remote</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:#07111f;color:#fff;font-family:Arial,Helvetica,sans-serif}
+body{background:radial-gradient(circle at 50% -10%,#1a3554 0,#0a1626 42%,#050b13 100%);min-height:100vh}
+.app{width:100%;max-width:650px;margin:auto;padding:14px}
+.card{background:rgba(14,28,46,.94);border:1px solid rgba(255,255,255,.07);border-radius:24px;padding:18px;margin-bottom:12px;box-shadow:0 10px 28px rgba(0,0,0,.2)}
+.top{display:flex;justify-content:space-between;align-items:center;padding:7px 3px 16px}
+.logo{font-size:28px;font-weight:900}.logo span{color:#42c7ff}
+.lang{border:0;border-radius:12px;background:#24364d;color:#fff;padding:10px 13px;font-weight:800}
+.title{font-size:17px;font-weight:900;margin-bottom:6px}
+.sub{font-size:11px;color:#8094ab;margin-bottom:15px}
+.status{padding:14px;border-radius:15px;background:#122338;margin-bottom:12px}
+.statusRow{display:flex;justify-content:space-between;gap:10px;margin:7px 0;font-size:12px}
+.label{color:#8094ab}.value{font-weight:800;direction:ltr}
+.ok{color:#36df9d}.bad{color:#ff7777}.wait{color:#ffc447}
+button{font:inherit;cursor:pointer}
+.action{width:100%;border:0;border-radius:14px;padding:14px;color:#fff;font-weight:900;margin-top:8px;background:linear-gradient(135deg,#1a8fbe,#2465a8)}
+.secondary{background:#24364d}
+.danger{background:#9f3541}
+input{width:100%;border:1px solid rgba(255,255,255,.09);background:#0b1727;color:#fff;border-radius:13px;padding:14px;outline:none;margin:7px 0;font-size:14px}
+.networks{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.net{display:flex;align-items:center;justify-content:space-between;padding:14px;border-radius:15px;background:#122338;border:1px solid transparent}
+.net.selected{border-color:#42c7ff;background:#16314a}
+.netName{font-weight:800;max-width:70%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.netMeta{font-size:10px;color:#8094ab;direction:ltr}
+.spinner{text-align:center;color:#8094ab;padding:14px;display:none}
+.back{width:100%;border:0;border-radius:14px;padding:14px;color:#fff;font-weight:900;background:#24364d}
+.hidden{display:none}
+.rtl{direction:rtl;text-align:right}
+</style>
+</head>
+
+<body>
+<div class="app" id="app">
+
+<div class="top">
+  <div class="logo">Steam<span>Pro</span></div>
+  <button class="lang" onclick="toggleLang()" id="langBtn">EN</button>
+</div>
+
+<div class="card">
+  <div class="title" id="pageTitle">تنظیمات Wi-Fi</div>
+  <div class="sub" id="pageSub">اتصال SteamPro به مودم و شبکه محلی</div>
+
+  <div class="status">
+    <div class="statusRow">
+      <span class="label" id="stStatusLabel">وضعیت</span>
+      <span class="value" id="stStatus">--</span>
+    </div>
+    <div class="statusRow">
+      <span class="label" id="stNetworkLabel">شبکه</span>
+      <span class="value" id="stNetwork">--</span>
+    </div>
+    <div class="statusRow">
+      <span class="label" id="stIpLabel">IP</span>
+      <span class="value" id="stIp">--</span>
+    </div>
+    <div class="statusRow">
+      <span class="label" id="stSignalLabel">قدرت سیگنال</span>
+      <span class="value" id="stSignal">--</span>
+    </div>
+  </div>
+
+  <button class="action" onclick="scan()" id="scanBtn">🔍 جستجوی مودم‌ها</button>
+  <div class="spinner" id="spinner">در حال جستجو...</div>
+  <div class="networks" id="networks"></div>
+</div>
+
+<div class="card">
+  <div class="title" id="connectTitle">اتصال به شبکه</div>
+
+  <div class="sub" id="selectedText">یک شبکه را انتخاب کنید</div>
+
+  <input id="ssid" placeholder="نام شبکه (SSID)" readonly>
+  <input id="pass" type="password" placeholder="رمز Wi-Fi">
+
+  <button class="action" onclick="connect()" id="connectBtn">اتصال</button>
+  <button class="action secondary" onclick="disconnectWiFi()" id="disconnectBtn">قطع اتصال</button>
+  <button class="action danger" onclick="forgetWiFi()" id="forgetBtn">حذف شبکه ذخیره‌شده</button>
+</div>
+
+<div class="card">
+  <button class="back" onclick="location.href='/'" id="backBtn">← بازگشت به صفحه اصلی</button>
+</div>
+
+</div>
+
+<script>
+let lang=localStorage.getItem("steamLang")||"fa";
+let selectedSSID="";
+
+const T={
+ fa:{
+  title:"تنظیمات Wi-Fi",
+  sub:"اتصال SteamPro به مودم و شبکه محلی",
+  status:"وضعیت",network:"شبکه",ip:"IP",signal:"قدرت سیگنال",
+  scan:"🔍 جستجوی مودم‌ها",scanning:"در حال جستجو...",
+  connectTitle:"اتصال به شبکه",select:"یک شبکه را انتخاب کنید",
+  password:"رمز Wi-Fi",connect:"اتصال",disconnect:"قطع اتصال",
+  forget:"حذف شبکه ذخیره‌شده",back:"← بازگشت به صفحه اصلی",
+  connected:"متصل ✓",disconnected:"قطع",connecting:"در حال اتصال...",
+  selectNet:"لطفاً ابتدا یک شبکه را انتخاب کنید",
+  connectingMsg:"در حال اتصال به شبکه...",
+  noNetworks:"شبکه‌ای پیدا نشد",
+  open:"بدون رمز"
+ },
+ en:{
+  title:"Wi-Fi Settings",sub:"Connect SteamPro to a router and local network",
+  status:"Status",network:"Network",ip:"IP",signal:"Signal",
+  scan:"🔍 Scan Networks",scanning:"Scanning...",
+  connectTitle:"Connect to Network",select:"Select a network",
+  password:"Wi-Fi password",connect:"Connect",disconnect:"Disconnect",
+  forget:"Forget saved network",back:"← Back to main page",
+  connected:"Connected ✓",disconnected:"Disconnected",connecting:"Connecting...",
+  selectNet:"Please select a network first",
+  connectingMsg:"Connecting to network...",
+  noNetworks:"No networks found",open:"Open"
+ }
+};
+
+function t(k){return T[lang][k]||k}
+
+function applyLang(){
+ document.documentElement.lang=lang;
+ document.getElementById("pageTitle").textContent=t("title");
+ document.getElementById("pageSub").textContent=t("sub");
+ document.getElementById("stStatusLabel").textContent=t("status");
+ document.getElementById("stNetworkLabel").textContent=t("network");
+ document.getElementById("stIpLabel").textContent=t("ip");
+ document.getElementById("stSignalLabel").textContent=t("signal");
+ document.getElementById("scanBtn").textContent=t("scan");
+ document.getElementById("connectTitle").textContent=t("connectTitle");
+ document.getElementById("selectedText").textContent=selectedSSID||t("select");
+ document.getElementById("pass").placeholder=t("password");
+ document.getElementById("connectBtn").textContent=t("connect");
+ document.getElementById("disconnectBtn").textContent=t("disconnect");
+ document.getElementById("forgetBtn").textContent=t("forget");
+ document.getElementById("backBtn").textContent=t("back");
+ document.getElementById("langBtn").textContent=lang==="fa"?"EN":"FA";
+ document.getElementById("app").className=lang==="fa"?"app rtl":"app";
+}
+
+function toggleLang(){
+ lang=lang==="fa"?"en":"fa";
+ localStorage.setItem("steamLang",lang);
+ applyLang();
+}
+
+function esc(x){
+ return String(x).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
+}
+
+function signal(rssi){
+ if(rssi>=-50)return "████ 100%";
+ if(rssi<=-90)return "█░░░ 0%";
+ let p=Math.round((rssi+90)*100/40);
+ let n=Math.max(1,Math.min(4,Math.ceil(p/25)));
+ return "█".repeat(n)+"░".repeat(4-n)+" "+p+"%";
+}
+
+function scan(){
+ document.getElementById("spinner").style.display="block";
+ document.getElementById("networks").innerHTML="";
+ document.getElementById("scanBtn").disabled=true;
+
+ fetch("/api/wifi/scan",{cache:"no-store"})
+ .then(r=>r.json())
+ .then(list=>{
+   document.getElementById("spinner").style.display="none";
+   document.getElementById("scanBtn").disabled=false;
+
+   if(!Array.isArray(list)||!list.length){
+     document.getElementById("networks").innerHTML='<div class="sub">'+t("noNetworks")+'</div>';
+     return;
+   }
+
+   let seen={};
+   list.forEach(n=>{
+     if(!n.ssid||seen[n.ssid])return;
+     seen[n.ssid]=1;
+
+     let d=document.createElement("div");
+     d.className="net"+(n.ssid===selectedSSID?" selected":"");
+     d.innerHTML='<span class="netName">'+esc(n.ssid)+'</span><span class="netMeta">'+signal(n.rssi)+(n.secure?" 🔒":" · "+t("open"))+'</span>';
+     d.onclick=()=>{
+       selectedSSID=n.ssid;
+       document.getElementById("ssid").value=n.ssid;
+       document.getElementById("selectedText").textContent=n.ssid;
+       document.querySelectorAll(".net").forEach(x=>x.classList.remove("selected"));
+       d.classList.add("selected");
+       document.getElementById("pass").focus();
+     };
+     document.getElementById("networks").appendChild(d);
+   });
+ })
+ .catch(()=>{
+   document.getElementById("spinner").style.display="none";
+   document.getElementById("scanBtn").disabled=false;
+ });
+}
+
+function updateStatus(){
+ fetch("/api/wifi/status",{cache:"no-store"})
+ .then(r=>r.json())
+ .then(x=>{
+   let st=document.getElementById("stStatus");
+   if(x.connected){
+     st.textContent=t("connected");
+     st.className="value ok";
+   }else if(x.pending){
+     st.textContent=t("connecting");
+     st.className="value wait";
+   }else{
+     st.textContent=t("disconnected");
+     st.className="value bad";
+   }
+
+   document.getElementById("stNetwork").textContent=x.ssid||"--";
+   document.getElementById("stIp").textContent=x.ip||"--";
+   document.getElementById("stSignal").textContent=x.connected?signal(x.rssi):"--";
+
+   if(x.pending){
+     setTimeout(updateStatus,1000);
+   }
+ })
+ .catch(()=>{});
+}
+
+function connect(){
+ if(!selectedSSID){
+   alert(t("selectNet"));
+   return;
+ }
+
+ let pass=document.getElementById("pass").value;
+
+ document.getElementById("connectBtn").disabled=true;
+
+ fetch("/api/wifi/connect?ssid="+encodeURIComponent(selectedSSID)+"&pass="+encodeURIComponent(pass))
+ .then(r=>r.json())
+ .then(x=>{
+   document.getElementById("connectBtn").disabled=false;
+   if(x.ok){
+     document.getElementById("stStatus").textContent=t("connecting");
+     document.getElementById("stStatus").className="value wait";
+     setTimeout(updateStatus,1000);
+     setTimeout(updateStatus,2500);
+   }
+ })
+ .catch(()=>{
+   document.getElementById("connectBtn").disabled=false;
+ });
+}
+
+function disconnectWiFi(){
+ fetch("/api/wifi/disconnect")
+ .then(()=>updateStatus());
+}
+
+function forgetWiFi(){
+ if(!confirm(lang==="fa"?"شبکه ذخیره‌شده حذف شود؟":"Forget saved Wi-Fi network?"))return;
+ fetch("/api/wifi/forget")
+ .then(()=>updateStatus());
+}
+
+applyLang();
+updateStatus();
+setInterval(updateStatus,5000);
+</script>
+</body>
+</html>
+)rawliteral";
+
+  return html;
+}
+
+// ============================================================
+// SETTINGS LOAD
+// ============================================================
+
+void loadSettings() {
+
+  prefs.begin("steampro", true);
+
+  timerEnabled =
+    prefs.getBool("timer", true);
+
+  runMinutes =
+    prefs.getUShort("run", 15);
+
+ saunaTargetTemp =
+  constrain(
+    prefs.getFloat("starget", 45.0),
+    SAUNA_TEMP_MIN,
+    SAUNA_TEMP_MAX
+  );
+  saunaHysteresis =
+    prefs.getFloat("shyst", 2.0);
+
+ drainStartTemp =
+  constrain(
+    prefs.getFloat("dstart", 50.0),
+    DRAIN_TEMP_MIN,
+    DRAIN_TEMP_MAX
+  );
+  drainSeconds =
+    prefs.getUShort("dsec", prefs.getUShort("dmin", 5) * 60);
+
+ maxWaterTemp =
+  constrain(
+    prefs.getFloat("maxw", 70.0),
+    WATER_TEMP_MIN,
+    WATER_TEMP_MAX
+  );
+
+  fillTimeoutSec =
+    prefs.getUShort("fillto", 120);
+
+  pulseEnabled =
+    prefs.getBool("pulse", true);
+
+ pulseOnMin =
+  prefs.getUShort("pon", 1);
+
+pulseOffMin =
+  prefs.getUShort("poff", 1);
+
+  dfVolume =
+    prefs.getUChar("volume", 15);
+
+  adEnabled =
+    prefs.getBool("adEnabled", false);
+
+  adIntervalSec =
+    constrain(
+      prefs.getUShort("adInt", 10),
+      3,
+      60
+    );
+
+  menuPassword =
+    prefs.getString("menupass", "1234");
+
+  if (menuPassword.length() < 4)
+    menuPassword = "1234";
+
+  prefs.end();
+
+  runMinutes = constrain(runMinutes, 1, 120);
+  drainSeconds = constrain(drainSeconds, 1, 3600);
+  fillTimeoutSec = constrain(fillTimeoutSec, 10, 600);
+
+ pulseOnMin = constrain(pulseOnMin, 1, 60);
+pulseOffMin = constrain(pulseOffMin, 1, 60);
+
+  if (dfVolume > 30)
+    dfVolume = 30;
+}
+
+// ============================================================
+// LM35
+// ============================================================
+
+
+float readLM35(int pin) {
+
+  long total = 0;
+
+  // گرفتن 30 نمونه
+  for (int i = 0; i < 30; i++) {
+    total += analogReadMilliVolts(pin);
+    delayMicroseconds(500);
+  }
+
+  float voltage = total / 30.0;
+
+  // LM35 = 10mV برای هر درجه
+  float newTemp = (voltage / 10.0) - 1.8;
+
+  // فیلتر نرم‌کننده
+  static float filteredSauna = 0;
+  static float filteredWater = 0;
+
+  float *filtered;
+
+  if (pin == PIN_SAUNA)
+    filtered = &filteredSauna;
+  else
+    filtered = &filteredWater;
+
+  // مقدار اول بدون تأخیر وارد فیلتر شود
+  if (*filtered == 0) {
+    *filtered = newTemp;
+  } 
+  else {
+    // هرچه عدد کمتر باشد، تغییرات آرام‌تر می‌شود
+    *filtered = (*filtered * 0.85) + (newTemp * 0.15);
+  }
+
+
+
+  return round(*filtered);
+}
+
+// ============================================================
+// WATER LEVEL
+// ============================================================
+
+bool lowLevel() {
+  return digitalRead(PIN_LOW) == HIGH;
+}
+
+bool highLevel() {
+  return digitalRead(PIN_HIGH) == HIGH;
+}
+
+// ============================================================
+// RESET WATER LEVEL TIMERS
+// ============================================================
+
+void resetLevelTimers() {
+
+  inletOpenPending = false;
+  inletClosePending = false;
+
+  inletOpenRequestStart = 0;
+  inletCloseRequestStart = 0;
+
+  heaterOffPending = false;
+  heaterOffRequestStart = 0;
+}
+
+// ============================================================
+// START DEVICE
+// ============================================================
+
+void startDevice() {
+
+  errorMessage = "";
+
+  running = true;
+  testMode = false;
+
+  runStart = millis();
+
+  fillStart = 0;
+  drainStart = 0;
+
+  pulseStart = millis();
+  pulseState = false;
+
+  drainPending = false;
+  drainCycleDone = false;
+
+  resetLevelTimers();
+
+  out(PIN_DRAIN, false);
+  drainActive = false;
+
+  lightOn = true;
+  out(PIN_LIGHT, true);
+
+  out(PIN_HEATER, false);
+
+  out(PIN_PULSE, false);
+
+  if (!lowLevel()) {
+
+    inletOpenPending = true;
+    inletOpenRequestStart = millis();
+
+  }
+  else {
+
+    inletOpenPending = false;
+    inletOpenRequestStart = 0;
+
+    out(PIN_INLET, false);
+  }
+}
+
+// ============================================================
+// STOP DEVICE
+// ============================================================
+
+void stopDevice() {
+
+  bool wasRunning = running;
+
+  running = false;
+  testMode = false;
+
+  out(PIN_HEATER, false);
+  out(PIN_INLET, false);
+  out(PIN_LIGHT, false);
+  out(PIN_PULSE, false);
+
+  lightOn = false;
+  pulseState = false;
+  fillActive = false;
+
+  resetLevelTimers();
+
+  if (wasRunning) {
+
+    drainActive = false;
+
+    out(PIN_DRAIN, false);
+
+    drainPending = true;
+    drainCycleDone = false;
+
+    drainStart = 0;
+  }
+
+  if (dfReady) {
+    dfPlayer.stop();
+  }
+
+  musicPlaying = false;
+}
+
+// ============================================================
+// TEST
+// ============================================================
+
+void startTest() {
+
+  errorMessage = "";
+
+  running = true;
+  testMode = true;
+
+  testStart = millis();
+
+  fillActive = false;
+  drainActive = false;
+
+  drainPending = false;
+  drainCycleDone = false;
+
+  resetLevelTimers();
+
+  out(PIN_DRAIN, false);
+  out(PIN_HEATER, false);
+
+  lightOn = true;
+  out(PIN_LIGHT, true);
+
+  if (!lowLevel()) {
+
+    inletOpenPending = true;
+    inletOpenRequestStart = millis();
+
+  }
+  else {
+
+    out(PIN_INLET, false);
+  }
+}
+
+// ============================================================
+// TEST BUTTON
+// ============================================================
+
+void processTestButton() {
+
+  bool state =
+    digitalRead(PIN_TEST);
+
+  if (lastTestButton == HIGH &&
+      state == LOW) {
+
+    delay(30);
+
+    if (digitalRead(PIN_TEST) == LOW) {
+
+      if (!running)
+        startTest();
+      else
+        stopDevice();
+    }
+  }
+
+  lastTestButton = state;
+}
+
+// ============================================================
+// FILL
+// ============================================================
+
+void processFill() {
+
+  if (!running)
+    return;
+
+  if (!fillActive)
+    return;
+
+  if (lowLevel()) {
+    return;
+  }
+
+  if (millis() - fillStart >=
+      (unsigned long)fillTimeoutSec * 1000UL) {
+
+    out(PIN_INLET, false);
+
+    fillActive = false;
+
+    resetLevelTimers();
+
+    errorMessage =
+      "NO WATER / FILL TIMEOUT";
+
+    stopDevice();
+
+    return;
+  }
+}
+
+// ============================================================
+// WATER CONTROL
+// ============================================================
+
+void processWater() {
+
+  if (!running)
+    return;
+
+  if (!lowLevel()) {
+
+    if (!digitalRead(PIN_INLET)) {
+
+      inletClosePending = false;
+      inletCloseRequestStart = 0;
+
+      if (!inletOpenPending) {
+
+        inletOpenPending = true;
+        inletOpenRequestStart = millis();
+      }
+
+      if (millis() - inletOpenRequestStart >=
+          LEVEL_DELAY_MS) {
+
+        out(PIN_INLET, true);
+
+        inletOpenPending = false;
+        inletOpenRequestStart = 0;
+
+        inletClosePending = false;
+        inletCloseRequestStart = 0;
+
+        fillActive = true;
+        fillStart = millis();
+      }
+    }
+
+    return;
+  }
+
+  if (digitalRead(PIN_INLET)) {
+
+    inletOpenPending = false;
+    inletOpenRequestStart = 0;
+
+    if (!inletClosePending) {
+
+      inletClosePending = true;
+      inletCloseRequestStart = millis();
+    }
+
+    if (millis() - inletCloseRequestStart >=
+        LEVEL_DELAY_MS) {
+
+      out(PIN_INLET, false);
+
+      inletClosePending = false;
+      inletCloseRequestStart = 0;
+
+      fillActive = false;
+      fillStart = 0;
+    }
+  }
+  else {
+
+    inletClosePending = false;
+    inletCloseRequestStart = 0;
+
+    fillActive = false;
+    fillStart = 0;
+  }
+}
+
+// ============================================================
+// HEATER
+// ============================================================
+
+void processHeater() {
+
+  if (!running) {
+
+    out(PIN_HEATER, false);
+
+    heaterOffPending = false;
+    heaterOffRequestStart = 0;
+
+    return;
+  }
+
+  if (waterTemp >= maxWaterTemp) {
+
+    out(PIN_HEATER, false);
+
+    heaterOffPending = false;
+    heaterOffRequestStart = 0;
+
+    errorMessage =
+      "WATER OVER TEMP";
+
+    stopDevice();
+
+    return;
+  }
+
+  if (!highLevel()) {
+
+    if (!heaterOffPending) {
+
+      heaterOffPending = true;
+      heaterOffRequestStart = millis();
+    }
+
+    if (millis() - heaterOffRequestStart >=
+        HEATER_LEVEL_DELAY_MS) {
+
+      out(PIN_HEATER, false);
+
+      heaterOffPending = false;
+      heaterOffRequestStart = 0;
+    }
+
+    return;
+  }
+
+  heaterOffPending = false;
+  heaterOffRequestStart = 0;
+
+  if (testMode) {
+
+    out(PIN_HEATER, true);
+
+    return;
+  }
+
+  if (saunaTemp <=
+      saunaTargetTemp - saunaHysteresis) {
+
+    out(PIN_HEATER, true);
+  }
+
+  if (saunaTemp >= saunaTargetTemp) {
+
+    out(PIN_HEATER, false);
+  }
+}
+
+// ============================================================
+// DRAIN
+// ============================================================
+
+void processDrain() {
+
+  if (running) {
+
+    if (drainActive) {
+
+      out(PIN_DRAIN, false);
+
+      drainActive = false;
+    }
+
+    return;
+  }
+
+  if (!drainPending)
+    return;
+
+  if (drainCycleDone)
+    return;
+
+  if (waterTemp > drainStartTemp) {
+
+    out(PIN_DRAIN, false);
+
+    return;
+  }
+
+  if (!drainActive) {
+
+    drainActive = true;
+
+    drainStart = millis();
+
+    out(PIN_DRAIN, true);
+
+    return;
+  }
+
+  if (millis() - drainStart >=
+      (unsigned long)drainSeconds * 1000UL) {
+
+    out(PIN_DRAIN, false);
+
+    drainActive = false;
+
+    drainPending = false;
+
+    drainCycleDone = true;
+
+    drainStart = 0;
+  }
+}
+
+// ============================================================
+// WATER SAFETY
+// ============================================================
+
+void processWaterProtection() {
+
+  if (!running)
+    return;
+
+  if (waterTemp >= maxWaterTemp) {
+
+    out(PIN_HEATER, false);
+
+    errorMessage =
+      "WATER OVER TEMP";
+
+    stopDevice();
+  }
+}
+
+// ============================================================
+// PULSE
+// ============================================================
+
+void processPulse() {
+
+  if (!running ||
+      !pulseEnabled ||
+      testMode) {
+
+    out(PIN_PULSE, false);
+
+    pulseState = false;
+
+    return;
+  }
+
+  unsigned long interval;
+
+if (pulseState)
+  interval =
+    (unsigned long)pulseOnMin * 60000UL;
+else
+  interval =
+    (unsigned long)pulseOffMin * 60000UL;
+
+  if (millis() - pulseStart >= interval) {
+
+    pulseStart = millis();
+
+    pulseState = !pulseState;
+
+    out(PIN_PULSE, pulseState);
+  }
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+
+void processTimer() {
+
+  if (!running)
+    return;
+
+  if (testMode) {
+
+    if (millis() - testStart >=
+        600000UL) {
+
+      stopDevice();
+    }
+
+    return;
+  }
+
+  if (!timerEnabled)
+    return;
+
+  if (millis() - runStart >=
+      (unsigned long)runMinutes * 60000UL) {
+
+    stopDevice();
+  }
+}
+
+// ============================================================
+// LIGHT
+// ============================================================
+
+void setLight(bool state) {
+
+  lightOn = state;
+
+  out(PIN_LIGHT, state);
+}
+
+void toggleLight() {
+
+  if (!running)
+    return;
+
+  setLight(!lightOn);
+}
+
+// ============================================================
+// DFPLAYER
+// ============================================================
+
+void setupDFPlayer() {
+
+  DFSerial.begin(
+    9600,
+    SERIAL_8N1,
+    DF_RX,
+    DF_TX
+  );
+
+  delay(1000);
+
+  if (dfPlayer.begin(DFSerial, true, true)) {
+
+    dfReady = true;
+
+    dfPlayer.volume(dfVolume);
+
+    delay(300);
+
+    int count =
+      dfPlayer.readFileCounts();
+
+    if (count > 0)
+      totalTracks = count;
+    else
+      totalTracks = 0;
+
+    currentTrack = 1;
+    musicPlaying = false;
+
+    Serial.println("DFPlayer OK");
+
+    Serial.print("Tracks: ");
+    Serial.println(totalTracks);
+  }
+  else {
+
+    dfReady = false;
+
+    totalTracks = 0;
+
+    musicPlaying = false;
+
+    Serial.println("DFPlayer NOT FOUND");
+  }
+}
+
+// ============================================================
+// PLAY
+// ============================================================
+
+void playTrack() {
+
+  if (!dfReady)
+    return;
+
+  if (currentTrack < 1)
+    currentTrack = 1;
+
+  if (totalTracks > 0 &&
+      currentTrack > totalTracks)
+    currentTrack = 1;
+
+  dfPlayer.play(currentTrack);
+
+  musicPlaying = true;
+
+  Serial.print("PLAY TRACK: ");
+  Serial.println(currentTrack);
+}
+
+// ============================================================
+// STOP MUSIC
+// ============================================================
+
+void stopMusic() {
+
+  if (dfReady)
+    dfPlayer.stop();
+
+  musicPlaying = false;
+
+  Serial.println("MUSIC STOP");
+}
+
+// ============================================================
+// NEXT
+// ============================================================
+
+void nextTrack() {
+
+  if (!dfReady)
+    return;
+
+  currentTrack++;
+
+  if (totalTracks > 0 &&
+      currentTrack > totalTracks)
+    currentTrack = 1;
+
+  dfPlayer.play(currentTrack);
+
+  musicPlaying = true;
+
+  Serial.print("NEXT TRACK: ");
+  Serial.println(currentTrack);
+}
+
+// ============================================================
+// PREVIOUS
+// ============================================================
+
+void previousTrack() {
+
+  if (!dfReady)
+    return;
+
+  currentTrack--;
+
+  if (currentTrack < 1) {
+
+    if (totalTracks > 0)
+      currentTrack = totalTracks;
+    else
+      currentTrack = 1;
+  }
+
+  dfPlayer.play(currentTrack);
+
+  musicPlaying = true;
+
+  Serial.print("PREVIOUS TRACK: ");
+  Serial.println(currentTrack);
+}
+// ============================================================
+// DFPLAYER AUTO NEXT
+// ============================================================
+
+void processDFPlayer() {
+
+  if (!dfReady)
+    return;
+
+  // بررسی پیام‌های DFPlayer
+  if (dfPlayer.available()) {
+
+    uint8_t type = dfPlayer.readType();
+
+    int value = dfPlayer.read();
+
+    // ----------------------------------------------------------
+    // آهنگ تمام شده
+    // ----------------------------------------------------------
+
+    if (type == DFPlayerPlayFinished) {
+
+      Serial.print("TRACK FINISHED: ");
+      Serial.println(value);
+
+      // فقط اگر کاربر پخش موسیقی را متوقف نکرده باشد
+      if (musicPlaying) {
+
+        currentTrack++;
+
+        // بعد از آخرین آهنگ، برگشت به آهنگ اول
+        if (totalTracks > 0 &&
+            currentTrack > totalTracks) {
+
+          currentTrack = 1;
+        }
+
+        dfPlayer.play(currentTrack);
+
+        musicPlaying = true;
+
+        Serial.print("AUTO NEXT TRACK: ");
+        Serial.println(currentTrack);
+      }
+    }
+  }
+}
+// ============================================================
+// VOLUME
+// ============================================================
+
+void volumeUp() {
+
+  if (dfVolume < 30)
+    dfVolume++;
+
+  if (dfReady)
+    dfPlayer.volume(dfVolume);
+
+  saveSettings();
+
+  Serial.print("VOLUME: ");
+  Serial.println(dfVolume);
+}
+
+void volumeDown() {
+
+  if (dfVolume > 0)
+    dfVolume--;
+
+  if (dfReady)
+    dfPlayer.volume(dfVolume);
+
+  saveSettings();
+
+  Serial.print("VOLUME: ");
+  Serial.println(dfVolume);
+}
+
+// ============================================================
+// WIFI RSSI
+// ============================================================
+
+int getClientRSSI() {
+
+  wifi_sta_list_t staList;
+
+  if (esp_wifi_ap_get_sta_list(&staList) != ESP_OK)
+    return 0;
+
+  if (staList.num == 0)
+    return 0;
+
+  return staList.sta[0].rssi;
+}
+
+// ============================================================
+// RSSI PERCENT
+// ============================================================
+
+int rssiPercent(int rssi) {
+
+  if (rssi == 0)
+    return 0;
+
+  if (rssi >= -50)
+    return 100;
+
+  if (rssi <= -90)
+    return 0;
+
+  return (rssi + 90) * 100 / 40;
+}
+
+// ============================================================
+// ADVERTISEMENT
+// ============================================================
+
+String adPath(uint8_t index) {
+  return "/ad" + String(index) + ".jpg";
+}
+
+int firstFreeAdSlot() {
+  for (uint8_t i = 0; i < MAX_AD_IMAGES; i++)
+    if (!LittleFS.exists(adPath(i)))
+      return i;
+  return -1;
+}
+
+int countAdImages() {
+  int count = 0;
+  for (uint8_t i = 0; i < MAX_AD_IMAGES; i++)
+    if (LittleFS.exists(adPath(i)))
+      count++;
+  return count;
+}
+
+String adListJSON() {
+  String s = "[";
+  bool first = true;
+  for (uint8_t i = 0; i < MAX_AD_IMAGES; i++) {
+    if (!LittleFS.exists(adPath(i)))
+      continue;
+    if (!first) s += ",";
+    s += String(i);
+    first = false;
+  }
+  s += "]";
+  return s;
+}
+
+bool adRequestAuthorized() {
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+    menuUnlocked = false;
+    return false;
+  }
+  menuLastAccess = millis();
+  return true;
+}
+
+void handleAdList() {
+  server.send(200, "application/json", adListJSON());
+}
+
+void handleAdImage(uint8_t index) {
+  if (index >= MAX_AD_IMAGES) {
+    server.send(404, "text/plain", "NOT FOUND");
+    return;
+  }
+
+  String path = adPath(index);
+
+  if (!LittleFS.exists(path)) {
+    server.send(404, "text/plain", "NOT FOUND");
+    return;
+  }
+
+  File file = LittleFS.open(path, "r");
+  if (!file) {
+    server.send(500, "text/plain", "OPEN FAILED");
+    return;
+  }
+
+  server.streamFile(file, "image/jpeg");
+  file.close();
+}
+
+void handleAdDelete() {
+  if (!adRequestAuthorized()) {
+    server.send(403, "text/plain", "LOCKED");
+    return;
+  }
+
+  if (!server.hasArg("id")) {
+    server.send(400, "text/plain", "BAD ID");
+    return;
+  }
+
+  int id = server.arg("id").toInt();
+
+  if (id < 0 || id >= MAX_AD_IMAGES) {
+    server.send(400, "text/plain", "BAD ID");
+    return;
+  }
+
+  String path = adPath((uint8_t)id);
+  if (LittleFS.exists(path))
+    LittleFS.remove(path);
+
+  server.send(200, "text/plain", "OK");
+}
+
+void handleAdDeleteAll() {
+  if (!adRequestAuthorized()) {
+    server.send(403, "text/plain", "LOCKED");
+    return;
+  }
+
+  for (uint8_t i = 0; i < MAX_AD_IMAGES; i++) {
+    String path = adPath(i);
+    if (LittleFS.exists(path))
+      LittleFS.remove(path);
+  }
+
+  adEnabled = false;
+  saveSettings();
+
+  server.send(200, "text/plain", "OK");
+}
+
+File adUploadFile;
+int adUploadSlot = -1;
+bool adUploadOK = false;
+
+void handleAdUploadData() {
+
+  HTTPUpload& upload = server.upload();
+
+  if (upload.status == UPLOAD_FILE_START) {
+
+    adUploadOK = false;
+    adUploadSlot = -1;
+
+    if (!adRequestAuthorized())
+      return;
+
+    if (upload.totalSize > MAX_AD_FILE_SIZE)
+      return;
+
+    adUploadSlot = firstFreeAdSlot();
+
+    if (adUploadSlot < 0)
+      return;
+
+    String path = adPath((uint8_t)adUploadSlot);
+
+    if (LittleFS.exists(path))
+      LittleFS.remove(path);
+
+    adUploadFile = LittleFS.open(path, "w");
+
+    if (!adUploadFile)
+      return;
+
+    adUploadOK = true;
+  }
+
+  else if (upload.status == UPLOAD_FILE_WRITE) {
+
+    if (!adUploadOK)
+      return;
+
+    if (adUploadFile) {
+      size_t written =
+        adUploadFile.write(
+          upload.buf,
+          upload.currentSize
+        );
+
+      if (written != upload.currentSize)
+        adUploadOK = false;
+    }
+  }
+
+  else if (upload.status == UPLOAD_FILE_END) {
+
+    if (adUploadFile)
+      adUploadFile.close();
+
+    if (!adUploadOK && adUploadSlot >= 0) {
+      String path = adPath((uint8_t)adUploadSlot);
+      if (LittleFS.exists(path))
+        LittleFS.remove(path);
+    }
+  }
+
+  else if (upload.status == UPLOAD_FILE_ABORTED) {
+
+    if (adUploadFile)
+      adUploadFile.close();
+
+    if (adUploadSlot >= 0) {
+      String path = adPath((uint8_t)adUploadSlot);
+      if (LittleFS.exists(path))
+        LittleFS.remove(path);
+    }
+
+    adUploadOK = false;
+  }
+}
+
+void handleAdUploadDone() {
+  if (!adUploadOK) {
+    server.send(400, "text/plain", "UPLOAD FAILED");
+    return;
+  }
+
+  server.send(200, "text/plain", "OK");
+}
+
+// ============================================================
+// STATUS JSON
+// ============================================================
+
+String getStatusJSON() {
+
+  String s = "{";
+
+  s += "\"running\":";
+  s += running ? "true" : "false";
+
+  s += ",\"test\":";
+  s += testMode ? "true" : "false";
+
+  s += ",\"sauna\":";
+s += String((int)round(saunaTemp));
+
+s += ",\"water\":";
+s += String((int)round(waterTemp));
+
+  s += ",\"heater\":";
+  s += digitalRead(PIN_HEATER)
+       ? "true" : "false";
+
+  s += ",\"inlet\":";
+  s += digitalRead(PIN_INLET)
+       ? "true" : "false";
+
+  s += ",\"drain\":";
+  s += digitalRead(PIN_DRAIN)
+       ? "true" : "false";
+
+  s += ",\"light\":";
+  s += lightOn ? "true" : "false";
+
+  s += ",\"pulse\":";
+  s += pulseState ? "true" : "false";
+
+  s += ",\"pulseEnabled\":";
+  s += pulseEnabled ? "true" : "false";
+
+  s += ",\"high\":";
+  s += highLevel() ? "true" : "false";
+
+  s += ",\"low\":";
+  s += lowLevel() ? "true" : "false";
+
+  s += ",\"timerEnabled\":";
+  s += timerEnabled ? "true" : "false";
+
+  s += ",\"runMinutes\":";
+  s += String(runMinutes);
+
+  // ----------------------------------------------------------
+  // HEATER COUNTERS
+  // ----------------------------------------------------------
+
+  uint64_t displayTotal =
+    totalHeaterSeconds;
+
+  uint64_t displayService =
+    serviceHeaterSeconds;
+
+  if (heaterWasOn) {
+
+    unsigned long elapsedMs =
+      millis() - heaterOnStartMillis;
+
+    if (elapsedMs >= 1000UL) {
+
+      uint64_t elapsedSec =
+        elapsedMs / 1000ULL;
+
+      displayTotal += elapsedSec;
+      displayService += elapsedSec;
+    }
+  }
+
+  s += ",\"heaterTotalSec\":";
+  s += String(
+    (unsigned long)displayTotal
+  );
+
+  s += ",\"heaterServiceSec\":";
+  s += String(
+    (unsigned long)displayService
+  );
+
+  s += ",\"heaterTotal\":\"";
+  s += formatHeaterTime(displayTotal);
+  s += "\"";
+
+  s += ",\"heaterService\":\"";
+  s += formatHeaterTime(displayService);
+  s += "\"";
+
+  // ----------------------------------------------------------
+
+  s += ",\"drainPending\":";
+  s += drainPending ? "true" : "false";
+
+  s += ",\"drainActive\":";
+  s += drainActive ? "true" : "false";
+
+  unsigned long remainingSec = 0;
+
+  if (running && testMode) {
+
+    unsigned long totalSec = 600;
+
+    unsigned long elapsed =
+      (millis() - testStart) / 1000UL;
+
+    if (elapsed < totalSec)
+      remainingSec = totalSec - elapsed;
+  }
+
+  else if (running &&
+           !testMode &&
+           timerEnabled) {
+
+    unsigned long totalSec =
+      (unsigned long)runMinutes * 60UL;
+
+    unsigned long elapsed =
+      (millis() - runStart) / 1000UL;
+
+    if (elapsed < totalSec)
+      remainingSec = totalSec - elapsed;
+  }
+
+  s += ",\"remainingSec\":";
+  s += String(remainingSec);
+
+  s += ",\"currentTrack\":";
+  s += String(currentTrack);
+
+  s += ",\"totalTracks\":";
+  s += String(totalTracks);
+
+  s += ",\"volume\":";
+  s += String(dfVolume);
+
+  s += ",\"dfReady\":";
+  s += dfReady ? "true" : "false";
+
+  s += ",\"musicPlaying\":";
+  s += musicPlaying ? "true" : "false";
+
+  int rssi = getClientRSSI();
+
+  s += ",\"rssi\":";
+  s += String(rssi);
+
+  s += ",\"rssiPercent\":";
+  s += String(rssiPercent(rssi));
+
+  s += ",\"clients\":";
+  s += String(WiFi.softAPgetStationNum());
+
+  s += ",\"adEnabled\":";
+  s += adEnabled ? "true" : "false";
+
+  s += ",\"adInterval\":";
+  s += String(adIntervalSec);
+
+  s += ",\"error\":\"";
+  s += errorMessage;
+  s += "\"";
+
+  s += "}";
+
+  return s;
+}
+
+// ============================================================
+// MAIN WEB PAGE
+// ============================================================
+
+String mainPage() {
+
+  String html = R"rawliteral(
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<meta name="theme-color" content="#07111f">
+
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-192.png">
+
+<title>SteamPro</title>
+
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;min-height:100%;background:#07111f;color:#fff;font-family:Arial,Helvetica,sans-serif}
+body{background:radial-gradient(circle at 50% -10%,#1a3554 0,#0a1626 42%,#050b13 100%)}
+button,select{font:inherit}
+button{cursor:pointer}
+.app{width:100%;max-width:760px;margin:auto;padding:14px 14px 28px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 3px 16px}
+.logo{font-size:29px;font-weight:900;letter-spacing:.4px}.logo span{color:#42c7ff}
+.topRight{display:flex;align-items:center;gap:8px}
+.systemChip{display:flex;align-items:center;gap:6px;padding:7px 10px;border:1px solid rgba(255,255,255,.07);border-radius:999px;background:rgba(255,255,255,.045);color:#aab8ca;font-size:10px;font-weight:800;letter-spacing:.4px}
+.systemDot{width:7px;height:7px;border-radius:50%;background:#36df9d;box-shadow:0 0 9px rgba(54,223,157,.6)}
+.pulseMini{padding:7px 9px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.3px;background:#24354b;color:#8fa1b7;white-space:nowrap}
+.pulseMini.enabled{background:rgba(22,185,120,.15);color:#36df9d}.pulseMini.active{background:rgba(66,199,255,.15);color:#42c7ff}
+.wifiMini{display:flex;align-items:center;gap:4px;color:#9aaec4;font-size:10px;font-weight:700}
+.wifiBars{width:25px;height:20px;display:flex;align-items:flex-end;justify-content:center;gap:2px}.wifiBars i{display:block;width:4px;border-radius:3px;background:#40526a;opacity:.28}.wifiBars i:nth-child(1){height:5px}.wifiBars i:nth-child(2){height:9px}.wifiBars i:nth-child(3){height:14px}.wifiBars i:nth-child(4){height:19px}.wifiBars.level1 i:nth-child(1),.wifiBars.level2 i:nth-child(-n+2),.wifiBars.level3 i:nth-child(-n+3),.wifiBars.level4 i{opacity:1;background:#42c7ff}
+.card{background:rgba(14,28,46,.92);border:1px solid rgba(255,255,255,.07);border-radius:24px;padding:16px;margin-bottom:12px;box-shadow:0 10px 28px rgba(0,0,0,.20)}
+.hero{padding:12px}.tempGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.tempBox{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid rgba(255,255,255,.05);border-radius:20px;padding:16px 12px;text-align:center}.tempBox:after{content:"";position:absolute;width:70px;height:70px;right:-25px;top:-25px;border-radius:50%;background:rgba(66,199,255,.08)}.tempBox.water:after{background:rgba(54,223,157,.08)}
+.caption{color:#8297af;font-size:11px;font-weight:800;letter-spacing:.7px;margin-bottom:7px}.temp{font-size:42px;line-height:1;font-weight:900;letter-spacing:-1px}.unit{color:#8195ad;font-size:14px;font-weight:700}.tempMeta{margin-top:9px;color:#72869e;font-size:10px}.tempAccent{display:inline-block;width:5px;height:5px;border-radius:50%;background:#42c7ff;margin:0 4px 2px}.water .tempAccent{background:#36df9d}
+.timerCard{text-align:center;padding:18px 16px}.timerHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}.timerCaption{color:#8297af;font-size:11px;font-weight:800;letter-spacing:.7px}.runBadge{padding:5px 9px;border-radius:999px;background:#203149;color:#8fa1b7;font-size:9px;font-weight:900;letter-spacing:.5px}.runBadge.running{background:rgba(214,40,40,.16);color:#ff7777}.timerRing{width:184px;height:184px;margin:10px auto 14px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#36df9d 0deg,#36df9d 360deg);position:relative;box-shadow:0 12px 32px rgba(0,0,0,.24)}.timerRing:before{content:"";position:absolute;inset:7px;border-radius:50%;background:#0d1b2c}.timerInner{position:relative;z-index:1}.timer{font-size:43px;line-height:1;font-weight:900;letter-spacing:2px}.timerHint{margin-top:7px;color:#71859d;font-size:10px;font-weight:700}.timerBar{width:100%;height:5px;background:rgba(255,255,255,.06);border-radius:8px;overflow:hidden;margin:0 0 16px}.timerProgress{width:100%;height:100%;border-radius:8px;background:#36df9d;transition:width .8s linear,background-color .8s linear}
+.start{width:146px;height:146px;border-radius:50%;border:8px solid rgba(255,255,255,.06);color:#fff;font-size:21px;font-weight:900;letter-spacing:.5px;position:relative;z-index:1;transition:transform .12s,filter .12s;box-shadow:0 12px 30px rgba(0,0,0,.28)}.start:active{transform:scale(.94)}.startOn{background:linear-gradient(145deg,#ef5b5b,#bd2525);box-shadow:0 14px 34px rgba(214,40,40,.28)}.startOff{background:linear-gradient(145deg,#20d88d,#079a62);box-shadow:0 14px 34px rgba(7,159,101,.26)}
+.status{margin-top:13px;color:#91a5bc;font-size:12px;font-weight:700}.error{color:#ff6b6b;font-weight:800;font-size:12px;margin-top:9px;min-height:15px}
+.actionGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.actionCard{margin:0;padding:13px}.sectionTitle{font-size:11px;font-weight:900;letter-spacing:.6px;color:#9aadc3;margin:0 0 10px}.lightBtn{width:100%;padding:15px;border:0;border-radius:15px;font-size:14px;font-weight:900;color:#fff}.lightOff{background:#24364d}.lightOn{background:linear-gradient(135deg,#ffc447,#eb9000);color:#182333}
+.musicControls{display:flex;justify-content:center;gap:6px}.musicControls button{width:43px;height:42px;border:0;border-radius:12px;color:#fff;font-size:17px;background:#24364d;transition:transform .08s,opacity .08s}.musicControls button:active{transform:scale(.88);opacity:.7}.musicControls .play{background:#149c68}.musicControls .stop{background:#b93542}.track{text-align:center;margin:9px 0;color:#8498ae;font-size:10px}.trackNow{color:#42c7ff;font-weight:900}.volume{display:flex;align-items:center;justify-content:center;gap:10px}.volume button{width:32px;height:32px;border:0;border-radius:9px;background:#24364d;color:#fff;font-size:20px}.volumeValue{font-size:15px;font-weight:800;min-width:25px;text-align:center}.dfStatus{text-align:center;color:#8195ad;font-size:9px;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adCard{display:none;overflow:hidden;padding:12px}.adTitle{text-align:center;color:#7489a1;font-size:10px;font-weight:800;letter-spacing:.6px;margin-bottom:8px}.adFrame{width:100%;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#0b1625}.adFrame img{width:100%;height:100%;display:block;object-fit:cover;transition:opacity .3s ease}
+.menuCard{padding:12px}.menuBtn{width:100%;padding:14px;border:0;border-radius:14px;background:#24364d;color:#fff;font-size:13px;font-weight:900}.menuBtn:first-child{background:linear-gradient(135deg,#1a8fbe,#2465a8)}
+.footerHint{text-align:center;color:#52677f;font-size:9px;margin-top:3px}
+@media(max-width:430px){.app{padding:10px 10px 22px}.logo{font-size:26px}.systemChip{display:none}.temp{font-size:36px}.timerRing{width:168px;height:168px}.timer{font-size:38px}.start{width:132px;height:132px}.caption{font-size:10px}.actionGrid{gap:8px}.musicControls button{width:39px}}
+</style>
+
+<body>
+<div class="app">
+
+<div class="topbar">
+  <div class="logo">Steam<span>Pro</span></div>
+  <div class="topRight">
+    <div class="systemChip"><span class="systemDot"></span><span id="systemState">READY</span></div>
+    <div class="pulseMini" id="pulseMini">PULSE OFF</div>
+    <div class="wifiMini">
+      <div class="wifiBars" id="wifiBars"><i></i><i></i><i></i><i></i></div>
+      <span id="rssiPercent">--%</span>
+    </div>
+  </div>
+</div>
+
+<div class="card hero">
+  <div class="tempGrid">
+    <div class="tempBox">
+      <div class="caption" id="saunaLabel">SAUNA TEMPERATURE</div>
+      <div class="temp"><span id="sauna">--</span> <span class="unit">°C</span></div>
+      <div class="tempMeta"><span class="tempAccent"></span><span id="saunaMeta">LIVE SENSOR</span></div>
+    </div>
+    <div class="tempBox water">
+      <div class="caption" id="waterLabel">WATER TEMPERATURE</div>
+      <div class="temp"><span id="water">--</span> <span class="unit">°C</span></div>
+      <div class="tempMeta"><span class="tempAccent"></span><span id="waterMeta">LIVE SENSOR</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="card timerCard">
+  <div class="timerHead">
+    <div class="timerCaption" id="timerLabel">RUN TIMER</div>
+    <div class="runBadge" id="runBadge">READY</div>
+  </div>
+
+  <div class="timerRing" id="timerRing">
+    <div class="timerInner">
+      <div class="timer" id="timer">--:--</div>
+      <div class="timerHint" id="timerHint">TIME REMAINING</div>
+    </div>
+  </div>
+
+
+
+  <button id="startBtn" class="start startOff" onclick="startStop()">START</button>
+  <div id="runStatus" class="status">READY</div>
+  <div id="error" class="error"></div>
+</div>
+
+<div class="actionGrid">
+  <div class="card actionCard">
+    <div class="sectionTitle" id="lightTitle">SAUNA LIGHT</div>
+    <button id="lightBtn" class="lightBtn lightOff" onclick="light()">💡 LIGHT OFF</button>
+  </div>
+
+  <div class="card actionCard">
+    <div class="sectionTitle" id="musicTitle">MUSIC PLAYER</div>
+    <div class="musicControls">
+      <button onclick="prev(this)">⏮</button>
+      <button class="play" onclick="play(this)">▶</button>
+      <button class="stop" onclick="stopMusic(this)">■</button>
+      <button onclick="next(this)">⏭</button>
+    </div>
+    <div class="track"><span id="trackLabel">TRACK</span> <span id="track" class="trackNow">1</span> / <span id="tracks">0</span></div>
+    <div class="volume"><button onclick="volDown(this)">−</button><div class="volumeValue" id="volume">15</div><button onclick="volUp(this)">+</button></div>
+    <div class="dfStatus" id="dfStatus">DFPlayer</div>
+  </div>
+</div>
+
+<div class="card adCard" id="adCard">
+  <div class="adTitle" id="adTitle">ADVERTISEMENT</div>
+  <div class="adFrame"><img id="adImage" alt="Advertisement"></div>
+</div>
+
+<div class="card menuCard">
+  <button class="menuBtn" id="userSettingsBtn" onclick="location.href='/user-settings'" style="margin-bottom:8px">⚙ USER SETTINGS</button>
+  <button class="menuBtn" id="wifiSettingsBtn" onclick="wifiSettings()" style="margin-bottom:8px">📶 WI-FI NETWORK</button>
+  <button class="menuBtn" id="settingsBtn" onclick="settings()">🔐 TECHNICAL SETTINGS</button>
+</div>
+
+<div class="footerHint" id="footerHint">SteamPro Local Control</div>
+</div>
+
+<script>
+
+
+let lang =
+localStorage.getItem("steamLang") || "en";
+
+let musicUiState = "stopped";
+
+let adIds = [];
+let adIndex = 0;
+let adTimer = null;
+let dAdsEnabled = false;
+let dAdsInterval = 10;
+
+function loadAds(){
+
+ fetch("/api/ad/list",{cache:"no-store"})
+ .then(r=>r.json())
+ .then(ids=>{
+
+  adIds = Array.isArray(ids) ? ids : [];
+
+  let card =
+    document.getElementById("adCard");
+
+  if(!dAdsEnabled || adIds.length===0){
+
+   card.style.display="none";
+
+   if(adTimer){
+    clearInterval(adTimer);
+    adTimer=null;
+   }
+
+   return;
+  }
+
+  card.style.display="block";
+
+  if(adIndex >= adIds.length)
+    adIndex=0;
+
+  showAd();
+
+  if(adTimer)
+    clearInterval(adTimer);
+
+  adTimer =
+    setInterval(
+      showAd,
+      Math.max(3,dAdsInterval)*1000
+    );
+ })
+ .catch(()=>{});
+
+}
+
+function showAd(){
+
+ if(!dAdsEnabled || adIds.length===0)
+   return;
+
+ let img =
+   document.getElementById("adImage");
+
+ img.style.opacity="0";
+
+ setTimeout(()=>{
+
+  img.src =
+    "/ad" + adIds[adIndex] +
+    ".jpg?x=" + Date.now();
+
+  adIndex =
+    (adIndex + 1) % adIds.length;
+
+  img.onload=()=>{
+    img.style.opacity="1";
+  };
+
+ },250);
+
+}
+
+function language(){
+
+ lang =
+   lang==="en"
+   ? "fa"
+   : "en";
+
+ localStorage.setItem(
+   "steamLang",
+   lang
+ );
+
+ updateLanguage();
+ update();
+
+}
+
+function updateLanguage(){
+
+ if(lang==="fa"){
+
+   document.documentElement.dir="rtl";
+
+   document.getElementById("saunaLabel").innerText =
+     "دمای سونا";
+
+   document.getElementById("waterLabel").innerText =
+     "دمای آب";
+
+   document.getElementById("timerLabel").innerText =
+     "زمان کارکرد";
+
+   document.getElementById("lightTitle").innerText =
+     "چراغ سونا";
+
+   document.getElementById("musicTitle").innerText =
+     "پخش موسیقی";
+
+   document.getElementById("adTitle").innerText =
+     "تبلیغات";
+
+   document.getElementById("trackLabel").innerText =
+     "آهنگ";
+   document.getElementById("timerHint").innerText =
+     "زمان باقی‌مانده";
+
+   document.getElementById("userSettingsBtn").innerText =
+     "⚙ تنظیمات کاربر";
+
+   document.getElementById("settingsBtn").innerText =
+     "🔐 تنظیمات فنی";
+
+ }
+ else{
+
+   document.documentElement.dir="ltr";
+
+   document.getElementById("saunaLabel").innerText =
+     "SAUNA TEMPERATURE";
+
+   document.getElementById("waterLabel").innerText =
+     "WATER TEMPERATURE";
+
+   document.getElementById("timerLabel").innerText =
+     "RUN TIMER";
+
+   document.getElementById("lightTitle").innerText =
+     "SAUNA LIGHT";
+
+   document.getElementById("musicTitle").innerText =
+     "MUSIC PLAYER";
+
+   document.getElementById("adTitle").innerText =
+     "ADVERTISEMENT";
+
+   document.getElementById("trackLabel").innerText =
+     "TRACK";
+   document.getElementById("timerHint").innerText =
+     "TIME REMAINING";
+
+   document.getElementById("userSettingsBtn").innerText =
+     "⚙ USER SETTINGS";
+
+   document.getElementById("settingsBtn").innerText =
+     "🔐 TECHNICAL SETTINGS";
+
+ }
+
+}
+
+function buttonPress(btn){
+
+ if(!btn)
+   return;
+
+ btn.style.transform="scale(.88)";
+ btn.style.opacity=".65";
+
+ setTimeout(()=>{
+
+   btn.style.transform="";
+   btn.style.opacity="";
+
+ },120);
+
+}
+
+function startStop(){
+
+ fetch("/api/startstop")
+ .then(()=>update());
+
+}
+
+function light(){
+
+ fetch("/api/light")
+ .then(()=>update());
+
+}
+
+function play(btn){
+
+ buttonPress(btn);
+
+ fetch("/api/play")
+ .then(()=>update());
+
+}
+
+function stopMusic(btn){
+
+ buttonPress(btn);
+
+ fetch("/api/musicstop")
+ .then(()=>update());
+
+}
+
+function next(btn){
+
+ buttonPress(btn);
+
+ fetch("/api/next")
+ .then(()=>update());
+
+}
+
+function prev(btn){
+
+ buttonPress(btn);
+
+ fetch("/api/prev")
+ .then(()=>update());
+
+}
+
+function volUp(btn){
+
+ buttonPress(btn);
+
+ fetch("/api/volup")
+ .then(()=>update());
+
+}
+
+function volDown(btn){
+
+ buttonPress(btn);
+
+ fetch("/api/voldown")
+ .then(()=>update());
+
+}
+
+function settings(){
+
+ let p = prompt(
+   lang==="fa"
+   ? "رمز ورود به منو را وارد کنید:"
+   : "Enter menu password:"
+ );
+
+ if(p===null) return;
+
+ fetch("/api/auth?pass=" + encodeURIComponent(p))
+ .then(r=>r.text())
+ .then(t=>{
+   if(t==="OK")
+     location.href="/settings";
+   else
+     alert(
+       lang==="fa"
+       ? "رمز اشتباه است"
+       : "Wrong password"
+     );
+ });
+
+}
+
+function wifiSettings(){
+
+ let p = prompt(
+   lang==="fa"
+   ? "رمز ورود به منو را وارد کنید:"
+   : "Enter menu password:"
+ );
+
+ if(p===null) return;
+
+ fetch("/api/auth?pass=" + encodeURIComponent(p))
+ .then(r=>r.text())
+ .then(t=>{
+   if(t==="OK")
+     location.href="/wifi";
+   else
+     alert(
+       lang==="fa"
+       ? "رمز اشتباه است"
+       : "Wrong password"
+     );
+ });
+}
+
+function formatTime(sec){
+
+ let m =
+   Math.floor(sec/60);
+
+ let s =
+   sec%60;
+
+ return String(m).padStart(2,"0")
+      + ":"
+      + String(s).padStart(2,"0");
+}
+
+function updateWifi(d){
+
+ let bars =
+   document.getElementById("wifiBars");
+
+ let percent =
+   document.getElementById("rssiPercent");
+
+ let p =
+   d.rssiPercent || 0;
+
+ bars.className="wifiBars";
+
+ if(d.clients <= 0){
+
+   percent.innerText="--%";
+
+   return;
+ }
+
+ percent.innerText =
+   p + "%";
+
+ if(p >= 80)
+   bars.classList.add("level4");
+
+ else if(p >= 60)
+   bars.classList.add("level3");
+
+ else if(p >= 35)
+   bars.classList.add("level2");
+
+ else
+   bars.classList.add("level1");
+}
+
+function updatePulse(d){
+
+ let p =
+   document.getElementById("pulseMini");
+
+ if(!d.pulseEnabled){
+
+   p.className="pulseMini";
+
+   p.innerText =
+     lang==="fa"
+     ? "پالس خاموش"
+     : "PULSE OFF";
+
+   return;
+ }
+
+ if(d.running && d.pulse){
+
+   p.className=
+     "pulseMini active";
+
+   p.innerText =
+     lang==="fa"
+     ? "پالس ON"
+     : "PULSE ON";
+
+ }
+ else{
+
+   p.className=
+     "pulseMini enabled";
+
+   p.innerText =
+     lang==="fa"
+     ? "پالس آماده"
+     : "PULSE READY";
+ }
+}
+
+function updateDFPlayer(d){
+
+ let status =
+   document.getElementById("dfStatus");
+
+ let track =
+   document.getElementById("track");
+
+ let tracks =
+   document.getElementById("tracks");
+
+ let volume =
+   document.getElementById("volume");
+
+ track.innerText =
+   d.currentTrack;
+
+ tracks.innerText =
+   d.totalTracks;
+
+ volume.innerText =
+   d.volume;
+
+ if(!d.dfReady){
+
+   status.innerText =
+     lang==="fa"
+     ? "● DFPlayer متصل نیست"
+     : "● DFPlayer NOT CONNECTED";
+
+   status.style.color =
+     "#ff6666";
+
+   return;
+ }
+
+ status.style.color =
+   "#36df9d";
+
+ if(d.musicPlaying){
+
+   status.innerText =
+     lang==="fa"
+     ? "▶ در حال پخش · آهنگ " + d.currentTrack
+     : "▶ PLAYING · TRACK " + d.currentTrack;
+
+ }
+ else{
+
+   status.innerText =
+     lang==="fa"
+     ? "■ متوقف"
+     : "■ STOPPED";
+ }
+}
+
+function updateTimerBar(d){
+
+ let bar = document.getElementById("timerBar");
+ let progress = document.getElementById("timerProgress");
+ 
+ let ring = document.getElementById("timerRing");
+let hint = document.getElementById("timerHint");
+
+if(!d.test && !d.timerEnabled){
+  ring.style.background="conic-gradient(#40526a 0deg 360deg)";
+  hint.innerText = lang==="fa" ? "تایمر خاموش است" : "TIMER DISABLED";
+  return;
+}
+
+let totalSec = d.test ? 600 : (d.runMinutes * 60);
+if(totalSec <= 0) totalSec = 1;
+
+let remaining = d.remainingSec;
+if(!d.running) remaining = totalSec;
+
+remaining = Math.max(0, Math.min(totalSec, remaining));
+
+let percent = Math.max(0, Math.min(100, (remaining / totalSec) * 100));
+let deg = percent * 3.6;
+
+let hue = percent * 1.2;
+let ringColor = "hsl(" + hue + ",85%,50%)";
+
+ring.style.background =
+  "conic-gradient(" +
+  ringColor + " 0deg " +
+  deg + "deg, " +
+  "rgba(255,255,255,.07) " +
+  deg + "deg 360deg)";
+
+hint.innerText = d.running
+  ? (lang==="fa" ? "زمان باقی‌مانده" : "TIME REMAINING")
+  : (lang==="fa" ? "زمان تنظیم‌شده" : "SET RUN TIME");
+}
+function update(){
+
+ fetch("/api/status",{cache:"no-store"})
+
+ .then(r=>r.json())
+
+ .then(d=>{
+
+  let oldAdEnabled = dAdsEnabled;
+  let oldAdInterval = dAdsInterval;
+
+  dAdsEnabled = !!d.adEnabled;
+  dAdsInterval = d.adInterval || 10;
+
+  if(oldAdEnabled !== dAdsEnabled ||
+     oldAdInterval !== dAdsInterval){
+
+    loadAds();
+  }
+
+  document.getElementById("sauna").innerText =
+  Math.round(d.sauna);
+
+document.getElementById("water").innerText =
+  Math.round(d.water);
+   updateWifi(d);
+
+   updatePulse(d);
+
+   updateDFPlayer(d);
+
+   if(d.test){
+
+     document.getElementById("timer").innerText =
+       formatTime(d.remainingSec);
+
+   }
+   else if(d.timerEnabled){
+
+     if(d.running){
+
+       document.getElementById("timer").innerText =
+         formatTime(d.remainingSec);
+
+     }
+     else{
+
+       document.getElementById("timer").innerText =
+         formatTime(d.runMinutes * 60);
+
+     }
+
+   }
+   else{
+
+     document.getElementById("timer").innerText =
+       lang==="fa" ? "خاموش" : "OFF";
+
+   }
+
+   updateTimerBar(d);
+
+   let b =
+     document.getElementById("startBtn");
+
+   if(d.running){
+
+     b.className =
+       "start startOn";
+
+     b.innerText =
+       d.test
+       ? (lang==="fa" ? "تست" : "TEST")
+       : (lang==="fa" ? "توقف" : "STOP");
+
+     document.getElementById("runStatus").innerText =
+       lang==="fa"
+       ? "دستگاه در حال کار است"
+       : "DEVICE RUNNING";
+
+   }
+   else{
+
+     b.className =
+       "start startOff";
+
+     b.innerText =
+       lang==="fa"
+       ? "شروع"
+       : "START";
+
+     if(d.drainActive){
+
+       document.getElementById("runStatus").innerText =
+         lang==="fa"
+         ? "در حال تخلیه مخزن"
+         : "DRAINING TANK";
+
+     }
+     else if(d.drainPending){
+
+       document.getElementById("runStatus").innerText =
+         lang==="fa"
+         ? "منتظر کاهش دمای آب"
+         : "WAITING FOR WATER TO COOL";
+
+     }
+     else{
+
+       document.getElementById("runStatus").innerText =
+         lang==="fa"
+         ? "آماده"
+         : "READY";
+
+     }
+   }
+
+   let lb =
+     document.getElementById("lightBtn");
+
+   if(d.light){
+
+     lb.className =
+       "lightBtn lightOn";
+
+     lb.innerText =
+       lang==="fa"
+       ? "💡 چراغ روشن"
+       : "💡 LIGHT ON";
+
+   }
+   else{
+
+     lb.className =
+       "lightBtn lightOff";
+
+     lb.innerText =
+       lang==="fa"
+       ? "💡 چراغ خاموش"
+       : "💡 LIGHT OFF";
+
+   }
+
+   document.getElementById("error").innerText =
+     d.error;
+
+   let badge = document.getElementById("runBadge");
+   let systemState = document.getElementById("systemState");
+
+   if(d.running){
+     badge.className = "runBadge running";
+     badge.innerText = lang==="fa" ? "در حال کار" : "RUNNING";
+     systemState.innerText = lang==="fa" ? "فعال" : "ACTIVE";
+   } else if(d.drainActive){
+     badge.className = "runBadge";
+     badge.innerText = lang==="fa" ? "تخلیه" : "DRAIN";
+     systemState.innerText = lang==="fa" ? "تخلیه" : "DRAINING";
+   } else {
+     badge.className = "runBadge";
+     badge.innerText = lang==="fa" ? "آماده" : "READY";
+     systemState.innerText = lang==="fa" ? "آماده" : "READY";
+   }
+
+   document.getElementById("saunaMeta").innerText =
+     lang==="fa" ? "سنسور دمای سونا" : "SAUNA SENSOR";
+   document.getElementById("waterMeta").innerText =
+     lang==="fa" ? "سنسور دمای آب" : "WATER SENSOR";
+   document.getElementById("footerHint").innerText =
+     lang==="fa" ? "کنترل محلی SteamPro" : "SteamPro Local Control";
+
+ });
+
+}
+
+updateLanguage();
+update();
+loadAds();
+
+setInterval(update,1500);
+
+if("serviceWorker" in navigator){
+
+ navigator.serviceWorker.register("/sw.js")
+ .catch(()=>{});
+
+}
+
+</script>
+
+</body>
+</html>
+)rawliteral";
+
+  return html;
+}
+
+// ============================================================
+// USER SETTINGS PAGE
+// ============================================================
+
+String userSettingsPage() {
+
+  String html = R"rawliteral(
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1">
+
+<title>SteamPro User Settings</title>
 
 <style>
 
 *{
-    box-sizing:border-box;
+ box-sizing:border-box;
 }
 
 body{
-    margin:0;
-    background:#0d1117;
-    color:#ffffff;
-    font-family:Arial,sans-serif;
+ margin:0;
+ background:
+ radial-gradient(circle at top,#182a45,#07111f 60%);
+ color:white;
+ font-family:Arial,sans-serif;
 }
 
-.container{
-    width:100%;
-    max-width:520px;
-    margin:auto;
-    padding:18px;
+.app{
+ max-width:620px;
+ margin:auto;
+ padding:15px;
 }
-
-/* HEADER */
 
 .header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:18px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:18px;
+}
+
+.logo{
+ font-size:26px;
+ font-weight:800;
+}
+
+.logo span{
+ color:#42c7ff;
+}
+
+.lang{
+ border:0;
+ border-radius:10px;
+ padding:9px 13px;
+ background:#243951;
+ color:white;
+ font-size:14px;
+}
+
+.section{
+ background:#142236;
+ border:1px solid rgba(255,255,255,.07);
+ border-radius:20px;
+ margin-bottom:14px;
+ overflow:hidden;
+ box-shadow:0 10px 30px rgba(0,0,0,.2);
 }
 
 .title{
-    font-size:28px;
-    font-weight:bold;
+ padding:16px 18px;
+ background:#1c2d45;
+ font-size:17px;
+ font-weight:700;
 }
 
-.subtitle{
-    font-size:12px;
-    color:#8b949e;
-    margin-top:4px;
+.body{
+ padding:16px;
 }
 
-.connection{
-    padding:8px 12px;
-    border-radius:20px;
-    background:#555;
-    font-size:12px;
+label{
+ display:block;
+ color:#91a5bc;
+ font-size:13px;
+ margin:12px 0 6px;
 }
 
-.connection.ok{
-    background:#16803c;
-}
-
-.connection.error{
-    background:#9b1c2c;
-}
-
-.connection.wait{
-    background:#806000;
-}
-
-/* CARD */
-
-.card{
-    background:#161b22;
-    border:1px solid #252c35;
-    border-radius:20px;
-    padding:18px;
-    margin-bottom:14px;
-}
-
-/* TEMPERATURE */
-
-.temperatures{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
-}
-
-.temperature{
-    text-align:center;
-}
-
-.temperature-label{
-    color:#9da7b3;
-    font-size:14px;
-}
-
-.temperature-value{
-    font-size:44px;
-    font-weight:bold;
-    margin-top:7px;
+input,select{
+ width:100%;
+ padding:13px;
+ border:0;
+ border-radius:10px;
+ background:#f2f5f8;
+ color:#111;
+ font-size:16px;
 }
 
 .unit{
-    font-size:18px;
-    color:#9da7b3;
+ color:#91a5bc;
+ font-size:12px;
+ margin-top:5px;
 }
 
-/* TIMER */
-
-.timer{
-    text-align:center;
+.save{
+ width:100%;
+ padding:16px;
+ border:0;
+ border-radius:14px;
+ background:#16b978;
+ color:white;
+ font-size:17px;
+ font-weight:700;
 }
 
-.timer-title{
-    color:#9da7b3;
-    font-size:14px;
+.back{
+ width:100%;
+ padding:14px;
+ border:0;
+ border-radius:14px;
+ background:#243951;
+ color:white;
+ font-size:16px;
+ margin-top:10px;
 }
 
-.timer-value{
-    font-size:42px;
-    font-weight:bold;
-    margin:8px 0;
+.note{
+ color:#91a5bc;
+ font-size:12px;
+ line-height:1.7;
+ margin-top:8px;
 }
 
-.state{
-    display:flex;
-    justify-content:center;
-    gap:8px;
-    flex-wrap:wrap;
+.pulseFields{
+ transition:opacity .2s;
 }
 
-.badge{
-    background:#202731;
-    border-radius:16px;
-    padding:7px 11px;
-    font-size:12px;
+.disabled{
+ opacity:.45;
+ pointer-events:none;
 }
 
-/* BUTTONS */
+</style>
 
-.buttons{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
+</head>
+
+<body>
+
+<div class="app">
+
+<div class="header">
+
+<div class="logo">
+Steam<span>Pro</span>
+</div>
+
+<button class="lang"
+onclick="language()"
+id="langBtn">
+FA
+</button>
+
+</div>
+
+<div class="section">
+
+<div class="title"
+id="runTitle">
+DEVICE RUN TIME
+</div>
+
+<div class="body">
+
+<label id="runLabel">
+Run time
+</label>
+
+<input
+id="run"
+type="number"
+min="1"
+max="120"
+step="1">
+
+<div class="unit"
+id="runUnit">
+1 to 120 minutes
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title"
+id="tempTitle">
+SAUNA TEMPERATURE
+</div>
+
+<div class="body">
+
+<label id="tempLabel">
+Target temperature
+</label>
+
+<input
+id="starget"
+type="number"
+min="10"
+max="90"
+step="1">
+
+<div class="unit"
+id="tempUnit">
+10 to 90 °C
+</div>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title"
+id="pulseTitle">
+PULSE RELAY
+</div>
+
+<div class="body">
+
+<label id="pulseLabel">
+Pulse relay
+</label>
+
+<select id="pulse">
+
+<option value="1">ON</option>
+<option value="0">OFF</option>
+
+</select>
+
+<div class="unit" id="pulseUnit">
+Pulse timing is configured in Technical Settings.
+</div>
+
+</div>
+
+</div>
+
+<button
+class="save"
+id="saveBtn"
+onclick="save()">
+SAVE
+</button>
+
+<button
+class="back"
+id="backBtn"
+onclick="location.href='/'">
+BACK
+</button>
+
+<div class="note" id="note">
+These settings are for normal daily use.
+Technical and safety settings are protected in the technical menu.
+</div>
+
+</div>
+
+<script>
+
+let lang =
+localStorage.getItem("steamLang") || "en";
+
+function language(){
+
+ lang =
+   lang==="en"
+   ? "fa"
+   : "en";
+
+ localStorage.setItem("steamLang",lang);
+
+ updateLanguage();
+
 }
 
-button{
-    border:none;
-    height:62px;
-    border-radius:18px;
-    color:white;
-    font-size:20px;
-    font-w
+function updateLanguage(){
+
+ let b =
+   document.getElementById("langBtn");
+
+ if(lang==="fa"){
+
+   document.documentElement.dir="rtl";
+
+   b.innerText="EN";
+
+   document.getElementById("runTitle").innerText =
+     "زمان کارکرد دستگاه";
+
+   document.getElementById("runLabel").innerText =
+     "مدت کارکرد";
+
+   document.getElementById("runUnit").innerText =
+     "۱ تا ۱۲۰ دقیقه";
+
+   document.getElementById("tempTitle").innerText =
+     "دمای سونا";
+
+   document.getElementById("tempLabel").innerText =
+     "دمای هدف سونا";
+
+   document.getElementById("tempUnit").innerText =
+     "۱۰ تا ۹۰ درجه سانتی‌گراد";
+
+   document.getElementById("pulseTitle").innerText =
+     "رله پالس";
+
+   document.getElementById("pulseLabel").innerText =
+     "وضعیت رله پالس";
+
+   document.getElementById("pulseUnit").innerText =
+     "زمان‌بندی پالس در تنظیمات فنی تنظیم می‌شود.";
+
+   document.getElementById("saveBtn").innerText =
+     "ذخیره تنظیمات";
+
+   document.getElementById("backBtn").innerText =
+     "بازگشت";
+
+   document.getElementById("note").innerText =
+     "این بخش برای تنظیمات معمول دستگاه است. تنظیمات فنی و حفاظتی در منوی تنظیمات فنی قرار دارند.";
+
+   document.querySelector("#pulse option[value='1']").innerText="روشن";
+   document.querySelector("#pulse option[value='0']").innerText="خاموش";
+
+ }
+ else{
+
+   document.documentElement.dir="ltr";
+
+   b.innerText="FA";
+
+   document.getElementById("runTitle").innerText =
+     "DEVICE RUN TIME";
+
+   document.getElementById("runLabel").innerText =
+     "Run time";
+
+   document.getElementById("runUnit").innerText =
+     "1 to 120 minutes";
+
+   document.getElementById("tempTitle").innerText =
+     "SAUNA TEMPERATURE";
+
+   document.getElementById("tempLabel").innerText =
+     "Target temperature";
+
+   document.getElementById("tempUnit").innerText =
+     "10 to 90 °C";
+
+   document.getElementById("pulseTitle").innerText =
+     "PULSE RELAY";
+
+   document.getElementById("pulseLabel").innerText =
+     "Pulse relay";
+
+   document.getElementById("pulseUnit").innerText =
+     "Pulse timing is configured in Technical Settings.";
+
+   document.getElementById("saveBtn").innerText =
+     "SAVE";
+
+   document.getElementById("backBtn").innerText =
+     "BACK";
+
+   document.getElementById("note").innerText =
+     "These settings are for normal daily use. Technical and safety settings are protected in the technical menu.";
+
+   document.querySelector("#pulse option[value='1']").innerText="ON";
+   document.querySelector("#pulse option[value='0']").innerText="OFF";
+
+ }
+
+}
+
+function load(){
+
+ fetch("/api/user-settings?x="+Date.now())
+ .then(r=>r.json())
+ .then(d=>{
+
+   document.getElementById("run").value =
+     d.run;
+
+   document.getElementById("starget").value =
+     Math.round(d.starget);
+
+   document.getElementById("pulse").value =
+     d.pulse ? "1" : "0";
+
+ })
+ .catch(()=>{
+
+   alert(
+     lang==="fa"
+     ? "خطا در دریافت تنظیمات"
+     : "Error loading settings"
+   );
+
+ });
+
+}
+
+function save(){
+
+ let run =
+   Math.max(
+     1,
+     Math.min(
+       120,
+       parseInt(document.getElementById("run").value)||1
+     )
+   );
+
+ let starget =
+   Math.max(
+     10,
+     Math.min(
+       90,
+       parseFloat(document.getElementById("starget").value)||10
+     )
+   );
+
+ let pulse =
+   document.getElementById("pulse").value==="1"
+   ? 1
+   : 0;
+
+ let url =
+   "/api/user-save" +
+   "?run=" + run +
+   "&starget=" + encodeURIComponent(starget) +
+   "&pulse=" + pulse;
+
+ fetch(url)
+ .then(r=>r.text())
+ .then(t=>{
+
+   if(t==="SAVED"){
+
+     alert(
+       lang==="fa"
+       ? "تنظیمات با موفقیت ذخیره شد"
+       : "Settings saved successfully"
+     );
+
+   }
+   else{
+
+     alert(
+       lang==="fa"
+       ? "خطا در ذخیره تنظیمات"
+       : "Error saving settings"
+     );
+
+   }
+
+ })
+ .catch(()=>{
+
+   alert(
+     lang==="fa"
+     ? "خطا در ارتباط با دستگاه"
+     : "Communication error"
+   );
+
+ });
+
+}
+
+updateLanguage();
+load();
+
+</script>
+
+</body>
+</html>
+)rawliteral";
+
+  return html;
+}
+
+// ============================================================
+// SETTINGS PAGE
+// ============================================================
+
+String settingsPage() {
+
+  String html = R"rawliteral(
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1">
+
+<title>SteamPro Settings</title>
+
+<style>
+
+*{
+ box-sizing:border-box;
+}
+
+body{
+ margin:0;
+ background:
+ radial-gradient(circle at top,#182a45,#07111f 60%);
+ color:white;
+ font-family:Arial,sans-serif;
+}
+
+.app{
+ max-width:700px;
+ margin:auto;
+ padding:15px;
+}
+
+.header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+ margin-bottom:18px;
+}
+
+.logo{
+ font-size:26px;
+ font-weight:800;
+}
+
+.logo span{
+ color:#42c7ff;
+}
+
+.section{
+ background:#142236;
+ border:1px solid rgba(255,255,255,.07);
+ border-radius:20px;
+ margin-bottom:14px;
+ overflow:hidden;
+ box-shadow:0 10px 30px rgba(0,0,0,.2);
+}
+
+.title{
+ padding:16px 18px;
+ background:#1c2d45;
+ font-size:17px;
+ font-weight:700;
+}
+
+.body{
+ padding:16px;
+}
+
+label{
+ display:block;
+ color:#91a5bc;
+ font-size:13px;
+ margin:12px 0 6px;
+}
+
+input,select{
+ width:100%;
+ padding:13px;
+ border:0;
+ border-radius:10px;
+ background:#f2f5f8;
+ color:#111;
+ font-size:16px;
+}
+
+.save{
+ width:100%;
+ padding:16px;
+ border:0;
+ border-radius:14px;
+ background:#16b978;
+ color:white;
+ font-size:17px;
+ font-weight:bold;
+}
+
+.back{
+ width:100%;
+ padding:14px;
+ border:0;
+ border-radius:14px;
+ background:#293b53;
+ color:white;
+ font-size:16px;
+ margin-top:10px;
+}
+
+.lang{
+ width:100%;
+ padding:13px;
+ border:0;
+ border-radius:14px;
+ background:transparent;
+ color:#aabbd0;
+ font-size:14px;
+ margin-top:8px;
+}
+
+.serviceBox{
+ text-align:center;
+ background:rgba(255,255,255,.04);
+ border-radius:14px;
+ padding:15px;
+ margin-bottom:12px;
+}
+
+.counterTitle{
+ color:#91a5bc;
+ font-size:13px;
+ margin-bottom:7px;
+}
+
+.counterValue{
+ font-size:28px;
+ font-weight:800;
+ color:#42c7ff;
+ direction:ltr;
+}
+
+.counterUnit{
+ color:#91a5bc;
+ font-size:12px;
+ margin-top:4px;
+}
+
+.reset{
+ width:100%;
+ padding:14px;
+ border:0;
+ border-radius:12px;
+ background:#c93b45;
+ color:white;
+ font-size:15px;
+ font-weight:bold;
+}
+
+.warning{
+ color:#91a5bc;
+ font-size:11px;
+ text-align:center;
+ margin-top:9px;
+ line-height:1.5;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="app">
+
+<div class="header">
+
+<div class="logo">
+Steam<span>Pro</span>
+</div>
+
+<div>
+⚙
+</div>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- HEATER COUNTERS -->
+<!-- ===================================================== -->
+
+<div class="section">
+
+<div class="title"
+id="heaterCounterTitle">
+
+🔥 Heater Operating Time
+
+</div>
+
+<div class="body">
+
+<div class="serviceBox">
+
+<div class="counterTitle"
+id="totalCounterLabel">
+
+Total Heater Operating Time
+
+</div>
+
+<div class="counterValue"
+id="heaterTotal">
+
+0:00
+
+</div>
+
+<div class="counterUnit"
+id="totalCounterUnit">
+
+Hours : Minutes
+
+</div>
+
+</div>
+
+<div class="serviceBox">
+
+<div class="counterTitle"
+id="serviceCounterLabel">
+
+Heater Time Since Last Service
+
+</div>
+
+<div class="counterValue"
+id="heaterService">
+
+0:00
+
+</div>
+
+<div class="counterUnit"
+id="serviceCounterUnit">
+
+Hours : Minutes
+
+</div>
+
+</div>
+
+<button
+class="reset"
+onclick="resetService()"
+id="resetServiceBtn">
+
+RESET SERVICE TIME
+
+</button>
+
+<div class="warning"
+id="resetWarning">
+
+This counter is only reset manually.
+Power loss does not reset it.
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ===================================================== -->
+<!-- TIMER -->
+<!-- ===================================================== -->
+
+<div class="section">
+
+<div class="title"
+id="timerTitle">
+⏱ Timer
+</div>
+
+<div class="body">
+
+<label id="timerLabel">
+Timer
+</label>
+
+<select id="timer">
+
+<option value="1"
+id="timerOn">
+ON
+</option>
+
+<option value="0"
+id="timerOff">
+OFF
+</option>
+
+</select>
+
+<label id="runLabel">
+Run Time (minutes)
+</label>
+
+<input
+id="run"
+type="number"
+min="1"
+max="120">
+
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title"
+id="saunaTitle">
+🌡 Sauna Temperature
+</div>
+
+<div class="body">
+
+<label id="targetLabel">
+Target Temperature °C
+</label>
+
+<input
+id="starget"
+type="number"
+step="0.1">
+
+<label id="hystLabel">
+Hysteresis °C
+</label>
+
+<input
+id="shyst"
+type="number"
+step="0.1">
+
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title"
+id="waterTitle">
+💧 Water & Drain
+</div>
+
+<div class="body">
+
+<label id="drainStartLabel">
+Drain Start Temperature °C
+</label>
+
+<input
+id="dstart"
+type="number"
+step="0.1">
+
+<label id="drainMinLabel">
+Drain Duration (seconds)
+</label>
+
+<input
+id="dsec"
+type="number"
+min="1"
+max="3600">
+
+<label id="maxWaterLabel">
+Maximum Water Temperature °C
+</label>
+
+<input
+id="maxw"
+type="number"
+step="0.1">
+
+<label id="fillLabel">
+Fill Timeout (seconds)
+</label>
+
+<input
+id="fillto"
+type="number"
+min="10"
+max="600">
+
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title"
+id="pulseTitle">
+⚡ Pulse Relay
+</div>
+
+<div class="body">
+
+<label id="pulseEnableLabel">
+Pulse Relay
+</label>
+
+<select id="pulse">
+
+<option value="1"
+id="pulseOn">
+ON
+</option>
+
+<option value="0"
+id="pulseOff">
+OFF
+</option>
+
+</select>
+
+<label id="pulseOnLabel">
+ON Time (minutes)
+</label>
+
+<input
+id="pon"
+type="number"
+min="1"
+max="60">
+
+<label id="pulseOffLabel">
+OFF Time (minutes)
+</label>
+
+<input
+id="poff"
+type="number"
+min="1"
+max="60">
+
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title"
+id="musicTitle">
+🎵 Music
+</div>
+
+<div class="body">
+
+<label id="volumeLabel">
+DFPlayer Volume
+</label>
+
+<input
+id="volume"
+type="number"
+min="0"
+max="30">
+
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title" id="adSettingsTitle">
+📢 Advertisement
+</div>
+
+<div class="body">
+
+<label id="adEnableLabel">
+Advertisement
+</label>
+
+<select id="adEnabled">
+<option value="1" id="adEnableOn">ON</option>
+<option value="0" id="adEnableOff">OFF</option>
+</select>
+
+<label id="adIntervalLabel">
+Slide Time (seconds)
+</label>
+
+<input
+id="adInterval"
+type="number"
+min="3"
+max="60">
+
+<div id="adUploadStatus"
+style="margin-top:10px;color:#8fa1b7;font-size:12px;text-align:center">
+</div>
+
+<input
+id="adFiles"
+type="file"
+accept="image/jpeg,image/png"
+multiple
+style="display:none"
+onchange="uploadAds(this)">
+
+<button
+class="save"
+style="margin-top:10px"
+onclick="document.getElementById('adFiles').click()"
+id="adUploadBtn">
+ADD PHOTOS
+</button>
+
+<div id="adPreview"
+style="margin-top:12px">
+</div>
+
+<button
+class="reset"
+style="margin-top:10px"
+onclick="deleteAllAds()"
+id="adDeleteAllBtn">
+DELETE ALL PHOTOS
+</button>
+
+</div>
+
+</div>
+
+<div class="section">
+
+<div class="title" id="passwordTitle">
+🔐 Menu Password
+</div>
+
+<div class="body">
+
+<label id="newPasswordLabel">
+New Password
+</label>
+
+<input
+id="newPassword"
+type="password"
+inputmode="numeric"
+maxlength="12"
+placeholder="4 to 12 characters">
+
+<button
+class="save"
+style="margin-top:10px"
+onclick="changePassword()"
+id="changePasswordBtn">
+CHANGE PASSWORD
+</button>
+
+</div>
+
+</div>
+
+<button
+class="save"
+onclick="save()"
+id="saveBtn">
+
+SAVE SETTINGS
+
+</button>
+
+<button
+class="lang"
+onclick="language()">
+
+فارسی / English
+
+</button>
+
+<button
+class="back"
+onclick="location.href='/'"
+id="backBtn">
+
+BACK
+
+</button>
+
+</div>
+
+<script>
+
+let lang =
+localStorage.getItem("steamLang") || "en";
+
+// ============================================================
+// LANGUAGE
+// ============================================================
+
+function language(){
+
+ lang =
+   lang==="en"
+   ? "fa"
+   : "en";
+
+ localStorage.setItem(
+   "steamLang",
+   lang
+ );
+
+ updateLanguage();
+
+}
+
+// ============================================================
+// UPDATE LANGUAGE
+// ============================================================
+
+function updateLanguage(){
+
+ if(lang==="fa"){
+
+   document.documentElement.dir="rtl";
+
+   document.getElementById("heaterCounterTitle").innerText =
+     "🔥 زمان کار هیتر";
+
+   document.getElementById("totalCounterLabel").innerText =
+     "کل زمان کار هیتر";
+
+   document.getElementById("totalCounterUnit").innerText =
+     "ساعت : دقیقه";
+
+   document.getElementById("serviceCounterLabel").innerText =
+     "زمان کار هیتر از آخرین سرویس";
+
+   document.getElementById("serviceCounterUnit").innerText =
+     "ساعت : دقیقه";
+
+   document.getElementById("resetServiceBtn").innerText =
+     "ریست زمان سرویس";
+
+   document.getElementById("resetWarning").innerText =
+     "این کنتور فقط با دکمه ریست می‌شود و با قطع برق پاک نمی‌شود.";
+
+   document.getElementById("timerTitle").innerText =
+     "⏱ تایمر";
+
+   document.getElementById("timerLabel").innerText =
+     "فعال بودن تایمر";
+
+   document.getElementById("timerOn").innerText =
+     "روشن";
+
+   document.getElementById("timerOff").innerText =
+     "خاموش";
+
+   document.getElementById("runLabel").innerText =
+     "مدت کارکرد (دقیقه)";
+
+   document.getElementById("saunaTitle").innerText =
+     "🌡 دمای سونا";
+
+   document.getElementById("targetLabel").innerText =
+     "دمای هدف °C";
+
+   document.getElementById("hystLabel").innerText =
+     "هیسترزیس °C";
+
+   document.getElementById("waterTitle").innerText =
+     "💧 آب و تخلیه";
+
+   document.getElementById("drainStartLabel").innerText =
+     "دمای شروع تخلیه °C";
+
+   document.getElementById("drainMinLabel").innerText =
+     "مدت تخلیه (ثانیه)";
+
+   document.getElementById("maxWaterLabel").innerText =
+     "حداکثر دمای آب °C";
+
+   document.getElementById("fillLabel").innerText =
+     "زمان مجاز پر شدن (ثانیه)";
+
+   document.getElementById("pulseTitle").innerText =
+     "⚡ رله پالس";
+
+   document.getElementById("pulseEnableLabel").innerText =
+     "فعال بودن رله پالس";
+
+   document.getElementById("pulseOn").innerText =
+     "روشن";
+
+   document.getElementById("pulseOff").innerText =
+     "خاموش";
+
+   document.getElementById("pulseOnLabel").innerText =
+     "زمان روشن (دقیقه)";
+
+   document.getElementById("pulseOffLabel").innerText =
+     "زمان خاموش (دقیقه)";
+
+   document.getElementById("musicTitle").innerText =
+     "🎵 موسیقی";
+
+   document.getElementById("passwordTitle").innerText =
+     "🔐 رمز ورود منو";
+
+   document.getElementById("newPasswordLabel").innerText =
+     "رمز جدید";
+
+   document.getElementById("newPassword").placeholder =
+     "۴ تا ۱۲ کاراکتر";
+
+   document.getElementById("changePasswordBtn").innerText =
+     "تغییر رمز";
+
+   document.getElementById("volumeLabel").innerText =
+     "صدای DFPlayer";
+
+   document.getElementById("adSettingsTitle").innerText =
+     "📢 تبلیغات";
+
+   document.getElementById("adEnableLabel").innerText =
+     "فعال بودن تبلیغات";
+
+   document.getElementById("adEnableOn").innerText =
+     "روشن";
+
+   document.getElementById("adEnableOff").innerText =
+     "خاموش";
+
+   document.getElementById("adIntervalLabel").innerText =
+     "مدت نمایش هر عکس (ثانیه)";
+
+   document.getElementById("adUploadBtn").innerText =
+     "افزودن عکس";
+
+   document.getElementById("adDeleteAllBtn").innerText =
+     "حذف همه عکس‌ها";
+
+   document.getElementById("saveBtn").innerText =
+     "ذخیره تنظیمات";
+
+   document.getElementById("backBtn").innerText =
+     "بازگشت";
+
+ }
+ else{
+
+   document.documentElement.dir="ltr";
+
+   document.getElementById("heaterCounterTitle").innerText =
+     "🔥 Heater Operating Time";
+
+   document.getElementById("totalCounterLabel").innerText =
+     "Total Heater Operating Time";
+
+   document.getElementById("totalCounterUnit").innerText =
+     "Hours : Minutes";
+
+   document.getElementById("serviceCounterLabel").innerText =
+     "Heater Time Since Last Service";
+
+   document.getElementById("serviceCounterUnit").innerText =
+     "Hours : Minutes";
+
+   document.getElementById("resetServiceBtn").innerText =
+     "RESET SERVICE TIME";
+
+   document.getElementById("resetWarning").innerText =
+     "This counter is only reset manually. Power loss does not reset it.";
+
+   document.getElementById("timerTitle").innerText =
+     "⏱ Timer";
+
+   document.getElementById("timerLabel").innerText =
+     "Timer";
+
+   document.getElementById("timerOn").innerText =
+     "ON";
+
+   document.getElementById("timerOff").innerText =
+     "OFF";
+
+   document.getElementById("runLabel").innerText =
+     "Run Time (minutes)";
+
+   document.getElementById("saunaTitle").innerText =
+     "🌡 Sauna Temperature";
+
+   document.getElementById("targetLabel").innerText =
+     "Target Temperature °C";
+
+   document.getElementById("hystLabel").innerText =
+     "Hysteresis °C";
+
+   document.getElementById("waterTitle").innerText =
+     "💧 Water & Drain";
+
+   document.getElementById("drainStartLabel").innerText =
+     "Drain Start Temperature °C";
+
+   document.getElementById("drainMinLabel").innerText =
+     "Drain Duration (seconds)";
+
+   document.getElementById("maxWaterLabel").innerText =
+     "Maximum Water Temperature °C";
+
+   document.getElementById("fillLabel").innerText =
+     "Fill Timeout (seconds)";
+
+   document.getElementById("pulseTitle").innerText =
+     "⚡ Pulse Relay";
+
+   document.getElementById("pulseEnableLabel").innerText =
+     "Pulse Relay";
+
+   document.getElementById("pulseOn").innerText =
+     "ON";
+
+   document.getElementById("pulseOff").innerText =
+     "OFF";
+
+   document.getElementById("pulseOnLabel").innerText =
+     "ON Time (minutes)";
+
+   document.getElementById("pulseOffLabel").innerText =
+     "OFF Time (minutes)";
+
+   document.getElementById("musicTitle").innerText =
+     "🎵 Music";
+
+   document.getElementById("passwordTitle").innerText =
+     "🔐 Menu Password";
+
+   document.getElementById("newPasswordLabel").innerText =
+     "New Password";
+
+   document.getElementById("newPassword").placeholder =
+     "4 to 12 characters";
+
+   document.getElementById("changePasswordBtn").innerText =
+     "CHANGE PASSWORD";
+
+   document.getElementById("volumeLabel").innerText =
+     "DFPlayer Volume";
+
+   document.getElementById("adSettingsTitle").innerText =
+     "📢 Advertisement";
+
+   document.getElementById("adEnableLabel").innerText =
+     "Advertisement";
+
+   document.getElementById("adEnableOn").innerText =
+     "ON";
+
+   document.getElementById("adEnableOff").innerText =
+     "OFF";
+
+   document.getElementById("adIntervalLabel").innerText =
+     "Slide Time (seconds)";
+
+   document.getElementById("adUploadBtn").innerText =
+     "ADD PHOTOS";
+
+   document.getElementById("adDeleteAllBtn").innerText =
+     "DELETE ALL PHOTOS";
+
+   document.getElementById("saveBtn").innerText =
+     "SAVE SETTINGS";
+
+   document.getElementById("backBtn").innerText =
+     "BACK";
+
+ }
+
+}
+
+// ============================================================
+// FORMAT COUNTER
+// ============================================================
+
+function formatCounter(sec){
+
+ let h =
+   Math.floor(sec / 3600);
+
+ let m =
+   Math.floor((sec % 3600) / 60);
+
+ return h + ":" +
+   String(m).padStart(2,"0");
+}
+
+// ============================================================
+// LOAD
+// ============================================================
+
+function load(){
+
+ fetch("/api/settings")
+
+ .then(r=>r.json())
+
+ .then(d=>{
+
+   document.getElementById("timer").value =
+     d.timer ? 1 : 0;
+
+   document.getElementById("run").value =
+     d.run;
+
+   document.getElementById("starget").value =
+     d.starget;
+
+   document.getElementById("shyst").value =
+     d.shyst;
+
+   document.getElementById("dstart").value =
+     d.dstart;
+
+   document.getElementById("dsec").value =
+     d.dsec;
+
+   document.getElementById("maxw").value =
+     d.maxw;
+
+   document.getElementById("fillto").value =
+     d.fillto;
+
+   document.getElementById("pulse").value =
+     d.pulse ? 1 : 0;
+
+   document.getElementById("pon").value =
+     d.pon;
+
+   document.getElementById("poff").value =
+     d.poff;
+
+   document.getElementById("volume").value =
+     d.volume;
+
+   document.getElementById("adEnabled").value =
+     d.adEnabled ? 1 : 0;
+
+   document.getElementById("adInterval").value =
+     d.adInterval;
+
+   renderAdPreview();
+
+   document.getElementById("heaterTotal").innerText =
+     formatCounter(d.heaterTotalSec);
+
+   document.getElementById("heaterService").innerText =
+     formatCounter(d.heaterServiceSec);
+
+ });
+
+}
+
+// ============================================================
+// UPDATE HEATER COUNTERS
+// ============================================================
+
+function updateCounters(){
+
+ fetch("/api/status?counter="+Date.now())
+
+ .then(r=>r.json())
+
+ .then(d=>{
+
+   document.getElementById("heaterTotal").innerText =
+     formatCounter(d.heaterTotalSec);
+
+   document.getElementById("heaterService").innerText =
+     formatCounter(d.heaterServiceSec);
+
+ });
+
+}
+
+// ============================================================
+// RESET SERVICE
+// ============================================================
+
+function resetService(){
+
+ let msg =
+   lang==="fa"
+   ? "آیا زمان کار هیتر از آخرین سرویس صفر شود؟"
+   : "Reset heater service time?";
+
+ if(!confirm(msg))
+   return;
+
+ fetch("/api/resetheaterservice")
+
+ .then(r=>r.text())
+
+ .then(t=>{
+
+   if(t==="OK"){
+
+     updateCounters();
+
+     alert(
+       lang==="fa"
+       ? "زمان سرویس ریست شد"
+       : "Service time reset"
+     );
+
+   }
+   else{
+
+     alert(
+       lang==="fa"
+       ? "خطا در ریست"
+       : "Reset failed"
+     );
+
+   }
+
+ });
+
+}
+
+// ============================================================
+// CHANGE PASSWORD
+// ============================================================
+
+function changePassword(){
+
+ let p =
+   document.getElementById("newPassword").value.trim();
+
+ if(p.length < 4 || p.length > 12){
+
+   alert(
+     lang==="fa"
+     ? "رمز باید بین ۴ تا ۱۲ کاراکتر باشد"
+     : "Password must be 4 to 12 characters"
+   );
+
+   return;
+ }
+
+ fetch("/api/changepass?pass=" +
+       encodeURIComponent(p))
+
+ .then(r=>r.text())
+
+ .then(t=>{
+
+   if(t==="OK"){
+
+     document.getElementById(
+       "newPassword"
+     ).value="";
+
+     alert(
+       lang==="fa"
+       ? "رمز با موفقیت تغییر کرد"
+       : "Password changed successfully"
+     );
+
+   }
+   else{
+
+     alert(
+       lang==="fa"
+       ? "خطا در تغییر رمز"
+       : "Password change failed"
+     );
+
+   }
+
+ });
+
+}
+
+// ============================================================
+// ADVERTISEMENT MANAGEMENT
+// ============================================================
+
+function renderAdPreview(){
+
+ fetch("/api/ad/list",{cache:"no-store"})
+ .then(r=>r.json())
+ .then(ids=>{
+
+  let box =
+    document.getElementById("adPreview");
+
+  box.innerHTML="";
+
+  if(!ids.length){
+
+   box.innerHTML =
+    '<div style="color:#8fa1b7;text-align:center;font-size:12px">' +
+    (lang==="fa"
+      ? "هنوز عکسی آپلود نشده"
+      : "No photos uploaded") +
+    '</div>';
+
+   return;
+  }
+
+  ids.forEach(id=>{
+
+   let row =
+    document.createElement("div");
+
+   row.style.cssText =
+    "display:flex;align-items:center;gap:10px;" +
+    "padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)";
+
+   let img =
+    document.createElement("img");
+
+   img.src =
+    "/ad" + id + ".jpg?x=" + Date.now();
+
+   img.style.cssText =
+    "width:82px;height:46px;object-fit:cover;" +
+    "border-radius:8px;background:#0b1625";
+
+   let label =
+    document.createElement("span");
+
+   label.style.cssText =
+    "flex:1;color:#aab8ca;font-size:12px";
+
+   label.innerText =
+    (lang==="fa" ? "عکس " : "Photo ") +
+    (id + 1);
+
+   let btn =
+    document.createElement("button");
+
+   btn.className="reset";
+   btn.style.cssText =
+    "width:auto;padding:8px 10px;margin:0;font-size:11px";
+
+   btn.innerText =
+    lang==="fa" ? "حذف" : "DELETE";
+
+   btn.onclick=()=>{
+    deleteAd(id);
+   };
+
+   row.appendChild(img);
+   row.appendChild(label);
+   row.appendChild(btn);
+
+   box.appendChild(row);
+  });
+
+ });
+}
+
+async function resizeAdImage(file){
+
+ return new Promise((resolve,reject)=>{
+
+  let reader = new FileReader();
+
+  reader.onload=()=>{
+
+   let img = new Image();
+
+   img.onload=()=>{
+
+    let maxW=1200;
+    let maxH=675;
+
+    let scale =
+      Math.min(
+        1,
+        maxW/img.width,
+        maxH/img.height
+      );
+
+    let canvas =
+      document.createElement("canvas");
+
+    canvas.width =
+      Math.max(1,Math.round(img.width*scale));
+
+    canvas.height =
+      Math.max(1,Math.round(img.height*scale));
+
+    let ctx = canvas.getContext("2d");
+
+    ctx.drawImage(
+      img,
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    let quality=0.72;
+
+    function makeBlob(){
+
+     canvas.toBlob(
+      blob=>{
+
+       if(!blob){
+        reject();
+        return;
+       }
+
+       if(blob.size<=200000 || quality<=0.45){
+        resolve(blob);
+        return;
+       }
+
+       quality-=0.07;
+       makeBlob();
+
+      },
+      "image/jpeg",
+      quality
+     );
+
+    }
+
+    makeBlob();
+   };
+
+   img.onerror=reject;
+   img.src=reader.result;
+  };
+
+  reader.onerror=reject;
+  reader.readAsDataURL(file);
+ });
+}
+
+async function uploadAds(input){
+
+ let files =
+   Array.from(input.files || []);
+
+ if(!files.length)
+   return;
+
+ let status =
+   document.getElementById("adUploadStatus");
+
+ let done=0;
+
+ for(let file of files){
+
+  try{
+
+   let blob =
+     await resizeAdImage(file);
+
+   let form =
+     new FormData();
+
+   form.append(
+     "file",
+     blob,
+     "ad.jpg"
+   );
+
+   status.innerText =
+     (lang==="fa"
+       ? "در حال آپلود "
+       : "Uploading ") +
+     (done+1) +
+     " / " +
+     files.length;
+
+   let r =
+     await fetch(
+      "/api/ad/upload",
+      {
+       method:"POST",
+       body:form
+      }
+     );
+
+   let t=await r.text();
+
+   if(!r.ok){
+
+    alert(
+     lang==="fa"
+      ? "آپلود انجام نشد: " + t
+      : "Upload failed: " + t
+    );
+
+    break;
+   }
+
+   done++;
+
+  }
+  catch(e){
+
+   alert(
+    lang==="fa"
+     ? "خطا در آماده‌سازی عکس"
+     : "Image preparation failed"
+   );
+
+   break;
+  }
+ }
+
+ input.value="";
+
+ status.innerText =
+  lang==="fa"
+   ? "تعداد عکس‌ها: " + done
+   : "Uploaded: " + done;
+
+ renderAdPreview();
+ load();
+
+ setTimeout(()=>{
+  status.innerText="";
+ },3000);
+}
+
+function deleteAd(id){
+
+ let msg =
+  lang==="fa"
+   ? "این عکس حذف شود؟"
+   : "Delete this photo?";
+
+ if(!confirm(msg))
+   return;
+
+ fetch(
+  "/api/ad/delete?id=" +
+  encodeURIComponent(id)
+ )
+ .then(r=>r.text())
+ .then(t=>{
+
+  if(t==="OK")
+   renderAdPreview();
+  else
+   alert(
+    lang==="fa"
+     ? "دسترسی منقضی شده یا خطا رخ داده"
+     : "Access expired or delete failed"
+   );
+
+ });
+}
+
+function deleteAllAds(){
+
+ let msg =
+  lang==="fa"
+   ? "همه عکس‌های تبلیغاتی حذف شوند؟"
+   : "Delete all advertisement photos?";
+
+ if(!confirm(msg))
+   return;
+
+ fetch("/api/ad/deleteall")
+ .then(r=>r.text())
+ .then(t=>{
+
+  if(t==="OK"){
+
+   document.getElementById("adEnabled").value=0;
+   renderAdPreview();
+
+   alert(
+    lang==="fa"
+     ? "همه عکس‌ها حذف شدند"
+     : "All photos deleted"
+   );
+
+  }
+  else{
+
+   alert(
+    lang==="fa"
+     ? "دسترسی منقضی شده"
+     : "Access expired"
+   );
+  }
+
+ });
+}
+
+// ============================================================
+// SAVE SETTINGS
+// ============================================================
+
+function save(){
+
+ let url =
+ "/api/save?" +
+
+ "timer="+
+ document.getElementById("timer").value +
+
+ "&run="+
+ document.getElementById("run").value +
+
+ "&starget="+
+ document.getElementById("starget").value +
+
+ "&shyst="+
+ document.getElementById("shyst").value +
+
+ "&dstart="+
+ document.getElementById("dstart").value +
+
+ "&dsec="+
+ document.getElementById("dsec").value +
+
+ "&maxw="+
+ document.getElementById("maxw").value +
+
+ "&fillto="+
+ document.getElementById("fillto").value +
+
+ "&pulse="+
+ document.getElementById("pulse").value +
+
+ "&pon="+
+ document.getElementById("pon").value +
+
+ "&poff="+
+ document.getElementById("poff").value +
+
+ "&volume="+
+ document.getElementById("volume").value +
+
+ "&adEnabled="+
+ document.getElementById("adEnabled").value +
+
+ "&adInterval="+
+ document.getElementById("adInterval").value;
+
+ fetch(url)
+
+ .then(r=>r.text())
+
+ .then(()=>{
+
+   alert(
+     lang==="fa"
+     ? "تنظیمات ذخیره شد"
+     : "Settings Saved"
+   );
+
+   load();
+
+ });
+
+}
+
+updateLanguage();
+load();
+
+setInterval(updateCounters,1000);
+
+</script>
+
+</body>
+</html>
+)rawliteral";
+
+  return html;
+}
+
+// ============================================================
+// SETTINGS JSON
+// ============================================================
+
+String settingsJSON() {
+
+  String s = "{";
+
+  s += "\"timer\":";
+  s += timerEnabled ? "true" : "false";
+
+  s += ",\"run\":";
+  s += String(runMinutes);
+
+  s += ",\"starget\":";
+  s += String(saunaTargetTemp, 1);
+
+  s += ",\"shyst\":";
+  s += String(saunaHysteresis, 1);
+
+  s += ",\"dstart\":";
+  s += String(drainStartTemp, 1);
+
+  s += ",\"dsec\":";
+  s += String(drainSeconds);
+
+  s += ",\"maxw\":";
+  s += String(maxWaterTemp, 1);
+
+  s += ",\"fillto\":";
+  s += String(fillTimeoutSec);
+
+  s += ",\"pulse\":";
+  s += pulseEnabled ? "true" : "false";
+
+ s += ",\"pon\":";
+s += String(pulseOnMin);
+
+s += ",\"poff\":";
+s += String(pulseOffMin);
+
+  s += ",\"volume\":";
+  s += String(dfVolume);
+
+  s += ",\"adEnabled\":";
+  s += adEnabled ? "true" : "false";
+
+  s += ",\"adInterval\":";
+  s += String(adIntervalSec);
+
+  s += ",\"adCount\":";
+  s += String(countAdImages());
+
+  // ----------------------------------------------------------
+  // HEATER COUNTERS
+  // ----------------------------------------------------------
+
+  uint64_t displayTotal =
+    totalHeaterSeconds;
+
+  uint64_t displayService =
+    serviceHeaterSeconds;
+
+  if (heaterWasOn) {
+
+    unsigned long elapsedMs =
+      millis() - heaterOnStartMillis;
+
+    if (elapsedMs >= 1000UL) {
+
+      uint64_t elapsedSec =
+        elapsedMs / 1000ULL;
+
+      displayTotal += elapsedSec;
+      displayService += elapsedSec;
+    }
+  }
+
+  s += ",\"heaterTotalSec\":";
+  s += String(
+    (unsigned long)displayTotal
+  );
+
+  s += ",\"heaterServiceSec\":";
+  s += String(
+    (unsigned long)displayService
+  );
+
+  s += "}";
+
+  return s;
+}
+
+// ============================================================
+// WEB HANDLERS
+// ============================================================
+
+void handleRoot() {
+
+  server.send(
+    200,
+    "text/html; charset=utf-8",
+    mainPage()
+  );
+}
+
+void handleUserSettings() {
+
+  server.send(
+    200,
+    "text/html; charset=utf-8",
+    userSettingsPage()
+  );
+}
+
+void handleUserSettingsJSON() {
+
+  String s = "{";
+
+  s += "\"run\":";
+  s += String(runMinutes);
+
+  s += ",\"starget\":";
+  s += String(saunaTargetTemp, 1);
+
+  s += ",\"pulse\":";
+  s += pulseEnabled ? "true" : "false";
+
+  s += "}";
+
+  server.send(
+    200,
+    "application/json",
+    s
+  );
+}
+
+void handleUserSave() {
+
+  if (server.hasArg("run"))
+    runMinutes =
+      constrain(
+        server.arg("run").toInt(),
+        1,
+        120
+      );
+
+  if (server.hasArg("starget"))
+    saunaTargetTemp =
+      constrain(
+        server.arg("starget").toFloat(),
+        SAUNA_TEMP_MIN,
+        SAUNA_TEMP_MAX
+      );
+
+  if (server.hasArg("pulse"))
+    pulseEnabled =
+      server.arg("pulse").toInt() != 0;
+
+  if (server.hasArg("pon"))
+    pulseOnMin =
+      constrain(
+        server.arg("pon").toInt(),
+        1,
+        60
+      );
+
+  if (server.hasArg("poff"))
+    pulseOffMin =
+      constrain(
+        server.arg("poff").toInt(),
+        1,
+        60
+      );
+
+  saveSettings();
+
+  if (!pulseEnabled) {
+
+    pulseState = false;
+
+    out(
+      PIN_PULSE,
+      false
+    );
+  }
+
+  server.send(
+    200,
+    "text/plain",
+    "SAVED"
+  );
+}
+
+void handleSettings() {
+
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+
+    menuUnlocked = false;
+
+    server.send(
+      403,
+      "text/plain",
+      "LOCKED"
+    );
+
+    return;
+  }
+
+  menuLastAccess = millis();
+
+  server.send(
+    200,
+    "text/html; charset=utf-8",
+    settingsPage()
+  );
+}
+
+void handleAuth() {
+
+  if (!server.hasArg("pass")) {
+
+    server.send(
+      403,
+      "text/plain",
+      "FAIL"
+    );
+
+    return;
+  }
+
+  if (server.arg("pass") == menuPassword) {
+
+    menuUnlocked = true;
+
+    menuLastAccess = millis();
+
+    server.send(
+      200,
+      "text/plain",
+      "OK"
+    );
+  }
+  else {
+
+    server.send(
+      403,
+      "text/plain",
+      "FAIL"
+    );
+  }
+}
+
+void handleChangePassword() {
+
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+
+    menuUnlocked = false;
+
+    server.send(
+      403,
+      "text/plain",
+      "LOCKED"
+    );
+
+    return;
+  }
+
+  if (!server.hasArg("pass")) {
+
+    server.send(
+      400,
+      "text/plain",
+      "FAIL"
+    );
+
+    return;
+  }
+
+  String p =
+    server.arg("pass");
+
+  if (p.length() < 4 ||
+      p.length() > 12) {
+
+    server.send(
+      400,
+      "text/plain",
+      "FAIL"
+    );
+
+    return;
+  }
+
+  menuPassword = p;
+
+  prefs.begin("steampro", false);
+
+  prefs.putString(
+    "menupass",
+    menuPassword
+  );
+
+  prefs.end();
+
+  menuLastAccess = millis();
+
+  server.send(
+    200,
+    "text/plain",
+    "OK"
+  );
+}
+
+void handleStatus() {
+
+  server.send(
+    200,
+    "application/json",
+    getStatusJSON()
+  );
+}
+
+void handleSettingsJSON() {
+
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+
+    menuUnlocked = false;
+
+    server.send(
+      403,
+      "application/json",
+      "{\"error\":\"LOCKED\"}"
+    );
+
+    return;
+  }
+
+  menuLastAccess = millis();
+
+  server.send(
+    200,
+    "application/json",
+    settingsJSON()
+  );
+}
+
+// ============================================================
+// RESET HEATER SERVICE HANDLER
+// ============================================================
+
+void handleResetHeaterService() {
+
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+
+    menuUnlocked = false;
+
+    server.send(
+      403,
+      "text/plain",
+      "LOCKED"
+    );
+
+    return;
+  }
+
+  menuLastAccess = millis();
+
+  resetServiceHeaterCounter();
+
+  server.send(
+    200,
+    "text/plain",
+    "OK"
+  );
+}
+
+// ============================================================
+// START STOP
+// ============================================================
+
+void handleStartStop() {
+
+  if (running)
+    stopDevice();
+  else
+    startDevice();
+
+  server.send(
+    200,
+    "text/plain",
+    "OK"
+  );
+}
+
+// ============================================================
+// LIGHT
+// ============================================================
+
+void handleLight() {
+
+  toggleLight();
+
+  server.send(
+    200,
+    "text/plain",
+    "OK"
+  );
+}
+
+// ============================================================
+// MUSIC HANDLERS
+// ============================================================
+
+void handlePlay() {
+
+  playTrack();
+
+  server.send(
+    200,
+    "text/plain",
+    "OK"
+  );
+}
+
+void handleMusicStop() {
+
+  stopMusic();
+
+  server.send(
+    200,
+    "text/plain",
+    "OK"
+  );
+}
+
+void handleNext() {
+
+  nextTrack();
+
+  server.send(
+    200,
+    "text/plain",
+    "OK"
+  );
+}
+
+void handlePrev() {
+
+  previousTrack();
+
+  server.send(
+    200,
+    "text/plain",
+    "OK"
+  );
+}
+
+void handleVolUp() {
+
+  volumeUp();
+
+  server.send(
+    200,
+    "text/plain",
+    "OK"
+  );
+}
+
+void handleVolDown() {
+
+  volumeDown();
+
+  server.send(
+    200,
+    "text/plain",
+    "OK"
+  );
+}
+
+// ============================================================
+// SAVE
+// ============================================================
+
+void handleSave() {
+
+  if (!menuUnlocked ||
+      millis() - menuLastAccess > MENU_TIMEOUT) {
+
+    menuUnlocked = false;
+
+    server.send(
+      403,
+      "text/plain",
+      "LOCKED"
+    );
+
+    return;
+  }
+
+  menuLastAccess = millis();
+
+  if (server.hasArg("timer"))
+    timerEnabled =
+      server.arg("timer").toInt() != 0;
+
+  if (server.hasArg("run"))
+    runMinutes =
+      constrain(
+        server.arg("run").toInt(),
+        1,
+        120
+      );
+
+  if (server.hasArg("starget"))
+  saunaTargetTemp =
+    constrain(
+      server.arg("starget").toFloat(),
+      SAUNA_TEMP_MIN,
+      SAUNA_TEMP_MAX
+ );
+  if (server.hasArg("shyst"))
+    saunaHysteresis =
+      server.arg("shyst").toFloat();
+
+ if (server.hasArg("dstart"))
+  drainStartTemp =
+    constrain(
+      server.arg("dstart").toFloat(),
+      DRAIN_TEMP_MIN,
+      DRAIN_TEMP_MAX
+ );
+  if (server.hasArg("dsec"))
+    drainSeconds =
+      constrain(
+        server.arg("dsec").toInt(),
+        1,
+        3600
+      );
+
+  if (server.hasArg("maxw"))
+  maxWaterTemp =
+    constrain(
+      server.arg("maxw").toFloat(),
+      WATER_TEMP_MIN,
+      WATER_TEMP_MAX
+ );
+  if (server.hasArg("fillto"))
+    fillTimeoutSec =
+      constrain(
+        server.arg("fillto").toInt(),
+        10,
+        600
+      );
+
+  if (server.hasArg("pulse"))
+    pulseEnabled =
+      server.arg("pulse").toInt() != 0;
+
+  if (server.hasArg("pon"))
+  pulseOnMin =
+    constrain(
+      server.arg("pon").toInt(),
+      1,
+      60
+    );
+
+if (server.hasArg("poff"))
+  pulseOffMin =
+    constrain(
+      server.arg("poff").toInt(),
+      1,
+      60
+    );
+
+  if (server.hasArg("volume"))
+    dfVolume =
+      constrain(
+        server.arg("volume").toInt(),
+        0,
+        30
+      );
+
+  if (server.hasArg("adEnabled"))
+    adEnabled =
+      server.arg("adEnabled").toInt() != 0;
+
+  if (server.hasArg("adInterval"))
+    adIntervalSec =
+      constrain(
+        server.arg("adInterval").toInt(),
+        3,
+        60
+      );
+
+  if (dfReady)
+    dfPlayer.volume(dfVolume);
+
+  saveSettings();
+
+  if (!pulseEnabled) {
+
+    pulseState = false;
+
+    out(PIN_PULSE, false);
+  }
+
+  server.send(
+    200,
+    "text/plain",
+    "SAVED"
+  );
+}
+
+// ============================================================
+// MANIFEST
+// ============================================================
+
+void handleManifest() {
+
+  String m = R"rawliteral(
+{
+  "name": "SteamPro",
+  "short_name": "SteamPro",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07111f",
+  "theme_color": "#07111f",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
+)rawliteral";
+
+  server.send(
+    200,
+    "application/manifest+json",
+    m
+  );
+}
+
+// ============================================================
+// OLD SVG ICON
+// ============================================================
+
+void handleIcon() {
+
+  String svg = R"rawliteral(
+<svg xmlns="http://www.w3.org/2000/svg"
+width="512"
+height="512"
+viewBox="0 0 512 512">
+
+<rect
+width="512"
+height="512"
+rx="110"
+fill="#07111f"/>
+
+<text
+x="256"
+y="315"
+text-anchor="middle"
+font-family="Arial"
+font-size="140"
+font-weight="bold"
+fill="#42c7ff">
+
+SP
+
+</text>
+
+</svg>
+)rawliteral";
+
+  server.send(
+    200,
+    "image/svg+xml",
+    svg
+  );
+}
+
+// ============================================================
+// PNG 192 ICON
+// ============================================================
+
+void handleIcon192() {
+
+  if (!LittleFS.exists("/icon-192.png")) {
+
+    server.send(
+      404,
+      "text/plain",
+      "icon-192.png NOT FOUND"
+    );
+
+    return;
+  }
+
+  File file =
+    LittleFS.open("/icon-192.png", "r");
+
+  server.streamFile(
+    file,
+    "image/png"
+  );
+
+  file.close();
+}
+
+// ============================================================
+// PNG 512 ICON
+// ============================================================
+
+void handleIcon512() {
+
+  if (!LittleFS.exists("/icon-512.png")) {
+
+    server.send(
+      404,
+      "text/plain",
+      "icon-512.png NOT FOUND"
+    );
+
+    return;
+  }
+
+  File file =
+    LittleFS.open("/icon-512.png", "r");
+
+  server.streamFile(
+    file,
+    "image/png"
+  );
+
+  file.close();
+}
+
+// ============================================================
+// SERVICE WORKER
+// ============================================================
+
+void handleSW() {
+
+  String sw = R"rawliteral(
+
+self.addEventListener(
+'install',
+event => {
+  self.skipWaiting();
+});
+
+self.addEventListener(
+'activate',
+event => {
+  self.clients.claim();
+});
+
+)rawliteral";
+
+  server.send(
+    200,
+    "application/javascript",
+    sw
+  );
+}
+
+// ============================================================
+// WEB SERVER
+// ============================================================
+
+void setupWebServer() {
+
+  server.on(
+    "/",
+    HTTP_GET,
+    handleRoot
+  );
+
+  server.on(
+    "/wifi",
+    HTTP_GET,
+    handleWiFiPage
+  );
+
+  server.on(
+    "/api/wifi/scan",
+    HTTP_GET,
+    handleWiFiScan
+  );
+
+  server.on(
+    "/api/wifi/connect",
+    HTTP_GET,
+    handleWiFiConnect
+  );
+
+  server.on(
+    "/api/wifi/disconnect",
+    HTTP_GET,
+    handleWiFiDisconnect
+  );
+
+  server.on(
+    "/api/wifi/forget",
+    HTTP_GET,
+    handleWiFiForget
+  );
+
+  server.on(
+    "/api/wifi/status",
+    HTTP_GET,
+    handleWiFiStatus
+  );
+
+
+  server.on(
+    "/user-settings",
+    HTTP_GET,
+    handleUserSettings
+  );
+
+  server.on(
+    "/api/user-settings",
+    HTTP_GET,
+    handleUserSettingsJSON
+  );
+
+  server.on(
+    "/api/user-save",
+    HTTP_GET,
+    handleUserSave
+  );
+
+  server.on(
+    "/settings",
+    HTTP_GET,
+    handleSettings
+  );
+
+  server.on(
+    "/api/status",
+    HTTP_GET,
+    handleStatus
+  );
+
+  server.on(
+    "/api/auth",
+    HTTP_GET,
+    handleAuth
+  );
+
+  server.on(
+    "/api/changepass",
+    HTTP_GET,
+    handleChangePassword
+  );
+
+  server.on(
+    "/api/settings",
+    HTTP_GET,
+    handleSettingsJSON
+  );
+
+  server.on(
+    "/api/resetheaterservice",
+    HTTP_GET,
+    handleResetHeaterService
+  );
+
+  server.on(
+    "/api/startstop",
+    HTTP_GET,
+    handleStartStop
+  );
+
+  server.on(
+    "/api/light",
+    HTTP_GET,
+    handleLight
+  );
+
+  server.on(
+    "/api/play",
+    HTTP_GET,
+    handlePlay
+  );
+
+  server.on(
+    "/api/musicstop",
+    HTTP_GET,
+    handleMusicStop
+  );
+
+  server.on(
+    "/api/next",
+    HTTP_GET,
+    handleNext
+  );
+
+  server.on(
+    "/api/prev",
+    HTTP_GET,
+    handlePrev
+  );
+
+  server.on(
+    "/api/volup",
+    HTTP_GET,
+    handleVolUp
+  );
+
+  server.on(
+    "/api/voldown",
+    HTTP_GET,
+    handleVolDown
+  );
+
+  server.on(
+    "/api/save",
+    HTTP_GET,
+    handleSave
+  );
+
+  // ----------------------------------------------------------
+  // ADVERTISEMENT
+  // ----------------------------------------------------------
+
+  server.on(
+    "/api/ad/list",
+    HTTP_GET,
+    handleAdList
+  );
+
+  server.on(
+    "/api/ad/delete",
+    HTTP_GET,
+    handleAdDelete
+  );
+
+  server.on(
+    "/api/ad/deleteall",
+    HTTP_GET,
+    handleAdDeleteAll
+  );
+
+  server.on(
+    "/api/ad/upload",
+    HTTP_POST,
+    handleAdUploadDone,
+    handleAdUploadData
+  );
+
+  server.on(
+    "/ad0.jpg",
+    HTTP_GET,
+    [](){ handleAdImage(0); }
+  );
+
+  server.on(
+    "/ad1.jpg",
+    HTTP_GET,
+    [](){ handleAdImage(1); }
+  );
+
+  server.on(
+    "/ad2.jpg",
+    HTTP_GET,
+    [](){ handleAdImage(2); }
+  );
+
+  server.on(
+    "/ad3.jpg",
+    HTTP_GET,
+    [](){ handleAdImage(3); }
+  );
+
+  server.on(
+    "/ad4.jpg",
+    HTTP_GET,
+    [](){ handleAdImage(4); }
+  );
+
+  // ----------------------------------------------------------
+  // PWA MANIFEST
+  // ----------------------------------------------------------
+
+  server.on(
+    "/manifest.json",
+    HTTP_GET,
+    handleManifest
+  );
+
+  // ----------------------------------------------------------
+  // OLD SVG ICON
+  // ----------------------------------------------------------
+
+  server.on(
+    "/icon.svg",
+    HTTP_GET,
+    handleIcon
+  );
+
+  // ----------------------------------------------------------
+  // PNG ICONS
+  // ----------------------------------------------------------
+
+  server.on(
+    "/icon-192.png",
+    HTTP_GET,
+    handleIcon192
+  );
+
+  server.on(
+    "/icon-512.png",
+    HTTP_GET,
+    handleIcon512
+  );
+
+  // ----------------------------------------------------------
+  // SERVICE WORKER
+  // ----------------------------------------------------------
+
+  server.on(
+    "/sw.js",
+    HTTP_GET,
+    handleSW
+  );
+
+  server.begin();
+}
+
+// ============================================================
+// SETUP
+// ============================================================
+
+void setup() {
+
+  Serial.begin(115200);
+  analogReadResolution(12);
+
+  analogSetPinAttenuation(PIN_SAUNA, ADC_11db);
+  analogSetPinAttenuation(PIN_WATER, ADC_11db);
+  // ----------------------------------------------------------
+  // LITTLEFS
+  // ----------------------------------------------------------
+
+  if (!LittleFS.begin(true)) {
+
+    Serial.println(
+      "LittleFS Mount Failed"
+    );
+
+  }
+  else {
+
+    Serial.println(
+      "LittleFS OK"
+    );
+
+    Serial.print(
+      "icon-192: "
+    );
+
+    Serial.println(
+      LittleFS.exists("/icon-192.png")
+      ? "FOUND"
+      : "NOT FOUND"
+    );
+
+    Serial.print(
+      "icon-512: "
+    );
+
+    Serial.println(
+      LittleFS.exists("/icon-512.png")
+      ? "FOUND"
+      : "NOT FOUND"
+    );
+  }
+
+
+//-------------------تست------------------//
+Serial.println("=== LITTLEFS FILES ===");
+
+File root = LittleFS.open("/");
+File file = root.openNextFile();
+
+while(file){
+  Serial.print("FILE: ");
+  Serial.print(file.name());
+  Serial.print("  SIZE: ");
+  Serial.println(file.size());
+
+  file = root.openNextFile();
+}
+
+
+
+  // ----------------------------------------------------------
+  // OUTPUT
+  // ----------------------------------------------------------
+
+  pinMode(PIN_HEATER, OUTPUT);
+  pinMode(PIN_INLET, OUTPUT);
+  pinMode(PIN_DRAIN, OUTPUT);
+  pinMode(PIN_LIGHT, OUTPUT);
+  pinMode(PIN_PULSE, OUTPUT);
+
+  allOff();
+
+  // ----------------------------------------------------------
+  // INPUT
+  // ----------------------------------------------------------
+
+  pinMode(PIN_LOW, INPUT);
+  pinMode(PIN_HIGH, INPUT);
+  pinMode(PIN_TEST, INPUT_PULLUP);
+
+  // ----------------------------------------------------------
+  // ADC
+  // ----------------------------------------------------------
+
+  analogReadResolution(12);
+
+  analogSetPinAttenuation(
+    PIN_SAUNA,
+    ADC_11db
+  );
+
+  analogSetPinAttenuation(
+    PIN_WATER,
+    ADC_11db
+  );
+
+  // ----------------------------------------------------------
+  // SETTINGS
+  // ----------------------------------------------------------
+
+  loadSettings();
+
+  // ----------------------------------------------------------
+  // HEATER COUNTERS
+  // ----------------------------------------------------------
+
+  loadHeaterCounters();
+
+  Serial.print("Total Heater Time: ");
+  Serial.println(
+    formatHeaterTime(totalHeaterSeconds)
+  );
+
+  Serial.print("Service Heater Time: ");
+  Serial.println(
+    formatHeaterTime(serviceHeaterSeconds)
+  );
+
+  // ----------------------------------------------------------
+  // DFPLAYER
+  // ----------------------------------------------------------
+
+  setupDFPlayer();
+
+  // ----------------------------------------------------------
+  // WIFI AP
+  // ----------------------------------------------------------
+
+  WiFi.mode(WIFI_AP_STA);
+
+  WiFi.setSleep(false);
+
+  WiFi.softAPConfig(
+    apIP,
+    gateway,
+    subnet
+  );
+
+  WiFi.softAP(
+    AP_SSID,
+    AP_PASS,
+    6,
+    false,
+    4
+  );
+
+  // Load previously saved router credentials.
+  loadWiFiCredentials();
+
+  // Keep SteamPro AP active while connecting to the router.
+  startSavedWiFiConnection();
+
+  // ----------------------------------------------------------
+  // MQTT
+  // ----------------------------------------------------------
+
+  mqttPrepareTopics();
+  mqtt.setServer(MQTT_SERVER, MQTT_PORT);
+  mqtt.setCallback(mqttCallback);
+  mqtt.setBufferSize(4096);
+  mqtt.setSocketTimeout(1);  // Keep failed network operations from stalling the control loop.
+  mqtt.setKeepAlive(15);
+
+  Serial.print("MQTT Command Topic: ");
+  Serial.println(mqttTopicCommand);
+  Serial.print("MQTT Status Topic: ");
+  Serial.println(mqttTopicStatus);
+  Serial.print("MQTT Temperature Topic: ");
+  Serial.println(mqttTopicTemperature);
+
+  // ----------------------------------------------------------
+  // WEB
+  // ----------------------------------------------------------
+
+  setupWebServer();
+
+  Serial.println();
+  Serial.println("==============================");
+  Serial.println("        STEAMPRO STARTED");
+  Serial.println("==============================");
+
+  Serial.print("SSID: ");
+  Serial.println(AP_SSID);
+
+  Serial.print("AP IP: ");
+  Serial.println(WiFi.softAPIP());
+
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.print("Router SSID: ");
+    Serial.println(WiFi.SSID());
+    Serial.print("Router IP: ");
+    Serial.println(WiFi.localIP());
+  }
+  else if (wifiSSID.length() > 0) {
+    Serial.print("Router: connecting to ");
+    Serial.println(wifiSSID);
+  }
+
+  Serial.println("==============================");
+
+}
+// ============================================================
+// LOOP
+// ============================================================
+
+void loop() {
+
+  server.handleClient();
+
+  // Maintain optional router/Internet connection.
+  processWiFiConnection();
+
+  // ----------------------------------------------------------
+  // MQTT REMOTE CONTROL
+  // ----------------------------------------------------------
+
+  processMQTT();
+
+  // ----------------------------------------------------------
+  // DFPLAYER AUTO NEXT
+  // ----------------------------------------------------------
+
+  processDFPlayer();
+
+  // ----------------------------------------------------------
+  // SENSORS
+  // ----------------------------------------------------------
+
+  saunaTemp =
+    readLM35(PIN_SAUNA);
+
+  waterTemp =
+    readLM35(PIN_WATER);
+
+  // ----------------------------------------------------------
+  // TEST BUTTON
+  // ----------------------------------------------------------
+
+  processTestButton();
+
+  // ----------------------------------------------------------
+  // RUNNING
+  // ----------------------------------------------------------
+
+  if (running) {
+
+    processWater();
+
+    processFill();
+
+    processWaterProtection();
+
+    processHeater();
+
+    processPulse();
+
+    processTimer();
+  }
+
+  // ----------------------------------------------------------
+  // HEATER COUNTER
+  // ----------------------------------------------------------
+
+  processHeaterCounter();
+
+  // ----------------------------------------------------------
+  // DRAIN
+  // ----------------------------------------------------------
+
+  processDrain();
+
+  delay(20);
+}
