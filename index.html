@@ -344,7 +344,7 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 
 <div class="toast" id="toast"></div>
 
-<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+<script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
 
 <script>
 // ============================================================
@@ -377,6 +377,7 @@ let adSliderTimer = null;
 let adReceived = {};
 let adMetaCount = 0;
 let adMetaReceived = 0;
+let adsLoaded = false;
 
 const MAX_LOG_LINES = 60;
 let logLines = [];
@@ -588,8 +589,7 @@ function handleAdTopic(topic, text){
       adMetaCount = parseInt(text.substring(5)) || 0;
       adMetaReceived = 0;
       adReceived = {};
-     
-log("AD META: " + adMetaCount + " images", "info");
+      log("AD META: " + adMetaCount + " images", "info");
       
       if(adMetaCount === 0){
         hideAdBanner();
@@ -645,6 +645,7 @@ log("AD META: " + adMetaCount + " images", "info");
     }
     
     const dataUrl = "data:image/jpeg;base64," + b64;
+    
     adImages = adImages.filter(a => a.id !== idx);
     adImages.push({ id: idx, dataUrl: dataUrl });
     adImages.sort((a, b) => a.id - b.id);
@@ -876,8 +877,9 @@ function loadSettings(){
 
 function refreshAds(){
   if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
-  adImages = [];
   adReceived = {};
+  adMetaCount = 0;
+  adMetaReceived = 0;
   $("adLoading").style.display = "flex";
   $("adImage").style.display = "none";
   client.publish(TOPIC_SETTINGS, "GET_ADS");
