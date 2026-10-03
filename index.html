@@ -588,7 +588,8 @@ function handleAdTopic(topic, text){
       adMetaCount = parseInt(text.substring(5)) || 0;
       adMetaReceived = 0;
       adReceived = {};
-      log("AD META: " + adMetaCount + " images", "info");
+adImages = [];      
+log("AD META: " + adMetaCount + " images", "info");
       
       if(adMetaCount === 0){
         hideAdBanner();
