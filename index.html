@@ -378,6 +378,8 @@ let adReceived = {};
 let adMetaCount = 0;
 let adMetaReceived = 0;
 let adsRequested = false;
+let adTransferId = 0;
+let adCurrentTransfer = 0;
 
 const MAX_LOG_LINES = 60;
 let logLines = [];
@@ -583,130 +585,165 @@ function updateSettings(data){
 function handleAdTopic(topic, text){
   const parts = topic.split("/");
   const last = parts[parts.length - 1];
-  
+
   if(last === "meta"){
-    if(text.startsWith("META:")){
-      adMetaCount = parseInt(text.substring(5)) || 0;
-      adMetaReceived = 0;
-      adReceived = {};
-      log("AD META: " + adMetaCount + " images", "info");
-      
-      if(adMetaCount === 0){
-        hideAdBanner();
-        $("adLoading").style.display = "none";
-      } else {
-        showAdBanner();
-        $("adLoading").style.display = "flex";
-      }
+    if(!text.startsWith("META:")) return;
+
+    const p = text.split(":");
+    if(p.length < 3) return;
+
+    const transferId = Number(p[1]) || 0;
+    const count = Number(p[2]) || 0;
+    if(!transferId) return;
+
+    adCurrentTransfer = transferId;
+    adMetaCount = count;
+    adMetaReceived = 0;
+    adReceived = {};
+    adImages = [];
+
+    if(adSliderTimer){
+      clearInterval(adSliderTimer);
+      adSliderTimer = null;
+    }
+
+    log("AD META T=" + transferId + ": " + count + " images", "info");
+
+    if(count === 0){
+      hideAdBanner();
+      $("adLoading").style.display = "none";
+    } else {
+      showAdBanner();
+      $("adLoading").style.display = "flex";
+      $("adImage").style.display = "none";
+      $("adDots").style.display = "none";
     }
     return;
   }
-  
-  const idx = parseInt(last);
-  if(isNaN(idx)) return;
-  
+
+  const idx = parseInt(last, 10);
+  if(isNaN(idx) || idx < 0 || idx >= 5) return;
+
   if(text.startsWith("IMG:")){
-    const p = text.substring(4).split(":");
-    const totalParts = parseInt(p[1]) || 0;
-    const size = parseInt(p[2]) || 0;
-    
-    adReceived[idx] = { totalParts: totalParts, size: size, chunks: {}, receivedCount: 0, done: false };
-    log("IMG " + idx + " starting (" + totalParts + " parts)", "info");
+    const p = text.split(":");
+    if(p.length < 5) return;
+
+    const transferId = Number(p[1]) || 0;
+    const imageIndex = Number(p[2]);
+    const totalParts = Number(p[3]) || 0;
+    const size = Number(p[4]) || 0;
+
+    if(!transferId || transferId !== adCurrentTransfer) return;
+    if(imageIndex !== idx || totalParts <= 0 || size <= 0) return;
+
+    adReceived[idx] = {
+      transferId,
+      totalParts,
+      size,
+      chunks: {},
+      receivedCount: 0,
+      done: false
+    };
+
+    log("IMG " + idx + " START (" + totalParts + " parts)", "info");
+    return;
   }
-  else if(text.startsWith("P:")){
-    const rest = text.substring(2);
-    const colon = rest.indexOf(":");
-    if(colon < 0) return;
-    const partNum = parseInt(rest.substring(0, colon));
-    const chunk = rest.substring(colon + 1);
-    
+
+  if(text.startsWith("P:")){
+    const first = text.indexOf(":");
+    const second = text.indexOf(":", first + 1);
+    const third = text.indexOf(":", second + 1);
+    if(first < 0 || second < 0 || third < 0) return;
+
+    const transferId = Number(text.substring(first + 1, second)) || 0;
+    const partNum = Number(text.substring(second + 1, third));
+    const chunk = text.substring(third + 1);
+
+    if(transferId !== adCurrentTransfer) return;
     if(!adReceived[idx]) return;
+    if(partNum < 0 || partNum >= adReceived[idx].totalParts) return;
     if(adReceived[idx].chunks[partNum] !== undefined) return;
-    
+
     adReceived[idx].chunks[partNum] = chunk;
     adReceived[idx].receivedCount++;
+    return;
   }
-  else if(text.startsWith("END:")){
+
+  if(text.startsWith("END:")){
+    const p = text.split(":");
+    if(p.length < 3) return;
+
+    const transferId = Number(p[1]) || 0;
+    const imageIndex = Number(p[2]);
+
+    if(transferId !== adCurrentTransfer || imageIndex !== idx) return;
     if(!adReceived[idx]) return;
-    adReceived[idx].done = true;
-    
-    if(adReceived[idx].receivedCount !== adReceived[idx].totalParts){
-      log("IMG " + idx + " INCOMPLETE! " + adReceived[idx].receivedCount + "/" + adReceived[idx].totalParts, "err");
-      // درخواست دوباره بعد از 2 ثانیه
-      setTimeout(() => {
-        if(client && client.connected && !adsRequested){
-          adsRequested = true;
-          log("Retrying ads...", "warn");
-          client.publish(TOPIC_SETTINGS, "GET_ADS");
-        }
-      }, 2000);
+
+    const item = adReceived[idx];
+
+    if(item.receivedCount !== item.totalParts){
+      log("IMG " + idx + " INCOMPLETE " +
+          item.receivedCount + "/" + item.totalParts, "err");
+      if(client && client.connected){
+        setTimeout(() => refreshAds(true), 1200);
+      }
       return;
     }
-    
+
     let b64 = "";
-    for(let p = 0; p < adReceived[idx].totalParts; p++){
-      if(adReceived[idx].chunks[p] === undefined){
-        log("IMG " + idx + " MISSING PART " + p, "err");
+    for(let pnum = 0; pnum < item.totalParts; pnum++){
+      if(item.chunks[pnum] === undefined){
+        log("IMG " + idx + " MISSING PART " + pnum, "err");
+        if(client && client.connected){
+          setTimeout(() => refreshAds(true), 1200);
+        }
         return;
       }
-      b64 += adReceived[idx].chunks[p];
+      b64 += item.chunks[pnum];
     }
-    
-    const dataUrl = "data:image/jpeg;base64," + b64;
-    
-    adImages = adImages.filter(a => a.id !== idx);
-    adImages.push({ id: idx, dataUrl: dataUrl });
-    adImages.sort((a, b) => a.id - b.id);
-    
-    adMetaReceived++;
-    log("IMG " + idx + " COMPLETE ✓", "info");
-    
-    if(adMetaReceived >= adMetaCount){
-      log("ALL ADS RECEIVED ✓", "info");
-      $("adLoading").style.display = "none";
-      adsRequested = false;
-      if(adImages.length > 0 && adEnabled){
-        startAdSlider();
-        showAdBanner();
+
+    const expectedB64Length = Math.ceil(item.size / 3) * 4;
+    if(b64.length !== expectedB64Length){
+      log("IMG " + idx + " SIZE ERROR " + b64.length +
+          "/" + expectedB64Length, "err");
+      if(client && client.connected){
+        setTimeout(() => refreshAds(true), 1200);
       }
+      return;
     }
+
+    const dataUrl = "data:image/jpeg;base64," + b64;
+
+    const testImg = new Image();
+    testImg.onload = () => {
+      adImages = adImages.filter(a => a.id !== idx);
+      adImages.push({ id: idx, dataUrl });
+      adImages.sort((a, b) => a.id - b.id);
+
+      adMetaReceived++;
+      log("IMG " + idx + " COMPLETE ✓", "info");
+
+      if(adMetaReceived >= adMetaCount){
+        log("ALL ADS RECEIVED ✓", "info");
+        $("adLoading").style.display = "none";
+        adsRequested = false;
+
+        if(adImages.length > 0 && adEnabled){
+          startAdSlider();
+          showAdBanner();
+        }
+      }
+    };
+
+    testImg.onerror = () => {
+      log("IMG " + idx + " JPEG INVALID", "err");
+      if(client && client.connected){
+        setTimeout(() => refreshAds(true), 1200);
+      }
+    };
+
+    testImg.src = dataUrl;
   }
-}
-
-function showAdBanner(){ $("adBanner").classList.add("show"); }
-function hideAdBanner(){ $("adBanner").classList.remove("show"); if(adSliderTimer){clearInterval(adSliderTimer);adSliderTimer=null;} }
-
-function startAdSlider(){
-  if(adSliderTimer) clearInterval(adSliderTimer);
-  if(adImages.length === 0) return;
-
-  adCurrentIndex = 0;
-  const dots = $("adDots");
-  dots.innerHTML = "";
-  dots.style.display = "flex";
-  adImages.forEach((_, i) => {
-    const d = document.createElement("div");
-    d.className = "ad-dot" + (i === 0 ? " active" : "");
-    dots.appendChild(d);
-  });
-
-  $("adImage").style.display = "block";
-  showAdSlide();
-  adSliderTimer = setInterval(showAdSlide, Math.max(3, adInterval) * 1000);
-}
-
-function showAdSlide(){
-  if(adImages.length === 0) return;
-  const img = $("adImage");
-  img.style.opacity = "0";
-  setTimeout(() => {
-    img.src = adImages[adCurrentIndex].dataUrl;
-    img.style.opacity = "1";
-    document.querySelectorAll(".ad-dot").forEach((d, i) => {
-      d.classList.toggle("active", i === adCurrentIndex);
-    });
-    adCurrentIndex = (adCurrentIndex + 1) % adImages.length;
-  }, 300);
 }
 
 // ============================================================
@@ -785,9 +822,8 @@ function lockTech(){
         log("TX: GET_SETTINGS", "tx");
       }, 500);
       setTimeout(() => {
-        client.publish(TOPIC_SETTINGS, "GET_ADS");
-        log("TX: GET_ADS", "tx");
-      }, 1000);
+        refreshAds();
+      }, 900);
     });
   });
 
@@ -884,17 +920,40 @@ function loadSettings(){
   log("TX: GET_SETTINGS", "tx");
 }
 
-function refreshAds(){
-  if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
+function refreshAds(force = false){
+  if(!client || !client.connected){
+    toast("MQTT وصل نیست", "err");
+    return;
+  }
+
+  if(adsRequested && !force) return;
+
+  adsRequested = true;
+  adTransferId = 0;
+  adCurrentTransfer = 0;
   adReceived = {};
   adMetaCount = 0;
   adMetaReceived = 0;
-  adsRequested = false;
+  adImages = [];
+
+  if(adSliderTimer){
+    clearInterval(adSliderTimer);
+    adSliderTimer = null;
+  }
+
   $("adLoading").style.display = "flex";
   $("adImage").style.display = "none";
-  client.publish(TOPIC_SETTINGS, "GET_ADS");
-  log("TX: GET_ADS", "tx");
-  toast("در حال بارگذاری...", "ok");
+  $("adDots").style.display = "none";
+
+  client.publish(TOPIC_SETTINGS, "GET_ADS", (err) => {
+    if(err){
+      adsRequested = false;
+      log("GET_ADS FAILED", "err");
+      toast("دریافت تبلیغات ناموفق بود", "err");
+    } else {
+      log("TX: GET_ADS", "tx");
+    }
+  });
 }
 
 function saveTechSettings(){
