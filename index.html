@@ -544,10 +544,17 @@ function updateStatus(data){
   const newAdEnabled = !!data.adEnabled;
   const newAdInterval = data.adInterval || 10;
   if(newAdEnabled !== adEnabled || newAdInterval !== adInterval){
+    const wasEnabled = adEnabled;
     adEnabled = newAdEnabled;
     adInterval = newAdInterval;
-    if(adEnabled && adImages.length > 0){ startAdSlider(); showAdBanner(); }
-    else if(!adEnabled){ hideAdBanner(); }
+    if(adEnabled && adImages.length > 0){
+      startAdSlider();
+      showAdBanner();
+    } else if(!adEnabled){
+      hideAdBanner();
+    } else if(!wasEnabled && adEnabled && client && client.connected){
+      refreshAds();
+    }
   }
 }
 
@@ -577,6 +584,81 @@ function updateSettings(data){
   $("t_poff").value = data.poff ?? 1;
   $("t_adEnabled").value = data.adEnabled ? "1" : "0";
   $("t_adInterval").value = data.adInterval ?? 10;
+}
+
+// ============================================================
+// AD DISPLAY
+// ============================================================
+let adShowIndex = 0;
+
+function updateAdDots(){
+  const box = $("adDots");
+  box.innerHTML = "";
+  adImages.forEach((img, i) => {
+    const dot = document.createElement("span");
+    dot.className = "ad-dot" + (i === adShowIndex ? " active" : "");
+    box.appendChild(dot);
+  });
+  box.style.display = adImages.length > 1 ? "flex" : "none";
+}
+
+function showAdBanner(){
+  const banner = $("adBanner");
+  if(adEnabled && adImages.length > 0) banner.classList.add("show");
+}
+
+function hideAdBanner(){
+  const banner = $("adBanner");
+  banner.classList.remove("show");
+  $("adImage").style.display = "none";
+  $("adDots").style.display = "none";
+  if(adSliderTimer){
+    clearInterval(adSliderTimer);
+    adSliderTimer = null;
+  }
+}
+
+function showCurrentAd(){
+  if(!adEnabled || adImages.length === 0){
+    hideAdBanner();
+    return;
+  }
+
+  if(adShowIndex >= adImages.length) adShowIndex = 0;
+  const item = adImages[adShowIndex];
+  const img = $("adImage");
+
+  img.style.opacity = "0";
+  img.src = item.dataUrl;
+  img.onload = () => {
+    img.style.display = "block";
+    requestAnimationFrame(() => { img.style.opacity = "1"; });
+  };
+
+  updateAdDots();
+  showAdBanner();
+}
+
+function startAdSlider(){
+  if(adSliderTimer){
+    clearInterval(adSliderTimer);
+    adSliderTimer = null;
+  }
+
+  if(!adEnabled || adImages.length === 0){
+    hideAdBanner();
+    return;
+  }
+
+  adShowIndex = 0;
+  showCurrentAd();
+
+  if(adImages.length > 1){
+    adSliderTimer = setInterval(() => {
+      adShowIndex = (adShowIndex + 1) % adImages.length;
+      showCurrentAd();
+    }, Math.max(3, Number(adInterval) || 10) * 1000);
+  }
 }
 
 // ============================================================
@@ -690,7 +772,7 @@ function handleAdTopic(topic, text){
       return;
     }
 
-    let b64 = "";
+    const orderedChunks = new Array(item.totalParts);
     for(let pnum = 0; pnum < item.totalParts; pnum++){
       if(item.chunks[pnum] === undefined){
         log("IMG " + idx + " MISSING PART " + pnum, "err");
@@ -699,8 +781,9 @@ function handleAdTopic(topic, text){
         }
         return;
       }
-      b64 += item.chunks[pnum];
+      orderedChunks[pnum] = item.chunks[pnum];
     }
+    const b64 = orderedChunks.join("");
 
     const expectedB64Length = Math.ceil(item.size / 3) * 4;
     if(b64.length !== expectedB64Length){
@@ -821,9 +904,12 @@ function lockTech(){
         client.publish(TOPIC_SETTINGS, "GET_SETTINGS");
         log("TX: GET_SETTINGS", "tx");
       }, 500);
+      // Ads are requested only after the retained status message tells us
+      // that advertising is enabled. This avoids a large MQTT transfer
+      // immediately after every reconnect.
       setTimeout(() => {
-        refreshAds();
-      }, 900);
+        if(adEnabled) refreshAds();
+      }, 1200);
     });
   });
 
