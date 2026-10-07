@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -15,111 +16,295 @@
   --purple:#8a6dff;--orange:#ff9d6b;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0;background:var(--bg-0);color:var(--text);font-family:'Segoe UI',Tahoma,Arial,sans-serif;overflow-x:hidden}
-body{background:radial-gradient(circle at 50% -20%,#1a2c44 0,var(--bg-0) 55%,var(--bg-3) 100%);min-height:100vh}
+html,body{
+  margin:0;padding:0;background:var(--bg-0);color:var(--text);
+  font-family:'Segoe UI',Tahoma,Arial,sans-serif;overflow-x:hidden
+}
+body{
+  background:radial-gradient(circle at 50% -20%,#1a2c44 0,var(--bg-0) 55%,var(--bg-3) 100%);
+  min-height:100vh
+}
 button{font:inherit;cursor:pointer;border:none;color:inherit}
 .container{max-width:700px;margin:0 auto;padding:14px 14px 60px}
-.header{display:flex;justify-content:space-between;align-items:center;padding:8px 4px 14px;gap:10px;flex-wrap:wrap}
+.header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 4px 14px;gap:10px;flex-wrap:wrap
+}
 .brand{display:flex;flex-direction:column;flex:1;min-width:0}
-.brand-name{font-size:26px;font-weight:900}.brand-name span{color:var(--accent)}
+.brand-name{font-size:26px;font-weight:900}
+.brand-name span{color:var(--accent)}
 .brand-sub{font-size:10px;color:var(--text-2);margin-top:2px;letter-spacing:.8px}
-.conn-badge{padding:8px 12px;border-radius:999px;font-size:11px;font-weight:800;background:var(--bg-2);color:var(--text-2);display:flex;align-items:center;gap:6px;white-space:nowrap}
-.conn-dot{width:8px;height:8px;border-radius:50%;background:var(--text-3);transition:all .3s}
+.conn-badge{
+  padding:8px 12px;border-radius:999px;font-size:11px;font-weight:800;
+  background:var(--bg-2);color:var(--text-2);display:flex;
+  align-items:center;gap:6px;white-space:nowrap
+}
+.conn-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--text-3);
+  transition:all .3s
+}
 .conn-badge.ok{background:rgba(22,185,120,.15);color:var(--accent-2)}
-.conn-badge.ok .conn-dot{background:var(--accent-2);box-shadow:0 0 10px var(--accent-2)}
+.conn-badge.ok .conn-dot{
+  background:var(--accent-2);box-shadow:0 0 10px var(--accent-2)
+}
 .conn-badge.wait{background:rgba(255,196,71,.14);color:var(--warn)}
-.conn-badge.wait .conn-dot{background:var(--warn);animation:pulse-dot 1s infinite}
+.conn-badge.wait .conn-dot{
+  background:var(--warn);animation:pulse-dot 1s infinite
+}
 .conn-badge.err{background:rgba(255,90,90,.14);color:var(--danger)}
 .conn-badge.err .conn-dot{background:var(--danger)}
 @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.3}}
-.tabs{display:flex;gap:4px;background:var(--bg-1);border:1px solid var(--border);border-radius:16px;padding:5px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}
+
+.tabs{
+  display:flex;gap:4px;background:var(--bg-1);border:1px solid var(--border);
+  border-radius:16px;padding:5px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none
+}
 .tabs::-webkit-scrollbar{display:none}
-.tab{flex:1;padding:10px 12px;border-radius:12px;background:transparent;color:var(--text-2);font-size:12px;font-weight:800;white-space:nowrap;transition:all .2s}
+.tab{
+  flex:1;padding:10px 12px;border-radius:12px;background:transparent;
+  color:var(--text-2);font-size:12px;font-weight:800;white-space:nowrap;
+  transition:all .2s
+}
 .tab.active{background:linear-gradient(135deg,#1a8fbe,#2465a8);color:#fff}
 .tab-content{display:none}
 .tab-content.active{display:block;animation:fadeIn .3s}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.card{background:var(--bg-1);border:1px solid var(--border);border-radius:22px;padding:18px;margin-bottom:12px;box-shadow:0 12px 30px rgba(0,0,0,.15)}
-.section-title{font-size:11px;color:var(--text-2);font-weight:900;letter-spacing:1px;margin:0 0 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.badge-mini{padding:3px 8px;border-radius:999px;font-size:9px;background:var(--bg-2);color:var(--text-2);font-weight:800}
-.ad-banner{display:none;padding:0;overflow:hidden;background:var(--bg-1);border:1px solid var(--border);border-radius:22px;margin-bottom:12px;box-shadow:0 12px 30px rgba(0,0,0,.15)}
+
+.card{
+  background:var(--bg-1);border:1px solid var(--border);border-radius:22px;
+  padding:18px;margin-bottom:12px;box-shadow:0 12px 30px rgba(0,0,0,.15)
+}
+.section-title{
+  font-size:11px;color:var(--text-2);font-weight:900;letter-spacing:1px;
+  margin:0 0 12px;display:flex;align-items:center;
+  justify-content:space-between;gap:8px
+}
+.badge-mini{
+  padding:3px 8px;border-radius:999px;font-size:9px;
+  background:var(--bg-2);color:var(--text-2);font-weight:800
+}
+
+.ad-banner{
+  display:none;padding:0;overflow:hidden;background:var(--bg-1);
+  border:1px solid var(--border);border-radius:22px;margin-bottom:12px;
+  box-shadow:0 12px 30px rgba(0,0,0,.15)
+}
 .ad-banner.show{display:block;animation:fadeIn .5s}
-.ad-banner-frame{width:100%;aspect-ratio:16/9;background:var(--bg-3);position:relative;overflow:hidden}
-.ad-banner-frame img{width:100%;height:100%;display:block;object-fit:cover;transition:opacity .5s}
-.ad-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;padding:6px 10px;background:rgba(0,0,0,.5);border-radius:999px;backdrop-filter:blur(8px)}
-.ad-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);transition:all .3s}
+.ad-banner-frame{
+  width:100%;aspect-ratio:16/9;background:var(--bg-3);
+  position:relative;overflow:hidden
+}
+.ad-banner-frame img{
+  width:100%;height:100%;display:block;object-fit:cover;
+  transition:opacity .5s
+}
+.ad-dots{
+  position:absolute;bottom:12px;left:50%;transform:translateX(-50%);
+  display:flex;gap:6px;padding:6px 10px;background:rgba(0,0,0,.5);
+  border-radius:999px;backdrop-filter:blur(8px)
+}
+.ad-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(255,255,255,.4);transition:all .3s
+}
 .ad-dot.active{background:#fff;width:22px;border-radius:4px}
-.ad-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:13px;font-weight:700;flex-direction:column;gap:8px}
-.spinner{width:36px;height:36px;border:3px solid var(--border-2);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+.ad-loading{
+  position:absolute;inset:0;display:flex;align-items:center;
+  justify-content:center;color:var(--text-2);font-size:13px;
+  font-weight:700;flex-direction:column;gap:8px
+}
+.spinner{
+  width:36px;height:36px;border:3px solid var(--border-2);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin 1s linear infinite
+}
 @keyframes spin{to{transform:rotate(360deg)}}
+
 .temp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.temp-card{position:relative;overflow:hidden;background:linear-gradient(145deg,rgba(66,199,255,.10),rgba(66,199,255,.02));border:1px solid rgba(66,199,255,.15);border-radius:20px;padding:20px 12px;text-align:center}
-.temp-card.water{background:linear-gradient(145deg,rgba(54,223,157,.10),rgba(54,223,157,.02));border-color:rgba(54,223,157,.15)}
-.temp-label{font-size:11px;color:var(--text-2);font-weight:800;letter-spacing:.8px;margin-bottom:10px}
-.temp-value{font-size:48px;font-weight:900;line-height:1;letter-spacing:-1.5px;font-variant-numeric:tabular-nums}
+.temp-card{
+  position:relative;overflow:hidden;
+  background:linear-gradient(145deg,rgba(66,199,255,.10),rgba(66,199,255,.02));
+  border:1px solid rgba(66,199,255,.15);border-radius:20px;
+  padding:20px 12px;text-align:center
+}
+.temp-card.water{
+  background:linear-gradient(145deg,rgba(54,223,157,.10),rgba(54,223,157,.02));
+  border-color:rgba(54,223,157,.15)
+}
+.temp-label{
+  font-size:11px;color:var(--text-2);font-weight:800;
+  letter-spacing:.8px;margin-bottom:10px
+}
+.temp-value{
+  font-size:48px;font-weight:900;line-height:1;
+  letter-spacing:-1.5px;font-variant-numeric:tabular-nums
+}
 .temp-value .unit{font-size:16px;color:var(--text-2);font-weight:700}
+
 .timer-card{text-align:center;padding:24px 18px}
-.timer-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.timer-head{
+  display:flex;justify-content:space-between;align-items:center;margin-bottom:16px
+}
 .timer-title{font-size:12px;color:var(--text-2);font-weight:800;letter-spacing:.8px}
-.state-badge{padding:6px 12px;border-radius:999px;background:var(--bg-2);color:var(--text-2);font-size:10px;font-weight:800;transition:all .3s}
+.state-badge{
+  padding:6px 12px;border-radius:999px;background:var(--bg-2);
+  color:var(--text-2);font-size:10px;font-weight:800;transition:all .3s
+}
 .state-badge.run{background:rgba(54,223,157,.18);color:var(--accent-2)}
 .state-badge.test{background:rgba(255,196,71,.18);color:var(--warn)}
 .state-badge.drain{background:rgba(66,199,255,.18);color:var(--accent)}
-.timer-ring{width:210px;height:210px;margin:0 auto 18px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) 0deg,var(--accent) 360deg);position:relative;box-shadow:0 14px 36px rgba(0,0,0,.28);transition:background .5s}
-.timer-ring:before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--bg-1)}
+
+.timer-ring{
+  width:210px;height:210px;margin:0 auto 18px;border-radius:50%;
+  display:grid;place-items:center;background:conic-gradient(var(--accent) 0deg,var(--accent) 360deg);
+  position:relative;box-shadow:0 14px 36px rgba(0,0,0,.28);transition:background .5s
+}
+.timer-ring:before{
+  content:"";position:absolute;inset:8px;border-radius:50%;background:var(--bg-1)
+}
 .timer-inner{position:relative;z-index:1}
-.timer-value{font-size:46px;font-weight:900;letter-spacing:2px;line-height:1;font-variant-numeric:tabular-nums}
+.timer-value{
+  font-size:46px;font-weight:900;letter-spacing:2px;
+  line-height:1;font-variant-numeric:tabular-nums
+}
 .timer-hint{margin-top:8px;font-size:10px;color:var(--text-3);font-weight:700}
+
 .actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.btn-main{height:80px;border-radius:20px;color:#fff;font-size:17px;font-weight:900;transition:transform .1s,opacity .2s;box-shadow:0 10px 24px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-main{
+  height:80px;border-radius:20px;color:#fff;font-size:17px;font-weight:900;
+  transition:transform .1s,opacity .2s;box-shadow:0 10px 24px rgba(0,0,0,.25);
+  display:flex;align-items:center;justify-content:center;gap:8px
+}
 .btn-main:active{transform:scale(.95)}
 .btn-main:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
 .btn-start{background:linear-gradient(145deg,#20d88d,#079a62)}
 .btn-stop{background:linear-gradient(145deg,#ef5b5b,#bd2525)}
 .btn-light{background:linear-gradient(145deg,#8a6dff,#5b3ddb)}
 .btn-light.off{background:var(--bg-2);color:var(--text-2)}
+
 .status-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.status-item{background:var(--bg-2);border:1px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center;transition:all .3s}
-.status-item.active-on{border-color:rgba(54,223,157,.35);background:rgba(54,223,157,.06)}
-.status-item .label{font-size:10px;color:var(--text-2);margin-bottom:6px;font-weight:700}
+.status-item{
+  background:var(--bg-2);border:1px solid var(--border);border-radius:14px;
+  padding:12px 8px;text-align:center;transition:all .3s
+}
+.status-item.active-on{
+  border-color:rgba(54,223,157,.35);background:rgba(54,223,157,.06)
+}
+.status-item .label{
+  font-size:10px;color:var(--text-2);margin-bottom:6px;font-weight:700
+}
 .status-item .value{font-size:13px;font-weight:800;color:var(--text)}
 .status-item .value.on{color:var(--accent-2)}
 .status-item .value.off{color:var(--text-3)}
 .status-item .value.warn{color:var(--warn)}
-.music-controls{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px}
-.music-btn{aspect-ratio:1;border-radius:14px;background:var(--bg-2);color:var(--text);font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;transition:transform .1s;border:1px solid var(--border-2)}
+
+.music-controls{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:12px
+}
+.music-btn{
+  aspect-ratio:1;border-radius:14px;background:var(--bg-2);color:var(--text);
+  font-size:20px;font-weight:900;display:flex;align-items:center;
+  justify-content:center;transition:transform .1s;border:1px solid var(--border-2)
+}
 .music-btn:active{transform:scale(.9)}
-.music-btn.play{background:linear-gradient(145deg,#20d88d,#079a62);color:#fff;border:none}
-.music-btn.stop{background:linear-gradient(145deg,#ef5b5b,#bd2525);color:#fff;border:none}
+.music-btn.play{
+  background:linear-gradient(145deg,#20d88d,#079a62);color:#fff;border:none
+}
+.music-btn.stop{
+  background:linear-gradient(145deg,#ef5b5b,#bd2525);color:#fff;border:none
+}
 .music-info{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px}
-.music-info-item{background:var(--bg-2);border-radius:12px;padding:10px;text-align:center}
-.music-info-item .label{font-size:9px;color:var(--text-2);margin-bottom:4px;font-weight:700}
-.music-info-item .value{font-size:16px;font-weight:900;color:var(--accent);font-variant-numeric:tabular-nums}
+.music-info-item{
+  background:var(--bg-2);border-radius:12px;padding:10px;text-align:center
+}
+.music-info-item .label{
+  font-size:9px;color:var(--text-2);margin-bottom:4px;font-weight:700
+}
+.music-info-item .value{
+  font-size:16px;font-weight:900;color:var(--accent);
+  font-variant-numeric:tabular-nums
+}
+
 .form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:11px;color:var(--text-2);margin-bottom:6px;font-weight:700}
-.form-group input,.form-group select{width:100%;padding:12px;border-radius:12px;background:var(--bg-2);color:var(--text);border:1px solid var(--border-2);font-size:14px;outline:none;font-family:inherit}
+.form-group label{
+  display:block;font-size:11px;color:var(--text-2);
+  margin-bottom:6px;font-weight:700
+}
+.form-group input,.form-group select{
+  width:100%;padding:12px;border-radius:12px;background:var(--bg-2);
+  color:var(--text);border:1px solid var(--border-2);font-size:14px;
+  outline:none;font-family:inherit
+}
 .form-group input:focus,.form-group select:focus{border-color:var(--accent)}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.btn-save{width:100%;padding:16px;border-radius:14px;background:linear-gradient(135deg,#16b978,#0d8a5a);color:#fff;font-weight:900;font-size:15px;margin-top:8px}
+.btn-save{
+  width:100%;padding:16px;border-radius:14px;
+  background:linear-gradient(135deg,#16b978,#0d8a5a);
+  color:#fff;font-weight:900;font-size:15px;margin-top:8px
+}
 .btn-save:active{transform:scale(.97)}
-.btn-secondary{width:100%;padding:14px;border-radius:14px;background:var(--bg-2);color:var(--text);font-weight:800;font-size:14px;margin-top:8px;border:1px solid var(--border-2)}
-.btn-danger{width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#c93b45,#9f3541);color:#fff;font-weight:800;font-size:14px;margin-top:8px}
+.btn-secondary{
+  width:100%;padding:14px;border-radius:14px;background:var(--bg-2);
+  color:var(--text);font-weight:800;font-size:14px;margin-top:8px;
+  border:1px solid var(--border-2)
+}
+.btn-danger{
+  width:100%;padding:14px;border-radius:14px;
+  background:linear-gradient(135deg,#c93b45,#9f3541);
+  color:#fff;font-weight:800;font-size:14px;margin-top:8px
+}
+
 .heater-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.heater-item{background:linear-gradient(145deg,rgba(255,120,80,.10),rgba(255,120,80,.02));border:1px solid rgba(255,120,80,.15);border-radius:16px;padding:16px 12px;text-align:center}
-.heater-item .label{font-size:10px;color:var(--text-2);margin-bottom:8px;font-weight:700}
-.heater-item .value{font-size:28px;font-weight:900;color:var(--orange);direction:ltr;font-variant-numeric:tabular-nums;letter-spacing:1px}
+.heater-item{
+  background:linear-gradient(145deg,rgba(255,120,80,.10),rgba(255,120,80,.02));
+  border:1px solid rgba(255,120,80,.15);border-radius:16px;
+  padding:16px 12px;text-align:center
+}
+.heater-item .label{
+  font-size:10px;color:var(--text-2);margin-bottom:8px;font-weight:700
+}
+.heater-item .value{
+  font-size:28px;font-weight:900;color:var(--orange);
+  direction:ltr;font-variant-numeric:tabular-nums;letter-spacing:1px
+}
 .heater-item .unit{font-size:10px;color:var(--text-3);margin-top:6px}
-.error-box{margin-top:12px;background:rgba(255,90,90,.10);border:1px solid rgba(255,90,90,.25);border-radius:14px;padding:12px 14px;display:none;align-items:center;gap:10px;color:#ff8b8b;font-size:13px;font-weight:700}
+
+.error-box{
+  margin-top:12px;background:rgba(255,90,90,.10);
+  border:1px solid rgba(255,90,90,.25);border-radius:14px;
+  padding:12px 14px;display:none;align-items:center;gap:10px;
+  color:#ff8b8b;font-size:13px;font-weight:700
+}
 .error-box.show{display:flex}
+
 .locked-overlay{padding:30px 20px;text-align:center}
 .locked-overlay .lock-icon{font-size:48px;margin-bottom:12px}
 .locked-overlay .lock-title{font-size:18px;font-weight:900;margin-bottom:8px}
-.locked-overlay .lock-sub{font-size:12px;color:var(--text-2);margin-bottom:20px;line-height:1.7}
-.locked-overlay input{width:100%;max-width:280px;padding:14px;border-radius:12px;background:var(--bg-2);color:var(--text);border:1px solid var(--border-2);font-size:16px;text-align:center;margin-bottom:12px;outline:none}
+.locked-overlay .lock-sub{
+  font-size:12px;color:var(--text-2);margin-bottom:20px;line-height:1.7
+}
+.locked-overlay input{
+  width:100%;max-width:280px;padding:14px;border-radius:12px;
+  background:var(--bg-2);color:var(--text);border:1px solid var(--border-2);
+  font-size:16px;text-align:center;margin-bottom:12px;outline:none
+}
 .locked-overlay input:focus{border-color:var(--accent)}
-.locked-overlay button{width:100%;max-width:280px;padding:14px;border-radius:12px;background:linear-gradient(135deg,#1a8fbe,#2465a8);color:#fff;font-weight:900;font-size:14px}
-.locked-overlay .error-msg{color:var(--danger);font-size:12px;margin-top:10px;font-weight:700;min-height:18px}
-.log{background:var(--bg-3);border:1px solid var(--border);border-radius:14px;padding:12px;height:180px;overflow-y:auto;font-family:'Courier New',monospace;font-size:11px;color:var(--text-2);direction:ltr;text-align:left;line-height:1.7}
+.locked-overlay button{
+  width:100%;max-width:280px;padding:14px;border-radius:12px;
+  background:linear-gradient(135deg,#1a8fbe,#2465a8);
+  color:#fff;font-weight:900;font-size:14px
+}
+.locked-overlay .error-msg{
+  color:var(--danger);font-size:12px;margin-top:10px;
+  font-weight:700;min-height:18px
+}
+
+.log{
+  background:var(--bg-3);border:1px solid var(--border);border-radius:14px;
+  padding:12px;height:180px;overflow-y:auto;
+  font-family:'Courier New',monospace;font-size:11px;color:var(--text-2);
+  direction:ltr;text-align:left;line-height:1.7
+}
 .log::-webkit-scrollbar{width:6px}
 .log::-webkit-scrollbar-thumb{background:var(--bg-2);border-radius:3px}
 .log-line{display:block;padding:2px 0}
@@ -128,11 +313,24 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 .log-line.tx{color:var(--accent-2)}
 .log-line.warn{color:var(--warn)}
 .log-line.err{color:var(--danger)}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--bg-1);border:1px solid var(--border-2);border-radius:14px;padding:12px 18px;font-size:13px;font-weight:700;box-shadow:0 12px 30px rgba(0,0,0,.4);transition:transform .3s;z-index:9999;max-width:90vw}
+
+.toast{
+  position:fixed;bottom:20px;left:50%;
+  transform:translateX(-50%) translateY(100px);
+  background:var(--bg-1);border:1px solid var(--border-2);
+  border-radius:14px;padding:12px 18px;font-size:13px;font-weight:700;
+  box-shadow:0 12px 30px rgba(0,0,0,.4);
+  transition:transform .3s;z-index:9999;max-width:90vw
+}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.ok{border-color:rgba(54,223,157,.4);color:var(--accent-2)}
 .toast.err{border-color:rgba(255,90,90,.4);color:var(--danger)}
-.footer{text-align:center;color:var(--text-3);font-size:10px;margin-top:18px;line-height:1.8;direction:ltr}
+
+.footer{
+  text-align:center;color:var(--text-3);font-size:10px;
+  margin-top:18px;line-height:1.8;direction:ltr
+}
+
 @media (max-width:400px){
   .temp-value{font-size:38px}
   .timer-ring{width:180px;height:180px}
@@ -146,200 +344,511 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 <body>
 <div class="container">
 
-  <div class="header">
-    <div class="brand">
-      <div class="brand-name">Steam<span>Pro</span></div>
-      <div class="brand-sub">REMOTE CONTROL</div>
-    </div>
-    <div class="conn-badge wait" id="connBadge">
-      <span class="conn-dot"></span>
-      <span id="connText">اتصال...</span>
+<div class="header">
+  <div class="brand">
+    <div class="brand-name">Steam<span>Pro</span></div>
+    <div class="brand-sub">REMOTE CONTROL</div>
+  </div>
+
+  <div class="conn-badge wait" id="connBadge">
+    <span class="conn-dot"></span>
+    <span id="connText">اتصال...</span>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 داشبورد</button>
+  <button class="tab" data-tab="music" onclick="switchTab('music')">🎵 پلیر</button>
+  <button class="tab" data-tab="tech" onclick="switchTab('tech')">🔧 فنی</button>
+  <button class="tab" data-tab="info" onclick="switchTab('info')">ℹ️ اطلاعات</button>
+</div>
+
+<!-- DASHBOARD -->
+<div class="tab-content active" id="tab-dashboard">
+
+  <div class="ad-banner" id="adBanner">
+    <div class="ad-banner-frame">
+
+      <div class="ad-loading" id="adLoading">
+        <div class="spinner"></div>
+        <div>در حال دریافت تبلیغات...</div>
+      </div>
+
+      <img id="adImage" style="display:none" alt="">
+
+      <div class="ad-dots" id="adDots" style="display:none"></div>
     </div>
   </div>
 
-  <div class="tabs">
-    <button class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">📊 داشبورد</button>
-    <button class="tab" data-tab="music" onclick="switchTab('music')">🎵 پلیر</button>
-    <button class="tab" data-tab="tech" onclick="switchTab('tech')">🔧 فنی</button>
-    <button class="tab" data-tab="info" onclick="switchTab('info')">ℹ️ اطلاعات</button>
-  </div>
+  <div class="card">
+    <div class="temp-grid">
 
-  <div class="tab-content active" id="tab-dashboard">
-    <div class="ad-banner" id="adBanner">
-      <div class="ad-banner-frame">
-        <div class="ad-loading" id="adLoading">
-          <div class="spinner"></div>
-          <div>در حال دریافت تبلیغات...</div>
-        </div>
-        <img id="adImage" style="display:none" alt="">
-        <div class="ad-dots" id="adDots" style="display:none"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="temp-grid">
-        <div class="temp-card">
-          <div class="temp-label">دمای سونا</div>
-          <div class="temp-value"><span id="saunaTemp">--</span><span class="unit">°C</span></div>
-        </div>
-        <div class="temp-card water">
-          <div class="temp-label">دمای آب</div>
-          <div class="temp-value"><span id="waterTemp">--</span><span class="unit">°C</span></div>
+      <div class="temp-card">
+        <div class="temp-label">دمای سونا</div>
+        <div class="temp-value">
+          <span id="saunaTemp">--</span>
+          <span class="unit">°C</span>
         </div>
       </div>
-    </div>
 
-    <div class="card timer-card">
-      <div class="timer-head">
-        <div class="timer-title">زمان باقی‌مانده</div>
-        <div class="state-badge" id="stateBadge">آماده</div>
-      </div>
-      <div class="timer-ring" id="timerRing">
-        <div class="timer-inner">
-          <div class="timer-value" id="timerValue">--:--</div>
-          <div class="timer-hint" id="timerHint">TIME REMAINING</div>
+      <div class="temp-card water">
+        <div class="temp-label">دمای آب</div>
+        <div class="temp-value">
+          <span id="waterTemp">--</span>
+          <span class="unit">°C</span>
         </div>
       </div>
-    </div>
 
-    <div class="card">
-      <div class="actions-grid">
-        <button class="btn-main btn-start" id="startBtn" onclick="sendCommand('START')">▶ شروع</button>
-        <button class="btn-main btn-stop" id="stopBtn" onclick="sendCommand('STOP')">■ توقف</button>
-      </div>
-      <button class="btn-main btn-light off" id="lightBtn" style="width:100%;margin-top:12px" onclick="toggleLight()">💡 چراغ</button>
-    </div>
-
-    <div class="card">
-      <div class="section-title">وضعیت دستگاه</div>
-      <div class="status-grid">
-        <div class="status-item" id="itemHeater"><div class="label">هیتر</div><div class="value off" id="stHeater">--</div></div>
-        <div class="status-item" id="itemInlet"><div class="label">ورودی</div><div class="value off" id="stInlet">--</div></div>
-        <div class="status-item" id="itemDrain"><div class="label">تخلیه</div><div class="value off" id="stDrain">--</div></div>
-        <div class="status-item" id="itemLight"><div class="label">چراغ</div><div class="value off" id="stLight">--</div></div>
-        <div class="status-item" id="itemPulse"><div class="label">پالس</div><div class="value off" id="stPulse">--</div></div>
-        <div class="status-item" id="itemTest"><div class="label">تست</div><div class="value off" id="stTest">--</div></div>
-        <div class="status-item" id="itemHigh"><div class="label">سطح بالا</div><div class="value off" id="stHigh">--</div></div>
-        <div class="status-item" id="itemLow"><div class="label">سطح پایین</div><div class="value off" id="stLow">--</div></div>
-        <div class="status-item"><div class="label">حجم صدا</div><div class="value" id="stVolume">--</div></div>
-      </div>
-      <div class="error-box" id="errorBox"><span>⚠️</span><span id="errorText"></span></div>
     </div>
   </div>
 
-  <div class="tab-content" id="tab-music">
+  <div class="card timer-card">
+
+    <div class="timer-head">
+      <div class="timer-title">زمان باقی‌مانده</div>
+      <div class="state-badge" id="stateBadge">آماده</div>
+    </div>
+
+    <div class="timer-ring" id="timerRing">
+      <div class="timer-inner">
+        <div class="timer-value" id="timerValue">--:--</div>
+        <div class="timer-hint" id="timerHint">TIME REMAINING</div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <div class="actions-grid">
+
+      <button class="btn-main btn-start"
+              id="startBtn"
+              onclick="sendCommand('START')">
+        ▶ شروع
+      </button>
+
+      <button class="btn-main btn-stop"
+              id="stopBtn"
+              onclick="sendCommand('STOP')">
+        ■ توقف
+      </button>
+
+    </div>
+
+    <button class="btn-main btn-light off"
+            id="lightBtn"
+            style="width:100%;margin-top:12px"
+            onclick="toggleLight()">
+      💡 چراغ
+    </button>
+
+  </div>
+
+  <div class="card">
+
+    <div class="section-title">وضعیت دستگاه</div>
+
+    <div class="status-grid">
+
+      <div class="status-item" id="itemHeater">
+        <div class="label">هیتر</div>
+        <div class="value off" id="stHeater">--</div>
+      </div>
+
+      <div class="status-item" id="itemInlet">
+        <div class="label">ورودی</div>
+        <div class="value off" id="stInlet">--</div>
+      </div>
+
+      <div class="status-item" id="itemDrain">
+        <div class="label">تخلیه</div>
+        <div class="value off" id="stDrain">--</div>
+      </div>
+
+      <div class="status-item" id="itemLight">
+        <div class="label">چراغ</div>
+        <div class="value off" id="stLight">--</div>
+      </div>
+
+      <div class="status-item" id="itemPulse">
+        <div class="label">پالس</div>
+        <div class="value off" id="stPulse">--</div>
+      </div>
+
+      <div class="status-item" id="itemTest">
+        <div class="label">تست</div>
+        <div class="value off" id="stTest">--</div>
+      </div>
+
+      <div class="status-item" id="itemHigh">
+        <div class="label">سطح بالا</div>
+        <div class="value off" id="stHigh">--</div>
+      </div>
+
+      <div class="status-item" id="itemLow">
+        <div class="label">سطح پایین</div>
+        <div class="value off" id="stLow">--</div>
+      </div>
+
+      <div class="status-item">
+        <div class="label">حجم صدا</div>
+        <div class="value" id="stVolume">--</div>
+      </div>
+
+    </div>
+
+    <div class="error-box" id="errorBox">
+      <span>⚠️</span>
+      <span id="errorText"></span>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- MUSIC -->
+<div class="tab-content" id="tab-music">
+
+  <div class="card">
+
+    <div class="section-title">
+      پخش‌کننده موسیقی
+      <span class="badge-mini" id="dfStatus">--</span>
+    </div>
+
+    <div class="music-controls">
+
+      <button class="music-btn" onclick="sendCommand('PREV')">⏮</button>
+
+      <button class="music-btn play" onclick="sendCommand('PLAY')">▶</button>
+
+      <button class="music-btn stop" onclick="sendCommand('MUSIC_STOP')">■</button>
+
+      <button class="music-btn" onclick="sendCommand('NEXT')">⏭</button>
+
+      <button class="music-btn" onclick="loadSettings()">🔄</button>
+
+    </div>
+
+    <div class="music-info">
+
+      <div class="music-info-item">
+        <div class="label">آهنگ فعلی</div>
+        <div class="value" id="musicTrack">--</div>
+      </div>
+
+      <div class="music-info-item">
+        <div class="label">کل آهنگ‌ها</div>
+        <div class="value" id="musicTotal">--</div>
+      </div>
+
+      <div class="music-info-item">
+        <div class="label">حجم صدا</div>
+        <div class="value" id="musicVolume">--</div>
+      </div>
+
+    </div>
+
+    <div class="form-group" style="margin-top:16px">
+
+      <label>حجم صدا</label>
+
+      <div style="display:flex;gap:8px;align-items:center">
+
+        <button class="music-btn"
+                style="width:60px;height:60px;aspect-ratio:auto;font-size:24px"
+                onclick="sendCommand('VOL_DOWN')">
+          −
+        </button>
+
+        <input id="volSlider"
+               type="range"
+               min="0"
+               max="30"
+               value="15"
+               style="flex:1"
+               onchange="setVolume(this.value)">
+
+        <button class="music-btn"
+                style="width:60px;height:60px;aspect-ratio:auto;font-size:24px"
+                onclick="sendCommand('VOL_UP')">
+          +
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- TECH -->
+<div class="tab-content" id="tab-tech">
+
+  <div class="card" id="techLocked">
+
+    <div class="locked-overlay">
+
+      <div class="lock-icon">🔐</div>
+
+      <div class="lock-title">
+        تنظیمات فنی قفل است
+      </div>
+
+      <div class="lock-sub">
+        برای دسترسی، رمز منو را وارد کنید
+      </div>
+
+      <input id="authInput"
+             type="password"
+             placeholder="رمز"
+             maxlength="12">
+
+      <button onclick="doAuth()">ورود</button>
+
+      <div class="error-msg" id="authError"></div>
+
+    </div>
+
+  </div>
+
+  <div id="techUnlocked" style="display:none">
+
     <div class="card">
-      <div class="section-title">پخش‌کننده موسیقی<span class="badge-mini" id="dfStatus">--</span></div>
-      <div class="music-controls">
-        <button class="music-btn" onclick="sendCommand('PREV')">⏮</button>
-        <button class="music-btn play" onclick="sendCommand('PLAY')">▶</button>
-        <button class="music-btn stop" onclick="sendCommand('MUSIC_STOP')">■</button>
-        <button class="music-btn" onclick="sendCommand('NEXT')">⏭</button>
-        <button class="music-btn" onclick="loadSettings()">🔄</button>
+
+      <div class="section-title">تنظیمات فنی</div>
+
+      <div class="form-group">
+        <label>فعال بودن تایمر</label>
+        <select id="t_timer">
+          <option value="1">روشن</option>
+          <option value="0">خاموش</option>
+        </select>
       </div>
-      <div class="music-info">
-        <div class="music-info-item"><div class="label">آهنگ فعلی</div><div class="value" id="musicTrack">--</div></div>
-        <div class="music-info-item"><div class="label">کل آهنگ‌ها</div><div class="value" id="musicTotal">--</div></div>
-        <div class="music-info-item"><div class="label">حجم صدا</div><div class="value" id="musicVolume">--</div></div>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>مدت کارکرد (دقیقه)</label>
+          <input id="t_run" type="number" min="1" max="120">
+        </div>
+
+        <div class="form-group">
+          <label>دمای هدف سونا (°C)</label>
+          <input id="t_starget" type="number" min="10" max="90" step="0.1">
+        </div>
+
+        <div class="form-group">
+          <label>هیسترزیس (°C)</label>
+          <input id="t_shyst" type="number" step="0.1">
+        </div>
+
+        <div class="form-group">
+          <label>دمای شروع تخلیه (°C)</label>
+          <input id="t_dstart" type="number" step="0.1">
+        </div>
+
+        <div class="form-group">
+          <label>مدت تخلیه (ثانیه)</label>
+          <input id="t_dsec" type="number" min="1" max="3600">
+        </div>
+
+        <div class="form-group">
+          <label>حداکثر دمای آب (°C)</label>
+          <input id="t_maxw" type="number" step="0.1">
+        </div>
+
+        <div class="form-group">
+          <label>Timeout پر شدن (ثانیه)</label>
+          <input id="t_fillto" type="number" min="10" max="600">
+        </div>
+
+        <div class="form-group">
+          <label>حجم صدا</label>
+          <input id="t_volume" type="number" min="0" max="30">
+        </div>
+
       </div>
-      <div class="form-group" style="margin-top:16px">
-        <label>حجم صدا</label>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="music-btn" style="width:60px;height:60px;aspect-ratio:auto;font-size:24px" onclick="sendCommand('VOL_DOWN')">−</button>
-          <input id="volSlider" type="range" min="0" max="30" value="15" style="flex:1" onchange="setVolume(this.value)">
-          <button class="music-btn" style="width:60px;height:60px;aspect-ratio:auto;font-size:24px" onclick="sendCommand('VOL_UP')">+</button>
+
+      <div class="form-group">
+        <label>رله پالس</label>
+        <select id="t_pulse">
+          <option value="1">روشن</option>
+          <option value="0">خاموش</option>
+        </select>
+      </div>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>زمان ON پالس (دقیقه)</label>
+          <input id="t_pon" type="number" min="1" max="60">
+        </div>
+
+        <div class="form-group">
+          <label>زمان OFF پالس (دقیقه)</label>
+          <input id="t_poff" type="number" min="1" max="60">
+        </div>
+
+      </div>
+
+      <div class="form-group">
+        <label>فعال بودن تبلیغات</label>
+        <select id="t_adEnabled">
+          <option value="1">روشن</option>
+          <option value="0">خاموش</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>مدت هر عکس (ثانیه)</label>
+        <input id="t_adInterval"
+               type="number"
+               min="3"
+               max="60">
+      </div>
+
+      <button class="btn-save" onclick="saveTechSettings()">
+        💾 ذخیره
+      </button>
+
+      <button class="btn-secondary" onclick="loadSettings()">
+        🔄 بارگذاری
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <div class="section-title">رمز منو</div>
+
+      <div class="form-group">
+        <label>رمز جدید (4 تا 12 کاراکتر)</label>
+        <input id="newPass"
+               type="password"
+               maxlength="12">
+      </div>
+
+      <button class="btn-secondary" onclick="changePassword()">
+        🔐 تغییر رمز
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <div class="section-title">ریست سرویس</div>
+
+      <button class="btn-danger" onclick="resetService()">
+        ♻️ ریست شمارنده سرویس هیتر
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <div class="section-title">تبلیغات</div>
+
+      <button class="btn-secondary" onclick="refreshAds(true)">
+        🔄 بارگذاری مجدد تبلیغات از ESP
+      </button>
+
+    </div>
+
+    <div class="card">
+
+      <button class="btn-secondary" onclick="lockTech()">
+        🔒 قفل کردن دوباره
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- INFO -->
+<div class="tab-content" id="tab-info">
+
+  <div class="card">
+
+    <div class="section-title">آمار کارکرد هیتر</div>
+
+    <div class="heater-grid">
+
+      <div class="heater-item">
+        <div class="label">کل کارکرد</div>
+        <div class="value" id="heaterTotal">--:--</div>
+        <div class="unit">ساعت : دقیقه</div>
+      </div>
+
+      <div class="heater-item">
+        <div class="label">از آخرین سرویس</div>
+        <div class="value" id="heaterService">--:--</div>
+        <div class="unit">ساعت : دقیقه</div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <div class="section-title">اطلاعات اتصال</div>
+
+    <div class="status-grid" style="grid-template-columns:1fr 1fr">
+
+      <div class="status-item">
+        <div class="label">MQTT</div>
+        <div class="value" id="infoMqtt">--</div>
+      </div>
+
+      <div class="status-item">
+        <div class="label">DEVICE</div>
+        <div class="value"
+             id="infoDevice"
+             style="font-size:10px;direction:ltr;font-family:monospace">
+          --
         </div>
       </div>
-    </div>
-  </div>
 
-  <div class="tab-content" id="tab-tech">
-    <div class="card" id="techLocked">
-      <div class="locked-overlay">
-        <div class="lock-icon">🔐</div>
-        <div class="lock-title">تنظیمات فنی قفل است</div>
-        <div class="lock-sub">برای دسترسی، رمز منو را وارد کنید</div>
-        <input id="authInput" type="password" placeholder="رمز" maxlength="12">
-        <button onclick="doAuth()">ورود</button>
-        <div class="error-msg" id="authError"></div>
+      <div class="status-item">
+        <div class="label">پیام‌ها</div>
+        <div class="value" id="infoMsgCount">0</div>
       </div>
-    </div>
 
-    <div id="techUnlocked" style="display:none">
-      <div class="card">
-        <div class="section-title">تنظیمات فنی</div>
-        <div class="form-group"><label>فعال بودن تایمر</label><select id="t_timer"><option value="1">روشن</option><option value="0">خاموش</option></select></div>
-        <div class="form-grid">
-          <div class="form-group"><label>مدت کارکرد (دقیقه)</label><input id="t_run" type="number" min="1" max="120"></div>
-          <div class="form-group"><label>دمای هدف سونا (°C)</label><input id="t_starget" type="number" min="10" max="90" step="0.1"></div>
-          <div class="form-group"><label>هیسترزیس (°C)</label><input id="t_shyst" type="number" step="0.1"></div>
-          <div class="form-group"><label>دمای شروع تخلیه (°C)</label><input id="t_dstart" type="number" step="0.1"></div>
-          <div class="form-group"><label>مدت تخلیه (ثانیه)</label><input id="t_dsec" type="number" min="1" max="3600"></div>
-          <div class="form-group"><label>حداکثر دمای آب (°C)</label><input id="t_maxw" type="number" step="0.1"></div>
-          <div class="form-group"><label>Timeout پر شدن (ثانیه)</label><input id="t_fillto" type="number" min="10" max="600"></div>
-          <div class="form-group"><label>حجم صدا</label><input id="t_volume" type="number" min="0" max="30"></div>
+      <div class="status-item">
+        <div class="label">آخرین</div>
+        <div class="value" id="infoLastMsg" style="font-size:11px">
+          --
         </div>
-        <div class="form-group"><label>رله پالس</label><select id="t_pulse"><option value="1">روشن</option><option value="0">خاموش</option></select></div>
-        <div class="form-grid">
-          <div class="form-group"><label>زمان ON پالس (دقیقه)</label><input id="t_pon" type="number" min="1" max="60"></div>
-          <div class="form-group"><label>زمان OFF پالس (دقیقه)</label><input id="t_poff" type="number" min="1" max="60"></div>
-        </div>
-        <div class="form-group"><label>فعال بودن تبلیغات</label><select id="t_adEnabled"><option value="1">روشن</option><option value="0">خاموش</option></select></div>
-        <div class="form-group"><label>مدت هر عکس (ثانیه)</label><input id="t_adInterval" type="number" min="3" max="60"></div>
-        <button class="btn-save" onclick="saveTechSettings()">💾 ذخیره</button>
-        <button class="btn-secondary" onclick="loadSettings()">🔄 بارگذاری</button>
       </div>
 
-      <div class="card">
-        <div class="section-title">رمز منو</div>
-        <div class="form-group"><label>رمز جدید (4 تا 12 کاراکتر)</label><input id="newPass" type="password" maxlength="12"></div>
-        <button class="btn-secondary" onclick="changePassword()">🔐 تغییر رمز</button>
-      </div>
-
-      <div class="card">
-        <div class="section-title">ریست سرویس</div>
-        <button class="btn-danger" onclick="resetService()">♻️ ریست شمارنده سرویس هیتر</button>
-      </div>
-
-      <div class="card">
-        <div class="section-title">تبلیغات</div>
-        <button class="btn-secondary" onclick="refreshAds()">🔄 بارگذاری مجدد تبلیغات از ESP</button>
-      </div>
-
-      <div class="card">
-        <button class="btn-secondary" onclick="lockTech()">🔒 قفل کردن دوباره</button>
-      </div>
     </div>
+
   </div>
 
-  <div class="tab-content" id="tab-info">
-    <div class="card">
-      <div class="section-title">آمار کارکرد هیتر</div>
-      <div class="heater-grid">
-        <div class="heater-item"><div class="label">کل کارکرد</div><div class="value" id="heaterTotal">--:--</div><div class="unit">ساعت : دقیقه</div></div>
-        <div class="heater-item"><div class="label">از آخرین سرویس</div><div class="value" id="heaterService">--:--</div><div class="unit">ساعت : دقیقه</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="section-title">اطلاعات اتصال</div>
-      <div class="status-grid" style="grid-template-columns:1fr 1fr">
-        <div class="status-item"><div class="label">MQTT</div><div class="value" id="infoMqtt">--</div></div>
-        <div class="status-item"><div class="label">DEVICE</div><div class="value" id="infoDevice" style="font-size:10px;direction:ltr;font-family:monospace">--</div></div>
-        <div class="status-item"><div class="label">پیام‌ها</div><div class="value" id="infoMsgCount">0</div></div>
-        <div class="status-item"><div class="label">آخرین</div><div class="value" id="infoLastMsg" style="font-size:11px">--</div></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="section-title">گزارش</div>
-      <div class="log" id="log"></div>
-      <button class="btn-secondary" onclick="clearLog()">پاک کردن</button>
-    </div>
+  <div class="card">
+
+    <div class="section-title">گزارش</div>
+
+    <div class="log" id="log"></div>
+
+    <button class="btn-secondary" onclick="clearLog()">
+      پاک کردن
+    </button>
+
   </div>
 
-  <div class="footer">
-    SteamPro Remote · MQTT<br>
-    <span id="footerDevice">DEVICE: --</span>
-  </div>
+</div>
+
+<div class="footer">
+  SteamPro Remote · MQTT<br>
+  <span id="footerDevice">DEVICE: --</span>
+</div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -347,734 +856,2405 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
 <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
 
 <script>
+
 // ============================================================
 // CONFIG
 // ============================================================
+
 const MQTT_URL = "wss://broker.emqx.io:8084/mqtt";
 const DEVICE_ID = "841FE8470B24";
 
-const TOPIC_COMMAND     = "steampro/" + DEVICE_ID + "/command";
-const TOPIC_STATUS      = "steampro/" + DEVICE_ID + "/status";
-const TOPIC_TEMPERATURE = "steampro/" + DEVICE_ID + "/temperature";
-const TOPIC_SETTINGS    = "steampro/" + DEVICE_ID + "/settings";
+const TOPIC_COMMAND =
+  "steampro/" + DEVICE_ID + "/command";
 
-document.getElementById("footerDevice").innerText = "DEVICE: " + DEVICE_ID;
-document.getElementById("infoDevice").innerText = DEVICE_ID;
+const TOPIC_STATUS =
+  "steampro/" + DEVICE_ID + "/status";
+
+const TOPIC_TEMPERATURE =
+  "steampro/" + DEVICE_ID + "/temperature";
+
+const TOPIC_SETTINGS =
+  "steampro/" + DEVICE_ID + "/settings";
+
+document.getElementById("footerDevice").innerText =
+  "DEVICE: " + DEVICE_ID;
+
+document.getElementById("infoDevice").innerText =
+  DEVICE_ID;
+
 
 // ============================================================
 // STATE
 // ============================================================
+
 let lastStatus = null;
-let timerRemaining = 0, timerTotal = 0, timerRunning = false, lastTimerSync = 0;
+
+let timerRemaining = 0;
+let timerTotal = 0;
+let timerRunning = false;
+let lastTimerSync = 0;
+
 let client = null;
-let msgCount = 0, lastMsgTime = 0;
-let heaterWasOnAtLastMsg = false, heaterBaseTimeAtLastMsg = 0, heaterBaseServiceAtLastMsg = 0;
+
+let msgCount = 0;
+let lastMsgTime = 0;
+
+let heaterWasOnAtLastMsg = false;
+let heaterBaseTimeAtLastMsg = 0;
+let heaterBaseServiceAtLastMsg = 0;
+
 let isAuthed = false;
-let adEnabled = false, adInterval = 10;
+
+let adEnabled = false;
+let adInterval = 10;
+
 let adImages = [];
 let adCurrentIndex = 0;
 let adSliderTimer = null;
+
 let adReceived = {};
 let adMetaCount = 0;
 let adMetaReceived = 0;
+
 let adsRequested = false;
+
 let adTransferId = 0;
 let adCurrentTransfer = 0;
 
 const MAX_LOG_LINES = 60;
+
 let logLines = [];
 
 const $ = id => document.getElementById(id);
 
+
 // ============================================================
 // HELPERS
 // ============================================================
+
 function setConnection(text, cls){
-  $("connBadge").className = "conn-badge " + cls;
+
+  $("connBadge").className =
+    "conn-badge " + cls;
+
   $("connText").innerText = text;
 }
 
+
 function log(msg, type = "info"){
-  const time = new Date().toLocaleTimeString();
-  logLines.push({ time, msg, type });
-  while(logLines.length > MAX_LOG_LINES) logLines.shift();
+
+  const time =
+    new Date().toLocaleTimeString();
+
+  logLines.push({
+    time,
+    msg,
+    type
+  });
+
+  while(logLines.length > MAX_LOG_LINES){
+    logLines.shift();
+  }
+
   renderLog();
 }
 
+
 function renderLog(){
+
   const box = $("log");
-  box.innerHTML = logLines.map(l => `<span class="log-line ${l.type}">[${l.time}] ${escapeHtml(l.msg)}</span>`).join("");
+
+  box.innerHTML =
+    logLines.map(l =>
+      `<span class="log-line ${l.type}">
+        [${l.time}] ${escapeHtml(l.msg)}
+      </span>`
+    ).join("");
+
   box.scrollTop = box.scrollHeight;
 }
 
+
 function escapeHtml(s){
-  return String(s).replace(/[&<>"']/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+
+  return String(s).replace(
+    /[&<>"']/g,
+    m => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    }[m])
+  );
 }
 
-function clearLog(){ logLines = []; renderLog(); }
+
+function clearLog(){
+
+  logLines = [];
+
+  renderLog();
+}
+
 
 function formatTime(sec){
-  sec = Math.max(0, Math.floor(Number(sec) || 0));
-  return String(Math.floor(sec/60)).padStart(2,"0") + ":" + String(sec%60).padStart(2,"0");
+
+  sec = Math.max(
+    0,
+    Math.floor(Number(sec) || 0)
+  );
+
+  return String(
+    Math.floor(sec / 60)
+  ).padStart(2,"0")
+  + ":"
+  + String(
+    sec % 60
+  ).padStart(2,"0");
 }
+
 
 function formatHeaterTime(sec){
-  sec = Math.max(0, Math.floor(Number(sec) || 0));
-  const tm = Math.floor(sec/60);
-  return Math.floor(tm/60) + ":" + String(tm%60).padStart(2,"0");
+
+  sec = Math.max(
+    0,
+    Math.floor(Number(sec) || 0)
+  );
+
+  const tm = Math.floor(sec / 60);
+
+  return Math.floor(tm / 60)
+    + ":"
+    + String(tm % 60).padStart(2,"0");
 }
 
-function setVal(id, text, cls, itemId){
+
+function setVal(id,text,cls,itemId){
+
   const el = $(id);
+
   if(!el) return;
+
   el.innerText = text;
-  el.className = "value " + (cls || "");
+
+  el.className =
+    "value " + (cls || "");
+
   if(itemId){
+
     const item = $(itemId);
-    if(item) item.classList.toggle("active-on", cls === "on");
+
+    if(item){
+      item.classList.toggle(
+        "active-on",
+        cls === "on"
+      );
+    }
   }
 }
 
-function onOff(v){ return v ? "روشن" : "خاموش"; }
-function openClose(v){ return v ? "باز" : "بسته"; }
-function highLow(v){ return v ? "پر" : "کم"; }
 
-function toast(msg, cls = ""){
-  const t = $("toast");
-  t.innerText = msg;
-  t.className = "toast show " + cls;
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove("show"), 2500);
+function onOff(v){
+  return v ? "روشن" : "خاموش";
 }
+
+
+function openClose(v){
+  return v ? "باز" : "بسته";
+}
+
+
+function highLow(v){
+  return v ? "پر" : "کم";
+}
+
+
+function toast(msg,cls = ""){
+
+  const t = $("toast");
+
+  t.innerText = msg;
+
+  t.className =
+    "toast show " + cls;
+
+  clearTimeout(t._timer);
+
+  t._timer =
+    setTimeout(
+      () => t.classList.remove("show"),
+      2500
+    );
+}
+
 
 function switchTab(name){
-  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
-  document.querySelectorAll(".tab-content").forEach(c => c.classList.toggle("active", c.id === "tab-" + name));
+
+  document.querySelectorAll(".tab")
+    .forEach(t =>
+      t.classList.toggle(
+        "active",
+        t.dataset.tab === name
+      )
+    );
+
+  document.querySelectorAll(".tab-content")
+    .forEach(c =>
+      c.classList.toggle(
+        "active",
+        c.id === "tab-" + name
+      )
+    );
 }
 
-function drawTimerRing(remaining, total){
+
+function drawTimerRing(remaining,total){
+
   const ring = $("timerRing");
-  if(total <= 0){ ring.style.background = "conic-gradient(var(--bg-2) 0deg 360deg)"; return; }
-  remaining = Math.max(0, Math.min(total, remaining));
-  const deg = (remaining/total) * 360;
-  const hue = (remaining/total) * 120;
-  const color = "hsl(" + hue + ",85%,55%)";
-  ring.style.background = "conic-gradient(" + color + " 0deg " + deg + "deg, rgba(255,255,255,.06) " + deg + "deg 360deg)";
+
+  if(total <= 0){
+
+    ring.style.background =
+      "conic-gradient(var(--bg-2) 0deg 360deg)";
+
+    return;
+  }
+
+  remaining =
+    Math.max(
+      0,
+      Math.min(total,remaining)
+    );
+
+  const deg =
+    (remaining / total) * 360;
+
+  const hue =
+    (remaining / total) * 120;
+
+  const color =
+    "hsl(" +
+    hue +
+    ",85%,55%)";
+
+  ring.style.background =
+    "conic-gradient(" +
+    color +
+    " 0deg " +
+    deg +
+    "deg, rgba(255,255,255,.06) " +
+    deg +
+    "deg 360deg)";
 }
+
 
 function updateTemperature(data){
-  if(data.sauna !== undefined) $("saunaTemp").innerText = Math.round(data.sauna);
-  if(data.water !== undefined) $("waterTemp").innerText = Math.round(data.water);
+
+  if(data.sauna !== undefined)
+    $("saunaTemp").innerText =
+      Math.round(data.sauna);
+
+  if(data.water !== undefined)
+    $("waterTemp").innerText =
+      Math.round(data.water);
 }
+
 
 // ============================================================
 // STATUS
 // ============================================================
-function updateStatus(data){
-  lastStatus = data;
-  msgCount++;
-  lastMsgTime = Date.now();
-  $("infoMsgCount").innerText = msgCount;
-  $("infoLastMsg").innerText = new Date().toLocaleTimeString();
 
-  heaterWasOnAtLastMsg = !!data.heater;
-  heaterBaseTimeAtLastMsg = data.heaterTotalSec || 0;
-  heaterBaseServiceAtLastMsg = data.heaterServiceSec || 0;
+function updateStatus(data){
+
+  lastStatus = data;
+
+  msgCount++;
+
+  lastMsgTime = Date.now();
+
+  $("infoMsgCount").innerText =
+    msgCount;
+
+  $("infoLastMsg").innerText =
+    new Date().toLocaleTimeString();
+
+  heaterWasOnAtLastMsg =
+    !!data.heater;
+
+  heaterBaseTimeAtLastMsg =
+    data.heaterTotalSec || 0;
+
+  heaterBaseServiceAtLastMsg =
+    data.heaterServiceSec || 0;
 
   updateTemperature(data);
 
-  const isTest = !!data.test;
-  const timerEnabled = data.timerEnabled !== false;
-  timerTotal = isTest ? 600 : ((data.runMinutes || 0) * 60);
-  timerRemaining = Math.max(0, Math.floor(Number(data.remainingSec) || 0));
-  timerRunning = !!data.running;
-  lastTimerSync = Date.now();
+  const isTest =
+    !!data.test;
 
-  if(!timerEnabled && !isTest && !data.running){
-    $("timerValue").innerText = "OFF"; $("timerHint").innerText = "TIMER DISABLED"; drawTimerRing(0,0);
-  } else if(!data.running){
-    $("timerValue").innerText = formatTime(timerTotal); $("timerHint").innerText = "SET RUN TIME"; drawTimerRing(timerTotal, timerTotal);
-  } else {
-    $("timerValue").innerText = formatTime(timerRemaining); $("timerHint").innerText = isTest ? "TEST MODE" : "TIME REMAINING"; drawTimerRing(timerRemaining, timerTotal);
+  const timerEnabled =
+    data.timerEnabled !== false;
+
+  timerTotal =
+    isTest
+      ? 600
+      : ((data.runMinutes || 0) * 60);
+
+  timerRemaining =
+    Math.max(
+      0,
+      Math.floor(
+        Number(data.remainingSec) || 0
+      )
+    );
+
+  timerRunning =
+    !!data.running;
+
+  lastTimerSync =
+    Date.now();
+
+  if(
+    !timerEnabled &&
+    !isTest &&
+    !data.running
+  ){
+
+    $("timerValue").innerText =
+      "OFF";
+
+    $("timerHint").innerText =
+      "TIMER DISABLED";
+
+    drawTimerRing(0,0);
+
+  }else if(!data.running){
+
+    $("timerValue").innerText =
+      formatTime(timerTotal);
+
+    $("timerHint").innerText =
+      "SET RUN TIME";
+
+    drawTimerRing(
+      timerTotal,
+      timerTotal
+    );
+
+  }else{
+
+    $("timerValue").innerText =
+      formatTime(timerRemaining);
+
+    $("timerHint").innerText =
+      isTest
+        ? "TEST MODE"
+        : "TIME REMAINING";
+
+    drawTimerRing(
+      timerRemaining,
+      timerTotal
+    );
   }
 
-  const badge = $("stateBadge");
-  if(data.running && isTest){ badge.innerText = "تست"; badge.className = "state-badge test"; }
-  else if(data.running){ badge.innerText = "در حال کار"; badge.className = "state-badge run"; }
-  else if(data.drainActive){ badge.innerText = "تخلیه"; badge.className = "state-badge drain"; }
-  else { badge.innerText = "آماده"; badge.className = "state-badge"; }
+  const badge =
+    $("stateBadge");
 
-  const startBtn = $("startBtn"), stopBtn = $("stopBtn");
+  if(data.running && isTest){
+
+    badge.innerText = "تست";
+    badge.className =
+      "state-badge test";
+
+  }else if(data.running){
+
+    badge.innerText =
+      "در حال کار";
+
+    badge.className =
+      "state-badge run";
+
+  }else if(data.drainActive){
+
+    badge.innerText =
+      "تخلیه";
+
+    badge.className =
+      "state-badge drain";
+
+  }else{
+
+    badge.innerText =
+      "آماده";
+
+    badge.className =
+      "state-badge";
+  }
+
+  const startBtn =
+    $("startBtn");
+
+  const stopBtn =
+    $("stopBtn");
+
   if(data.running){
-    startBtn.disabled = true; stopBtn.disabled = false;
-    startBtn.innerText = isTest ? "▶ تست" : "▶ در حال کار";
-  } else {
-    startBtn.disabled = false; stopBtn.disabled = true; startBtn.innerText = "▶ شروع";
+
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+
+    startBtn.innerText =
+      isTest
+        ? "▶ تست"
+        : "▶ در حال کار";
+
+  }else{
+
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+
+    startBtn.innerText =
+      "▶ شروع";
   }
 
-  const lightBtn = $("lightBtn");
-  if(data.light){ lightBtn.className = "btn-main btn-light"; lightBtn.innerText = "💡 چراغ روشن"; }
-  else { lightBtn.className = "btn-main btn-light off"; lightBtn.innerText = "💡 چراغ خاموش"; }
+  const lightBtn =
+    $("lightBtn");
 
-  setVal("stHeater", onOff(data.heater), data.heater ? "on" : "off", "itemHeater");
-  setVal("stInlet", openClose(data.inlet), data.inlet ? "on" : "off", "itemInlet");
-  setVal("stDrain", onOff(data.drain), data.drain ? "on" : "off", "itemDrain");
-  setVal("stLight", onOff(data.light), data.light ? "on" : "off", "itemLight");
-  setVal("stPulse", onOff(data.pulse), data.pulse ? "on" : "off", "itemPulse");
-  setVal("stTest", data.test ? "فعال" : "غیرفعال", data.test ? "warn" : "off", "itemTest");
-  setVal("stHigh", highLow(data.high), data.high ? "on" : "off", "itemHigh");
-  setVal("stLow", highLow(data.low), data.low ? "on" : "off", "itemLow");
-  $("stVolume").innerText = data.volume ?? "--";
+  if(data.light){
+
+    lightBtn.className =
+      "btn-main btn-light";
+
+    lightBtn.innerText =
+      "💡 چراغ روشن";
+
+  }else{
+
+    lightBtn.className =
+      "btn-main btn-light off";
+
+    lightBtn.innerText =
+      "💡 چراغ خاموش";
+  }
+
+  setVal(
+    "stHeater",
+    onOff(data.heater),
+    data.heater ? "on" : "off",
+    "itemHeater"
+  );
+
+  setVal(
+    "stInlet",
+    openClose(data.inlet),
+    data.inlet ? "on" : "off",
+    "itemInlet"
+  );
+
+  setVal(
+    "stDrain",
+    onOff(data.drain),
+    data.drain ? "on" : "off",
+    "itemDrain"
+  );
+
+  setVal(
+    "stLight",
+    onOff(data.light),
+    data.light ? "on" : "off",
+    "itemLight"
+  );
+
+  setVal(
+    "stPulse",
+    onOff(data.pulse),
+    data.pulse ? "on" : "off",
+    "itemPulse"
+  );
+
+  setVal(
+    "stTest",
+    data.test ? "فعال" : "غیرفعال",
+    data.test ? "warn" : "off",
+    "itemTest"
+  );
+
+  setVal(
+    "stHigh",
+    highLow(data.high),
+    data.high ? "on" : "off",
+    "itemHigh"
+  );
+
+  setVal(
+    "stLow",
+    highLow(data.low),
+    data.low ? "on" : "off",
+    "itemLow"
+  );
+
+  $("stVolume").innerText =
+    data.volume ?? "--";
 
   updateHeaterStats();
 
-  $("musicTrack").innerText = data.currentTrack ?? "--";
-  $("musicTotal").innerText = data.totalTracks ?? "--";
-  $("musicVolume").innerText = data.volume ?? "--";
-  $("volSlider").value = data.volume ?? 15;
+  $("musicTrack").innerText =
+    data.currentTrack ?? "--";
 
-  const dfB = $("dfStatus");
-  dfB.innerText = data.dfReady ? "آماده" : "قطع";
-  dfB.style.color = data.dfReady ? "var(--accent-2)" : "var(--danger)";
+  $("musicTotal").innerText =
+    data.totalTracks ?? "--";
 
-  const errBox = $("errorBox");
-  if(data.error && data.error.length > 0){ errBox.classList.add("show"); $("errorText").innerText = data.error; }
-  else errBox.classList.remove("show");
+  $("musicVolume").innerText =
+    data.volume ?? "--";
 
-  const newAdEnabled = !!data.adEnabled;
-  const newAdInterval = data.adInterval || 10;
-  if(newAdEnabled !== adEnabled || newAdInterval !== adInterval){
-    const wasEnabled = adEnabled;
-    adEnabled = newAdEnabled;
-    adInterval = newAdInterval;
-    if(adEnabled && adImages.length > 0){
+  $("volSlider").value =
+    data.volume ?? 15;
+
+  const dfB =
+    $("dfStatus");
+
+  dfB.innerText =
+    data.dfReady
+      ? "آماده"
+      : "قطع";
+
+  dfB.style.color =
+    data.dfReady
+      ? "var(--accent-2)"
+      : "var(--danger)";
+
+  const errBox =
+    $("errorBox");
+
+  if(
+    data.error &&
+    data.error.length > 0
+  ){
+
+    errBox.classList.add("show");
+
+    $("errorText").innerText =
+      data.error;
+
+  }else{
+
+    errBox.classList.remove("show");
+  }
+
+  const newAdEnabled =
+    !!data.adEnabled;
+
+  const newAdInterval =
+    data.adInterval || 10;
+
+  if(
+    newAdEnabled !== adEnabled ||
+    newAdInterval !== adInterval
+  ){
+
+    const wasEnabled =
+      adEnabled;
+
+    adEnabled =
+      newAdEnabled;
+
+    adInterval =
+      newAdInterval;
+
+    if(
+      adEnabled &&
+      adImages.length > 0
+    ){
+
       startAdSlider();
       showAdBanner();
-    } else if(!adEnabled){
+
+    }else if(!adEnabled){
+
       hideAdBanner();
-    } else if(!wasEnabled && adEnabled && client && client.connected){
-      refreshAds();
+
+    }else if(
+      !wasEnabled &&
+      adEnabled &&
+      client &&
+      client.connected
+    ){
+
+      refreshAds(true);
     }
   }
 }
 
+
+// ============================================================
+// HEATER
+// ============================================================
+
 function updateHeaterStats(){
-  if(!lastStatus){ $("heaterTotal").innerText = "--:--"; $("heaterService").innerText = "--:--"; return; }
-  let total = heaterBaseTimeAtLastMsg, service = heaterBaseServiceAtLastMsg;
-  if(heaterWasOnAtLastMsg && lastMsgTime){
-    const elapsed = Math.floor((Date.now() - lastMsgTime) / 1000);
-    total += elapsed; service += elapsed;
+
+  if(!lastStatus){
+
+    $("heaterTotal").innerText =
+      "--:--";
+
+    $("heaterService").innerText =
+      "--:--";
+
+    return;
   }
-  $("heaterTotal").innerText = formatHeaterTime(total);
-  $("heaterService").innerText = formatHeaterTime(service);
+
+  let total =
+    heaterBaseTimeAtLastMsg;
+
+  let service =
+    heaterBaseServiceAtLastMsg;
+
+  if(
+    heaterWasOnAtLastMsg &&
+    lastMsgTime
+  ){
+
+    const elapsed =
+      Math.floor(
+        (Date.now() - lastMsgTime) / 1000
+      );
+
+    total += elapsed;
+    service += elapsed;
+  }
+
+  $("heaterTotal").innerText =
+    formatHeaterTime(total);
+
+  $("heaterService").innerText =
+    formatHeaterTime(service);
 }
 
+
+// ============================================================
+// SETTINGS
+// ============================================================
+
 function updateSettings(data){
-  $("t_timer").value = data.timer ? "1" : "0";
-  $("t_run").value = data.run ?? 15;
-  $("t_starget").value = data.starget ?? 45;
-  $("t_shyst").value = data.shyst ?? 2;
-  $("t_dstart").value = data.dstart ?? 50;
-  $("t_dsec").value = data.dsec ?? 300;
-  $("t_maxw").value = data.maxw ?? 70;
-  $("t_fillto").value = data.fillto ?? 120;
-  $("t_volume").value = data.volume ?? 15;
-  $("t_pulse").value = data.pulse ? "1" : "0";
-  $("t_pon").value = data.pon ?? 1;
-  $("t_poff").value = data.poff ?? 1;
-  $("t_adEnabled").value = data.adEnabled ? "1" : "0";
-  $("t_adInterval").value = data.adInterval ?? 10;
+
+  $("t_timer").value =
+    data.timer ? "1" : "0";
+
+  $("t_run").value =
+    data.run ?? 15;
+
+  $("t_starget").value =
+    data.starget ?? 45;
+
+  $("t_shyst").value =
+    data.shyst ?? 2;
+
+  $("t_dstart").value =
+    data.dstart ?? 50;
+
+  $("t_dsec").value =
+    data.dsec ?? 300;
+
+  $("t_maxw").value =
+    data.maxw ?? 70;
+
+  $("t_fillto").value =
+    data.fillto ?? 120;
+
+  $("t_volume").value =
+    data.volume ?? 15;
+
+  $("t_pulse").value =
+    data.pulse ? "1" : "0";
+
+  $("t_pon").value =
+    data.pon ?? 1;
+
+  $("t_poff").value =
+    data.poff ?? 1;
+
+  $("t_adEnabled").value =
+    data.adEnabled ? "1" : "0";
+
+  $("t_adInterval").value =
+    data.adInterval ?? 10;
+
+  // ==========================================================
+  // FIX:
+  // بعد از دریافت تنظیمات از ESP32،
+  // اگر تبلیغات فعال بود، GET_ADS را ارسال کن.
+  // ==========================================================
+
+  if(data.adEnabled === true){
+
+    adEnabled = true;
+
+    adInterval =
+      Number(data.adInterval) || 10;
+
+    setTimeout(() => {
+
+      if(
+        client &&
+        client.connected
+      ){
+
+        refreshAds(true);
+      }
+
+    },300);
+
+  }else{
+
+    adEnabled = false;
+
+    hideAdBanner();
+  }
 }
+
 
 // ============================================================
 // AD DISPLAY
 // ============================================================
+
 let adShowIndex = 0;
 
+
 function updateAdDots(){
-  const box = $("adDots");
+
+  const box =
+    $("adDots");
+
   box.innerHTML = "";
-  adImages.forEach((img, i) => {
-    const dot = document.createElement("span");
-    dot.className = "ad-dot" + (i === adShowIndex ? " active" : "");
-    box.appendChild(dot);
-  });
-  box.style.display = adImages.length > 1 ? "flex" : "none";
+
+  adImages.forEach(
+    (img,i) => {
+
+      const dot =
+        document.createElement("span");
+
+      dot.className =
+        "ad-dot" +
+        (i === adShowIndex
+          ? " active"
+          : "");
+
+      box.appendChild(dot);
+    }
+  );
+
+  box.style.display =
+    adImages.length > 1
+      ? "flex"
+      : "none";
 }
+
 
 function showAdBanner(){
-  const banner = $("adBanner");
-  if(adEnabled && adImages.length > 0) banner.classList.add("show");
+
+  const banner =
+    $("adBanner");
+
+  if(
+    adEnabled &&
+    adImages.length > 0
+  ){
+
+    banner.classList.add("show");
+  }
 }
 
+
 function hideAdBanner(){
-  const banner = $("adBanner");
+
+  const banner =
+    $("adBanner");
+
   banner.classList.remove("show");
-  $("adImage").style.display = "none";
-  $("adDots").style.display = "none";
+
+  $("adImage").style.display =
+    "none";
+
+  $("adDots").style.display =
+    "none";
+
   if(adSliderTimer){
-    clearInterval(adSliderTimer);
+
+    clearInterval(
+      adSliderTimer
+    );
+
     adSliderTimer = null;
   }
 }
 
+
 function showCurrentAd(){
-  if(!adEnabled || adImages.length === 0){
+
+  if(
+    !adEnabled ||
+    adImages.length === 0
+  ){
+
     hideAdBanner();
+
     return;
   }
 
-  if(adShowIndex >= adImages.length) adShowIndex = 0;
-  const item = adImages[adShowIndex];
-  const img = $("adImage");
+  if(
+    adShowIndex >=
+    adImages.length
+  ){
+
+    adShowIndex = 0;
+  }
+
+  const item =
+    adImages[adShowIndex];
+
+  const img =
+    $("adImage");
 
   img.style.opacity = "0";
-  img.src = item.dataUrl;
+
+  img.src =
+    item.dataUrl;
+
   img.onload = () => {
-    img.style.display = "block";
-    requestAnimationFrame(() => { img.style.opacity = "1"; });
+
+    img.style.display =
+      "block";
+
+    requestAnimationFrame(
+      () => {
+        img.style.opacity = "1";
+      }
+    );
   };
 
   updateAdDots();
+
   showAdBanner();
 }
 
+
 function startAdSlider(){
+
   if(adSliderTimer){
-    clearInterval(adSliderTimer);
+
+    clearInterval(
+      adSliderTimer
+    );
+
     adSliderTimer = null;
   }
 
-  if(!adEnabled || adImages.length === 0){
+  if(
+    !adEnabled ||
+    adImages.length === 0
+  ){
+
     hideAdBanner();
+
     return;
   }
 
   adShowIndex = 0;
+
   showCurrentAd();
 
   if(adImages.length > 1){
-    adSliderTimer = setInterval(() => {
-      adShowIndex = (adShowIndex + 1) % adImages.length;
-      showCurrentAd();
-    }, Math.max(3, Number(adInterval) || 10) * 1000);
+
+    adSliderTimer =
+      setInterval(
+        () => {
+
+          adShowIndex =
+            (adShowIndex + 1) %
+            adImages.length;
+
+          showCurrentAd();
+
+        },
+        Math.max(
+          3,
+          Number(adInterval) || 10
+        ) * 1000
+      );
   }
 }
+
 
 // ============================================================
 // AD RECEIVE
 // ============================================================
-function handleAdTopic(topic, text){
-  const parts = topic.split("/");
-  const last = parts[parts.length - 1];
+
+function handleAdTopic(topic,text){
+
+  const parts =
+    topic.split("/");
+
+  const last =
+    parts[parts.length - 1];
+
+
+  // ----------------------------------------------------------
+  // META
+  // ----------------------------------------------------------
 
   if(last === "meta"){
-    if(!text.startsWith("META:")) return;
 
-    const p = text.split(":");
-    if(p.length < 3) return;
+    if(!text.startsWith("META:"))
+      return;
 
-    const transferId = Number(p[1]) || 0;
-    const count = Number(p[2]) || 0;
-    if(!transferId) return;
+    const p =
+      text.split(":");
 
-    adCurrentTransfer = transferId;
-    adMetaCount = count;
-    adMetaReceived = 0;
+    if(p.length < 3)
+      return;
+
+    const transferId =
+      Number(p[1]) || 0;
+
+    const count =
+      Number(p[2]) || 0;
+
+    if(!transferId)
+      return;
+
+    adCurrentTransfer =
+      transferId;
+
+    adMetaCount =
+      count;
+
+    adMetaReceived =
+      0;
+
     adReceived = {};
+
     adImages = [];
 
     if(adSliderTimer){
-      clearInterval(adSliderTimer);
+
+      clearInterval(
+        adSliderTimer
+      );
+
       adSliderTimer = null;
     }
 
-    log("AD META T=" + transferId + ": " + count + " images", "info");
+    log(
+      "AD META T=" +
+      transferId +
+      ": " +
+      count +
+      " images",
+      "info"
+    );
 
     if(count === 0){
+
       hideAdBanner();
-      $("adLoading").style.display = "none";
-    } else {
+
+      $("adLoading").style.display =
+        "none";
+
+    }else{
+
       showAdBanner();
-      $("adLoading").style.display = "flex";
-      $("adImage").style.display = "none";
-      $("adDots").style.display = "none";
+
+      $("adLoading").style.display =
+        "flex";
+
+      $("adImage").style.display =
+        "none";
+
+      $("adDots").style.display =
+        "none";
     }
+
     return;
   }
 
-  const idx = parseInt(last, 10);
-  if(isNaN(idx) || idx < 0 || idx >= 5) return;
+
+  // ----------------------------------------------------------
+  // IMAGE INDEX
+  // ----------------------------------------------------------
+
+  const idx =
+    parseInt(last,10);
+
+  if(
+    isNaN(idx) ||
+    idx < 0 ||
+    idx >= 5
+  )
+    return;
+
+
+  // ----------------------------------------------------------
+  // IMG HEADER
+  // ----------------------------------------------------------
 
   if(text.startsWith("IMG:")){
-    const p = text.split(":");
-    if(p.length < 5) return;
 
-    const transferId = Number(p[1]) || 0;
-    const imageIndex = Number(p[2]);
-    const totalParts = Number(p[3]) || 0;
-    const size = Number(p[4]) || 0;
+    const p =
+      text.split(":");
 
-    if(!transferId || transferId !== adCurrentTransfer) return;
-    if(imageIndex !== idx || totalParts <= 0 || size <= 0) return;
+    if(p.length < 5)
+      return;
+
+    const transferId =
+      Number(p[1]) || 0;
+
+    const imageIndex =
+      Number(p[2]);
+
+    const totalParts =
+      Number(p[3]) || 0;
+
+    const size =
+      Number(p[4]) || 0;
+
+    if(
+      !transferId ||
+      transferId !== adCurrentTransfer
+    )
+      return;
+
+    if(
+      imageIndex !== idx ||
+      totalParts <= 0 ||
+      size <= 0
+    )
+      return;
 
     adReceived[idx] = {
+
       transferId,
       totalParts,
       size,
-      chunks: {},
-      receivedCount: 0,
-      done: false
+
+      chunks:{},
+
+      receivedCount:0,
+
+      done:false
     };
 
-    log("IMG " + idx + " START (" + totalParts + " parts)", "info");
+    log(
+      "IMG " +
+      idx +
+      " START (" +
+      totalParts +
+      " parts)",
+      "info"
+    );
+
     return;
   }
+
+
+  // ----------------------------------------------------------
+  // IMAGE PART
+  // ----------------------------------------------------------
 
   if(text.startsWith("P:")){
-    const first = text.indexOf(":");
-    const second = text.indexOf(":", first + 1);
-    const third = text.indexOf(":", second + 1);
-    if(first < 0 || second < 0 || third < 0) return;
 
-    const transferId = Number(text.substring(first + 1, second)) || 0;
-    const partNum = Number(text.substring(second + 1, third));
-    const chunk = text.substring(third + 1);
+    const first =
+      text.indexOf(":");
 
-    if(transferId !== adCurrentTransfer) return;
-    if(!adReceived[idx]) return;
-    if(partNum < 0 || partNum >= adReceived[idx].totalParts) return;
-    if(adReceived[idx].chunks[partNum] !== undefined) return;
+    const second =
+      text.indexOf(
+        ":",
+        first + 1
+      );
 
-    adReceived[idx].chunks[partNum] = chunk;
-    adReceived[idx].receivedCount++;
+    const third =
+      text.indexOf(
+        ":",
+        second + 1
+      );
+
+    if(
+      first < 0 ||
+      second < 0 ||
+      third < 0
+    )
+      return;
+
+    const transferId =
+      Number(
+        text.substring(
+          first + 1,
+          second
+        )
+      ) || 0;
+
+    const partNum =
+      Number(
+        text.substring(
+          second + 1,
+          third
+        )
+      );
+
+    const chunk =
+      text.substring(
+        third + 1
+      );
+
+    if(
+      transferId !==
+      adCurrentTransfer
+    )
+      return;
+
+    if(!adReceived[idx])
+      return;
+
+    if(
+      partNum < 0 ||
+      partNum >=
+      adReceived[idx].totalParts
+    )
+      return;
+
+    if(
+      adReceived[idx]
+        .chunks[partNum] !== undefined
+    )
+      return;
+
+    adReceived[idx]
+      .chunks[partNum] =
+      chunk;
+
+    adReceived[idx]
+      .receivedCount++;
+
     return;
   }
 
+
+  // ----------------------------------------------------------
+  // END IMAGE
+  // ----------------------------------------------------------
+
   if(text.startsWith("END:")){
-    const p = text.split(":");
-    if(p.length < 3) return;
 
-    const transferId = Number(p[1]) || 0;
-    const imageIndex = Number(p[2]);
+    const p =
+      text.split(":");
 
-    if(transferId !== adCurrentTransfer || imageIndex !== idx) return;
-    if(!adReceived[idx]) return;
+    if(p.length < 3)
+      return;
 
-    const item = adReceived[idx];
+    const transferId =
+      Number(p[1]) || 0;
 
-    if(item.receivedCount !== item.totalParts){
-      log("IMG " + idx + " INCOMPLETE " +
-          item.receivedCount + "/" + item.totalParts, "err");
-      if(client && client.connected){
-        setTimeout(() => refreshAds(true), 1200);
+    const imageIndex =
+      Number(p[2]);
+
+    if(
+      transferId !==
+      adCurrentTransfer ||
+      imageIndex !== idx
+    )
+      return;
+
+    if(!adReceived[idx])
+      return;
+
+    const item =
+      adReceived[idx];
+
+
+    if(
+      item.receivedCount !==
+      item.totalParts
+    ){
+
+      log(
+        "IMG " +
+        idx +
+        " INCOMPLETE " +
+        item.receivedCount +
+        "/" +
+        item.totalParts,
+        "err"
+      );
+
+      if(
+        client &&
+        client.connected
+      ){
+
+        setTimeout(
+          () => refreshAds(true),
+          1200
+        );
       }
+
       return;
     }
 
-    const orderedChunks = new Array(item.totalParts);
-    for(let pnum = 0; pnum < item.totalParts; pnum++){
-      if(item.chunks[pnum] === undefined){
-        log("IMG " + idx + " MISSING PART " + pnum, "err");
-        if(client && client.connected){
-          setTimeout(() => refreshAds(true), 1200);
+
+    const orderedChunks =
+      new Array(
+        item.totalParts
+      );
+
+
+    for(
+      let pnum = 0;
+      pnum < item.totalParts;
+      pnum++
+    ){
+
+      if(
+        item.chunks[pnum] ===
+        undefined
+      ){
+
+        log(
+          "IMG " +
+          idx +
+          " MISSING PART " +
+          pnum,
+          "err"
+        );
+
+        if(
+          client &&
+          client.connected
+        ){
+
+          setTimeout(
+            () => refreshAds(true),
+            1200
+          );
         }
+
         return;
       }
-      orderedChunks[pnum] = item.chunks[pnum];
-    }
-    const b64 = orderedChunks.join("");
 
-    const expectedB64Length = Math.ceil(item.size / 3) * 4;
-    if(b64.length !== expectedB64Length){
-      log("IMG " + idx + " SIZE ERROR " + b64.length +
-          "/" + expectedB64Length, "err");
-      if(client && client.connected){
-        setTimeout(() => refreshAds(true), 1200);
+      orderedChunks[pnum] =
+        item.chunks[pnum];
+    }
+
+
+    const b64 =
+      orderedChunks.join("");
+
+
+    const expectedB64Length =
+      Math.ceil(item.size / 3) * 4;
+
+
+    if(
+      b64.length !==
+      expectedB64Length
+    ){
+
+      log(
+        "IMG " +
+        idx +
+        " SIZE ERROR " +
+        b64.length +
+        "/" +
+        expectedB64Length,
+        "err"
+      );
+
+      if(
+        client &&
+        client.connected
+      ){
+
+        setTimeout(
+          () => refreshAds(true),
+          1200
+        );
       }
+
       return;
     }
 
-    const dataUrl = "data:image/jpeg;base64," + b64;
 
-    const testImg = new Image();
+    const dataUrl =
+      "data:image/jpeg;base64," +
+      b64;
+
+
+    const testImg =
+      new Image();
+
+
     testImg.onload = () => {
-      adImages = adImages.filter(a => a.id !== idx);
-      adImages.push({ id: idx, dataUrl });
-      adImages.sort((a, b) => a.id - b.id);
+
+      adImages =
+        adImages.filter(
+          a => a.id !== idx
+        );
+
+      adImages.push({
+        id:idx,
+        dataUrl:dataUrl
+      });
+
+      adImages.sort(
+        (a,b) =>
+          a.id - b.id
+      );
 
       adMetaReceived++;
-      log("IMG " + idx + " COMPLETE ✓", "info");
 
-      if(adMetaReceived >= adMetaCount){
-        log("ALL ADS RECEIVED ✓", "info");
-        $("adLoading").style.display = "none";
+      log(
+        "IMG " +
+        idx +
+        " COMPLETE ✓",
+        "info"
+      );
+
+
+      if(
+        adMetaReceived >=
+        adMetaCount
+      ){
+
+        log(
+          "ALL ADS RECEIVED ✓",
+          "info"
+        );
+
+        $("adLoading").style.display =
+          "none";
+
         adsRequested = false;
 
-        if(adImages.length > 0 && adEnabled){
+        if(
+          adImages.length > 0 &&
+          adEnabled
+        ){
+
           startAdSlider();
+
           showAdBanner();
         }
       }
     };
 
+
     testImg.onerror = () => {
-      log("IMG " + idx + " JPEG INVALID", "err");
-      if(client && client.connected){
-        setTimeout(() => refreshAds(true), 1200);
+
+      log(
+        "IMG " +
+        idx +
+        " JPEG INVALID",
+        "err"
+      );
+
+      if(
+        client &&
+        client.connected
+      ){
+
+        setTimeout(
+          () => refreshAds(true),
+          1200
+        );
       }
     };
 
-    testImg.src = dataUrl;
+
+    testImg.src =
+      dataUrl;
   }
 }
+
 
 // ============================================================
 // AUTH
 // ============================================================
+
 function doAuth(){
-  const p = $("authInput").value.trim();
-  if(!p){ $("authError").innerText = "رمز را وارد کنید"; return; }
-  if(!client || !client.connected){ $("authError").innerText = "MQTT وصل نیست"; return; }
-  client.publish(TOPIC_SETTINGS, "AUTH:" + p);
-  log("TX: AUTH:***", "tx");
-  $("authError").innerText = "در حال بررسی...";
-  $("authError").style.color = "var(--text-2)";
+
+  const p =
+    $("authInput")
+      .value
+      .trim();
+
+  if(!p){
+
+    $("authError").innerText =
+      "رمز را وارد کنید";
+
+    return;
+  }
+
+  if(
+    !client ||
+    !client.connected
+  ){
+
+    $("authError").innerText =
+      "MQTT وصل نیست";
+
+    return;
+  }
+
+  client.publish(
+    TOPIC_SETTINGS,
+    "AUTH:" + p
+  );
+
+  log(
+    "TX: AUTH:***",
+    "tx"
+  );
+
+  $("authError").innerText =
+    "در حال بررسی...";
+
+  $("authError").style.color =
+    "var(--text-2)";
 }
 
+
 function onAuthResult(ok){
+
   if(ok){
+
     isAuthed = true;
-    $("techLocked").style.display = "none";
-    $("techUnlocked").style.display = "block";
+
+    $("techLocked").style.display =
+      "none";
+
+    $("techUnlocked").style.display =
+      "block";
+
     $("authInput").value = "";
-    $("authError").innerText = "";
-    log("AUTH OK", "info");
-    toast("دسترسی باز شد", "ok");
+
+    $("authError").innerText =
+      "";
+
+    log(
+      "AUTH OK",
+      "info"
+    );
+
+    toast(
+      "دسترسی باز شد",
+      "ok"
+    );
+
     loadSettings();
-  } else {
-    $("authError").innerText = "رمز اشتباه است";
-    $("authError").style.color = "var(--danger)";
-    log("AUTH FAIL", "err");
+
+  }else{
+
+    $("authError").innerText =
+      "رمز اشتباه است";
+
+    $("authError").style.color =
+      "var(--danger)";
+
+    log(
+      "AUTH FAIL",
+      "err"
+    );
   }
 }
 
+
 function lockTech(){
+
   isAuthed = false;
-  $("techLocked").style.display = "block";
-  $("techUnlocked").style.display = "none";
+
+  $("techLocked").style.display =
+    "block";
+
+  $("techUnlocked").style.display =
+    "none";
+
   $("authInput").value = "";
-  $("authError").innerText = "";
-  toast("قفل شد", "ok");
+
+  $("authError").innerText =
+    "";
+
+  toast(
+    "قفل شد",
+    "ok"
+  );
 }
 
+
 // ============================================================
-// INIT
+// MQTT INIT
 // ============================================================
+
 (function init(){
-  log("Connecting...", "info");
-  log("Device: " + DEVICE_ID, "info");
 
-  const CLIENT_ID = "SteamProRemote_" + Math.random().toString(16).substring(2,10);
+  log(
+    "Connecting...",
+    "info"
+  );
 
-  client = mqtt.connect(MQTT_URL, {
-    clientId: CLIENT_ID,
-    clean: true,
-    connectTimeout: 10000,
-    reconnectPeriod: 3000,
-    keepalive: 30
-  });
+  log(
+    "Device: " + DEVICE_ID,
+    "info"
+  );
 
-  client.on("connect", () => {
-    log("MQTT CONNECTED", "info");
-    setConnection("متصل", "ok");
-    $("infoMqtt").innerText = "متصل";
-    $("infoMqtt").className = "value on";
 
-    const AD_TOPICS = [TOPIC_STATUS, TOPIC_TEMPERATURE, TOPIC_SETTINGS];
-    AD_TOPICS.push("steampro/" + DEVICE_ID + "/ad/meta");
-    for(let i = 0; i < 5; i++){
-      AD_TOPICS.push("steampro/" + DEVICE_ID + "/ad/" + i);
+  const CLIENT_ID =
+    "SteamProRemote_" +
+    Math.random()
+      .toString(16)
+      .substring(2,10);
+
+
+  client =
+    mqtt.connect(
+      MQTT_URL,
+      {
+
+        clientId:CLIENT_ID,
+
+        clean:true,
+
+        connectTimeout:10000,
+
+        reconnectPeriod:3000,
+
+        keepalive:30
+      }
+    );
+
+
+  // ----------------------------------------------------------
+  // CONNECT
+  // ----------------------------------------------------------
+
+  client.on(
+    "connect",
+    () => {
+
+      log(
+        "MQTT CONNECTED",
+        "info"
+      );
+
+      setConnection(
+        "متصل",
+        "ok"
+      );
+
+      $("infoMqtt").innerText =
+        "متصل";
+
+      $("infoMqtt").className =
+        "value on";
+
+
+      // هر بار که اتصال مجدد برقرار شد،
+      // اجازه درخواست تبلیغات دوباره داده شود.
+
+      adsRequested = false;
+
+
+      const AD_TOPICS = [
+
+        TOPIC_STATUS,
+
+        TOPIC_TEMPERATURE,
+
+        TOPIC_SETTINGS,
+
+        "steampro/" +
+        DEVICE_ID +
+        "/ad/meta"
+      ];
+
+
+      for(
+        let i = 0;
+        i < 5;
+        i++
+      ){
+
+        AD_TOPICS.push(
+          "steampro/" +
+          DEVICE_ID +
+          "/ad/" +
+          i
+        );
+      }
+
+
+      client.subscribe(
+        AD_TOPICS,
+        (err) => {
+
+          if(err){
+
+            log(
+              "SUBSCRIBE ERROR",
+              "err"
+            );
+
+            return;
+          }
+
+
+          log(
+            "SUBSCRIBED to all topics",
+            "info"
+          );
+
+
+          // اول تنظیمات را بگیر.
+
+          setTimeout(
+            () => {
+
+              if(
+                client &&
+                client.connected
+              ){
+
+                client.publish(
+                  TOPIC_SETTINGS,
+                  "GET_SETTINGS"
+                );
+
+                log(
+                  "TX: GET_SETTINGS",
+                  "tx"
+                );
+              }
+
+            },
+            500
+          );
+
+        }
+      );
     }
+  );
 
-    client.subscribe(AD_TOPICS, (err) => {
-      if(err){ log("SUBSCRIBE ERROR", "err"); return; }
-      log("SUBSCRIBED to all topics", "info");
-      setTimeout(() => {
-        client.publish(TOPIC_SETTINGS, "GET_SETTINGS");
-        log("TX: GET_SETTINGS", "tx");
-      }, 500);
-      // Ads are requested only after the retained status message tells us
-      // that advertising is enabled. This avoids a large MQTT transfer
-      // immediately after every reconnect.
-      setTimeout(() => {
-        if(adEnabled) refreshAds();
-      }, 1200);
-    });
-  });
 
-  client.on("message", (topic, message) => {
-    const text = message.toString();
-    
-    if(topic.startsWith("steampro/" + DEVICE_ID + "/ad/")){
-      handleAdTopic(topic, text);
-      return;
-    }
-    
-    const shortTopic = topic.split("/").pop();
-    log("RX: " + shortTopic, "rx");
-    
-    try {
-      const data = JSON.parse(text);
-      if(topic === TOPIC_STATUS) updateStatus(data);
-      else if(topic === TOPIC_TEMPERATURE) updateTemperature(data);
-      else if(topic === TOPIC_SETTINGS && data.run !== undefined) updateSettings(data);
-    } catch(e){
-      if(topic === TOPIC_SETTINGS){
-        if(text === "AUTH_OK") onAuthResult(true);
-        else if(text === "AUTH_FAIL") onAuthResult(false);
-        else if(text === "OK") log("SETTING SAVED", "info");
-        else if(text === "SAVED") log("ALL SAVED", "info");
-        else if(text === "ERROR:LOCKED") log("LOCKED", "warn");
-        else if(text.startsWith("ERROR:")) log("ERR: " + text, "err");
+  // ----------------------------------------------------------
+  // MESSAGE
+  // ----------------------------------------------------------
+
+  client.on(
+    "message",
+    (topic,message) => {
+
+      const text =
+        message.toString();
+
+
+      // تبلیغات
+
+      if(
+        topic.startsWith(
+          "steampro/" +
+          DEVICE_ID +
+          "/ad/"
+        )
+      ){
+
+        handleAdTopic(
+          topic,
+          text
+        );
+
+        return;
+      }
+
+
+      const shortTopic =
+        topic.split("/").pop();
+
+
+      log(
+        "RX: " + shortTopic,
+        "rx"
+      );
+
+
+      try{
+
+        const data =
+          JSON.parse(text);
+
+
+        if(
+          topic ===
+          TOPIC_STATUS
+        ){
+
+          updateStatus(data);
+
+        }else if(
+          topic ===
+          TOPIC_TEMPERATURE
+        ){
+
+          updateTemperature(data);
+
+        }else if(
+          topic ===
+          TOPIC_SETTINGS &&
+          data.run !== undefined
+        ){
+
+          // =================================================
+          // FIX اصلی تبلیغات
+          // =================================================
+
+          updateSettings(data);
+
+          if(
+            data.adEnabled === true
+          ){
+
+            adEnabled = true;
+
+            adInterval =
+              Number(
+                data.adInterval
+              ) || 10;
+
+
+            // با کمی تاخیر تا مطمئن شویم
+            // subscribe کامل شده است.
+
+            setTimeout(
+              () => {
+
+                if(
+                  client &&
+                  client.connected
+                ){
+
+                  refreshAds(true);
+                }
+
+              },
+              300
+            );
+
+          }else{
+
+            adEnabled = false;
+
+            hideAdBanner();
+          }
+        }
+
+      }catch(e){
+
+        if(
+          topic ===
+          TOPIC_SETTINGS
+        ){
+
+          if(text === "AUTH_OK"){
+
+            onAuthResult(true);
+
+          }else if(
+            text === "AUTH_FAIL"
+          ){
+
+            onAuthResult(false);
+
+          }else if(
+            text === "OK"
+          ){
+
+            log(
+              "SETTING SAVED",
+              "info"
+            );
+
+          }else if(
+            text === "SAVED"
+          ){
+
+            log(
+              "ALL SAVED",
+              "info"
+            );
+
+          }else if(
+            text ===
+            "ERROR:LOCKED"
+          ){
+
+            log(
+              "LOCKED",
+              "warn"
+            );
+
+          }else if(
+            text.startsWith(
+              "ERROR:"
+            )
+          ){
+
+            log(
+              "ERR: " + text,
+              "err"
+            );
+          }
+        }
       }
     }
-  });
+  );
 
-  client.on("error", () => {
-    log("MQTT ERROR", "err");
-    setConnection("خطا", "err");
-    $("infoMqtt").innerText = "خطا";
-    $("infoMqtt").className = "value err";
-  });
 
-  client.on("close", () => {
-    log("CLOSED", "warn");
-    setConnection("قطع", "err");
-    $("infoMqtt").innerText = "قطع";
-    $("infoMqtt").className = "value err";
-  });
+  // ----------------------------------------------------------
+  // ERROR
+  // ----------------------------------------------------------
 
-  client.on("reconnect", () => {
-    log("Reconnecting...", "warn");
-    setConnection("اتصال مجدد...", "wait");
-  });
+  client.on(
+    "error",
+    () => {
+
+      log(
+        "MQTT ERROR",
+        "err"
+      );
+
+      setConnection(
+        "خطا",
+        "err"
+      );
+
+      $("infoMqtt").innerText =
+        "خطا";
+
+      $("infoMqtt").className =
+        "value err";
+    }
+  );
+
+
+  // ----------------------------------------------------------
+  // CLOSE
+  // ----------------------------------------------------------
+
+  client.on(
+    "close",
+    () => {
+
+      log(
+        "CLOSED",
+        "warn"
+      );
+
+      setConnection(
+        "قطع",
+        "err"
+      );
+
+      $("infoMqtt").innerText =
+        "قطع";
+
+      $("infoMqtt").className =
+        "value err";
+    }
+  );
+
+
+  // ----------------------------------------------------------
+  // RECONNECT
+  // ----------------------------------------------------------
+
+  client.on(
+    "reconnect",
+    () => {
+
+      log(
+        "Reconnecting...",
+        "warn"
+      );
+
+      setConnection(
+        "اتصال مجدد...",
+        "wait"
+      );
+    }
+  );
+
 })();
+
 
 // ============================================================
 // LOCAL TICKS
 // ============================================================
-setInterval(() => {
-  if(!timerRunning || !lastStatus) return;
-  const elapsed = Math.floor((Date.now() - lastTimerSync) / 1000);
-  const displayTime = Math.max(0, timerRemaining - elapsed);
-  $("timerValue").innerText = formatTime(displayTime);
-  drawTimerRing(displayTime, timerTotal);
-}, 1000);
 
-setInterval(updateHeaterStats, 1000);
+setInterval(
+  () => {
+
+    if(
+      !timerRunning ||
+      !lastStatus
+    )
+      return;
+
+    const elapsed =
+      Math.floor(
+        (Date.now() -
+        lastTimerSync) / 1000
+      );
+
+    const displayTime =
+      Math.max(
+        0,
+        timerRemaining -
+        elapsed
+      );
+
+    $("timerValue").innerText =
+      formatTime(displayTime);
+
+    drawTimerRing(
+      displayTime,
+      timerTotal
+    );
+
+  },
+  1000
+);
+
+
+setInterval(
+  updateHeaterStats,
+  1000
+);
+
 
 // ============================================================
 // COMMANDS
 // ============================================================
+
 function sendCommand(cmd){
-  if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
-  client.publish(TOPIC_COMMAND, cmd, (err) => {
-    if(err){ log("CMD FAILED: " + cmd, "err"); }
-    else log("TX: " + cmd, "tx");
-  });
-}
 
-function toggleLight(){
-  if(lastStatus && lastStatus.light) sendCommand("LIGHT_OFF");
-  else sendCommand("LIGHT_ON");
-}
+  if(
+    !client ||
+    !client.connected
+  ){
 
-function sendSetting(key, value){
-  if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
-  if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
-  const cmd = "SET:" + key + "=" + value;
-  client.publish(TOPIC_SETTINGS, cmd, (err) => {
-    if(err){ log("SET FAILED: " + key, "err"); toast("ذخیره نشد", "err"); }
-    else log("TX: " + cmd, "tx");
-  });
-}
+    toast(
+      "MQTT وصل نیست",
+      "err"
+    );
 
-function loadSettings(){
-  if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
-  client.publish(TOPIC_SETTINGS, "GET_SETTINGS");
-  log("TX: GET_SETTINGS", "tx");
-}
-
-function refreshAds(force = false){
-  if(!client || !client.connected){
-    toast("MQTT وصل نیست", "err");
     return;
   }
 
-  if(adsRequested && !force) return;
+  client.publish(
+    TOPIC_COMMAND,
+    cmd,
+    (err) => {
+
+      if(err){
+
+        log(
+          "CMD FAILED: " + cmd,
+          "err"
+        );
+
+      }else{
+
+        log(
+          "TX: " + cmd,
+          "tx"
+        );
+      }
+    }
+  );
+}
+
+
+function toggleLight(){
+
+  if(
+    lastStatus &&
+    lastStatus.light
+  ){
+
+    sendCommand(
+      "LIGHT_OFF"
+    );
+
+  }else{
+
+    sendCommand(
+      "LIGHT_ON"
+    );
+  }
+}
+
+
+function sendSetting(key,value){
+
+  if(!isAuthed){
+
+    toast(
+      "ابتدا رمز را وارد کنید",
+      "err"
+    );
+
+    return;
+  }
+
+  if(
+    !client ||
+    !client.connected
+  ){
+
+    toast(
+      "MQTT وصل نیست",
+      "err"
+    );
+
+    return;
+  }
+
+  const cmd =
+    "SET:" +
+    key +
+    "=" +
+    value;
+
+  client.publish(
+    TOPIC_SETTINGS,
+    cmd,
+    (err) => {
+
+      if(err){
+
+        log(
+          "SET FAILED: " + key,
+          "err"
+        );
+
+        toast(
+          "ذخیره نشد",
+          "err"
+        );
+
+      }else{
+
+        log(
+          "TX: " + cmd,
+          "tx"
+        );
+      }
+    }
+  );
+}
+
+
+function loadSettings(){
+
+  if(
+    !client ||
+    !client.connected
+  ){
+
+    toast(
+      "MQTT وصل نیست",
+      "err"
+    );
+
+    return;
+  }
+
+  client.publish(
+    TOPIC_SETTINGS,
+    "GET_SETTINGS"
+  );
+
+  log(
+    "TX: GET_SETTINGS",
+    "tx"
+  );
+}
+
+
+// ============================================================
+// GET ADS
+// ============================================================
+
+function refreshAds(force = false){
+
+  if(
+    !client ||
+    !client.connected
+  ){
+
+    toast(
+      "MQTT وصل نیست",
+      "err"
+    );
+
+    return;
+  }
+
+
+  if(
+    adsRequested &&
+    !force
+  ){
+
+    return;
+  }
+
 
   adsRequested = true;
+
   adTransferId = 0;
+
   adCurrentTransfer = 0;
+
   adReceived = {};
+
   adMetaCount = 0;
+
   adMetaReceived = 0;
+
   adImages = [];
 
+
   if(adSliderTimer){
-    clearInterval(adSliderTimer);
+
+    clearInterval(
+      adSliderTimer
+    );
+
     adSliderTimer = null;
   }
 
-  $("adLoading").style.display = "flex";
-  $("adImage").style.display = "none";
-  $("adDots").style.display = "none";
 
-  client.publish(TOPIC_SETTINGS, "GET_ADS", (err) => {
-    if(err){
-      adsRequested = false;
-      log("GET_ADS FAILED", "err");
-      toast("دریافت تبلیغات ناموفق بود", "err");
-    } else {
-      log("TX: GET_ADS", "tx");
+  $("adLoading").style.display =
+    "flex";
+
+  $("adImage").style.display =
+    "none";
+
+  $("adDots").style.display =
+    "none";
+
+
+  client.publish(
+    TOPIC_SETTINGS,
+    "GET_ADS",
+    (err) => {
+
+      if(err){
+
+        adsRequested = false;
+
+        log(
+          "GET_ADS FAILED",
+          "err"
+        );
+
+        toast(
+          "دریافت تبلیغات ناموفق بود",
+          "err"
+        );
+
+      }else{
+
+        log(
+          "TX: GET_ADS",
+          "tx"
+        );
+      }
     }
-  });
+  );
 }
+
+
+// ============================================================
+// SAVE SETTINGS
+// ============================================================
 
 function saveTechSettings(){
-  if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
+
+  if(!isAuthed){
+
+    toast(
+      "ابتدا رمز را وارد کنید",
+      "err"
+    );
+
+    return;
+  }
+
+
   const settings = [
-    ["timer", $("t_timer").value], ["run", $("t_run").value],
-    ["starget", $("t_starget").value], ["shyst", $("t_shyst").value],
-    ["dstart", $("t_dstart").value], ["dsec", $("t_dsec").value],
-    ["maxw", $("t_maxw").value], ["fillto", $("t_fillto").value],
-    ["volume", $("t_volume").value], ["pulse", $("t_pulse").value],
-    ["pon", $("t_pon").value], ["poff", $("t_poff").value],
-    ["adEnabled", $("t_adEnabled").value], ["adInterval", $("t_adInterval").value]
+
+    ["timer",$("t_timer").value],
+
+    ["run",$("t_run").value],
+
+    ["starget",$("t_starget").value],
+
+    ["shyst",$("t_shyst").value],
+
+    ["dstart",$("t_dstart").value],
+
+    ["dsec",$("t_dsec").value],
+
+    ["maxw",$("t_maxw").value],
+
+    ["fillto",$("t_fillto").value],
+
+    ["volume",$("t_volume").value],
+
+    ["pulse",$("t_pulse").value],
+
+    ["pon",$("t_pon").value],
+
+    ["poff",$("t_poff").value],
+
+    ["adEnabled",
+      $("t_adEnabled").value],
+
+    ["adInterval",
+      $("t_adInterval").value]
   ];
-  settings.forEach(([k, v], i) => setTimeout(() => sendSetting(k, v), i * 150));
-  toast("تنظیمات ارسال شد", "ok");
+
+
+  settings.forEach(
+    ([k,v],i) => {
+
+      setTimeout(
+        () => sendSetting(k,v),
+        i * 150
+      );
+
+    }
+  );
+
+
+  toast(
+    "تنظیمات ارسال شد",
+    "ok"
+  );
 }
 
-function setVolume(v){ sendSetting("volume", v); }
+
+function setVolume(v){
+
+  sendSetting(
+    "volume",
+    v
+  );
+}
+
 
 function changePassword(){
-  if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
-  const p = $("newPass").value.trim();
-  if(p.length < 4 || p.length > 12){ toast("رمز باید 4 تا 12 کاراکتر", "err"); return; }
-  sendSetting("menupass", p);
-  $("newPass").value = "";
-  toast("رمز تغییر کرد", "ok");
+
+  if(!isAuthed){
+
+    toast(
+      "ابتدا رمز را وارد کنید",
+      "err"
+    );
+
+    return;
+  }
+
+
+  const p =
+    $("newPass")
+      .value
+      .trim();
+
+
+  if(
+    p.length < 4 ||
+    p.length > 12
+  ){
+
+    toast(
+      "رمز باید 4 تا 12 کاراکتر",
+      "err"
+    );
+
+    return;
+  }
+
+
+  sendSetting(
+    "menupass",
+    p
+  );
+
+
+  $("newPass").value =
+    "";
+
+
+  toast(
+    "رمز تغییر کرد",
+    "ok"
+  );
 }
 
+
 function resetService(){
-  if(!isAuthed){ toast("ابتدا رمز را وارد کنید", "err"); return; }
-  if(!confirm("ریست شود؟")) return;
-  sendSetting("resetservice", "1");
-  setTimeout(() => { heaterBaseServiceAtLastMsg = 0; updateHeaterStats(); }, 1000);
-  toast("ریست شد", "ok");
+
+  if(!isAuthed){
+
+    toast(
+      "ابتدا رمز را وارد کنید",
+      "err"
+    );
+
+    return;
+  }
+
+
+  if(!confirm("ریست شود؟"))
+    return;
+
+
+  sendSetting(
+    "resetservice",
+    "1"
+  );
+
+
+  setTimeout(
+    () => {
+
+      heaterBaseServiceAtLastMsg = 0;
+
+      updateHeaterStats();
+
+    },
+    1000
+  );
+
+
+  toast(
+    "ریست شد",
+    "ok"
+  );
 }
+
 </script>
+
 </body>
 </html>
+```
