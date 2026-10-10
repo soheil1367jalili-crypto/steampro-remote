@@ -595,6 +595,73 @@ function updateSettings(data){
 }
 
 // ============================================================
+// AD DISPLAY
+// ============================================================
+function showAdBanner(){
+  const box = $("adBanner");
+  if(box) box.classList.add("show");
+}
+
+function hideAdBanner(){
+  if(adSliderTimer){
+    clearInterval(adSliderTimer);
+    adSliderTimer = null;
+  }
+  const box = $("adBanner");
+  const img = $("adImage");
+  const dots = $("adDots");
+  const loading = $("adLoading");
+  if(box) box.classList.remove("show");
+  if(img){ img.style.display = "none"; img.removeAttribute("src"); }
+  if(dots){ dots.style.display = "none"; dots.innerHTML = ""; }
+  if(loading) loading.style.display = "none";
+}
+
+function renderAd(index){
+  if(!adImages.length) return;
+  if(index < 0 || index >= adImages.length) index = 0;
+  adCurrentIndex = index;
+
+  const img = $("adImage");
+  const dots = $("adDots");
+  if(!img || !dots) return;
+
+  img.src = adImages[index].dataUrl;
+  img.style.display = "block";
+  img.style.opacity = "0";
+  requestAnimationFrame(() => { img.style.opacity = "1"; });
+
+  dots.innerHTML = adImages.map((a,i) =>
+    `<span style="display:inline-block;width:7px;height:7px;border-radius:50%;margin:0 3px;background:${i===index?'var(--accent)':'rgba(255,255,255,.25)'}"></span>`
+  ).join("");
+  dots.style.display = adImages.length > 1 ? "block" : "none";
+}
+
+function startAdSlider(){
+  if(adSliderTimer){
+    clearInterval(adSliderTimer);
+    adSliderTimer = null;
+  }
+  if(!adImages.length || !adEnabled) return;
+
+  showAdBanner();
+  $("adLoading").style.display = "none";
+  renderAd(0);
+
+  if(adImages.length > 1){
+    adSliderTimer = setInterval(() => {
+      if(!adImages.length){
+        clearInterval(adSliderTimer);
+        adSliderTimer = null;
+        return;
+      }
+      adCurrentIndex = (adCurrentIndex + 1) % adImages.length;
+      renderAd(adCurrentIndex);
+    }, Math.max(3000, Math.min(60000, Number(adInterval) * 1000)));
+  }
+}
+
+// ============================================================
 // AD RECEIVE
 // ============================================================
 function publishAdAck(message){
@@ -945,9 +1012,26 @@ setInterval(updateHeaterStats, 1000);
 // ============================================================
 function sendCommand(cmd){
   if(!client || !client.connected){ toast("MQTT وصل نیست", "err"); return; }
-  client.publish(TOPIC_COMMAND, cmd, (err) => {
-    if(err){ log("CMD FAILED: " + cmd, "err"); }
-    else log("TX: " + cmd, "tx");
+
+  // STOP is reflected immediately so the phone never keeps counting after
+  // the user has already stopped the machine. START is confirmed by the
+  // immediate status message sent by ESP32 after executing the command.
+  if(cmd === "STOP") {
+    timerRunning = false;
+    lastTimerSync = Date.now();
+    $("timerHint").innerText = "در حال توقف...";
+  }
+
+  client.publish(TOPIC_COMMAND, cmd, { qos: 0, retain: false }, (err) => {
+    if(err){
+      log("CMD FAILED: " + cmd, "err");
+      if(cmd === "STOP" && lastStatus && lastStatus.running){
+        timerRunning = true;
+        lastTimerSync = Date.now();
+      }
+    } else {
+      log("TX: " + cmd, "tx");
+    }
   });
 }
 
