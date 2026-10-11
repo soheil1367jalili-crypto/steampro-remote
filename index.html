@@ -383,7 +383,7 @@ let adTransferId = 0;
 let adCurrentTransfer = 0;
 let adRequestStartedAt = 0;
 let adRetryTimer = null;
-const AD_BROWSER_TIMEOUT_MS = 180000;
+const AD_BROWSER_TIMEOUT_MS = 45000;
 
 const MAX_LOG_LINES = 60;
 let logLines = [];
@@ -721,6 +721,7 @@ function handleAdTopic(topic, text){
     adReceived = {};
     adImages = [];
     resetAdReceiveState();
+    scheduleAdTimeout();
     publishAdAck("ACKMETA:" + transferId);
 
     if(adSliderTimer){
@@ -786,6 +787,7 @@ function handleAdTopic(topic, text){
     if(partNum < 0 || partNum >= adReceived[idx].totalParts) return;
 
     publishAdAck("ACK:" + transferId + ":" + idx + ":" + partNum);
+    scheduleAdTimeout(); // restart the watchdog whenever progress is made
 
     if(adReceived[idx].chunks[partNum] !== undefined){
       log("IMG " + idx + " DUP PART " + partNum + " -> ACK", "warn");
@@ -855,15 +857,22 @@ function handleAdTopic(topic, text){
       adMetaReceived++;
       log("IMG " + idx + " COMPLETE ✓", "info");
 
+      // Show the first image immediately; do not wait for every ad to download.
+      if(adImages.length > 0 && adEnabled){
+        $("adLoading").style.display = "none";
+        showAdBanner();
+        if(!adSliderTimer) startAdSlider();
+        else renderAd(adCurrentIndex);
+      }
+
       if(adMetaReceived >= adMetaCount){
         log("ALL ADS RECEIVED ✓", "info");
         $("adLoading").style.display = "none";
         adsRequested = false;
         if(adRetryTimer){ clearTimeout(adRetryTimer); adRetryTimer = null; }
-
         if(adImages.length > 0 && adEnabled){
-          startAdSlider();
           showAdBanner();
+          if(!adSliderTimer) startAdSlider();
         }
       }
     };
