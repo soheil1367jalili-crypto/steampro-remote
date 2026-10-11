@@ -208,6 +208,7 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
         <button class="btn-main btn-stop" id="stopBtn" onclick="sendCommand('STOP')">■ توقف</button>
       </div>
       <button class="btn-main btn-light off" id="lightBtn" style="width:100%;margin-top:12px" onclick="toggleLight()">💡 چراغ</button>
+      <button class="btn-main btn-light off" id="pulseControlBtn" style="width:100%;margin-top:10px;background:var(--bg-2);color:var(--text-2)" onclick="togglePulse()">⚡ پالس خاموش</button>
     </div>
 
     <div class="card">
@@ -518,6 +519,19 @@ function updateStatus(data){
   const lightBtn = $("lightBtn");
   if(data.light){ lightBtn.className = "btn-main btn-light"; lightBtn.innerText = "💡 چراغ روشن"; }
   else { lightBtn.className = "btn-main btn-light off"; lightBtn.innerText = "💡 چراغ خاموش"; }
+
+  const pulseBtn = $("pulseControlBtn");
+  if(pulseBtn){
+    if(data.pulse){
+      pulseBtn.style.background = "linear-gradient(145deg,#20d88d,#079a62)";
+      pulseBtn.style.color = "#fff";
+      pulseBtn.innerText = "⚡ پالس روشن";
+    } else {
+      pulseBtn.style.background = "var(--bg-2)";
+      pulseBtn.style.color = "var(--text-2)";
+      pulseBtn.innerText = "⚡ پالس خاموش";
+    }
+  }
 
   setVal("stHeater", onOff(data.heater), data.heater ? "on" : "off", "itemHeater");
   setVal("stInlet", openClose(data.inlet), data.inlet ? "on" : "off", "itemInlet");
@@ -1038,6 +1052,11 @@ function sendCommand(cmd){
 function toggleLight(){
   if(lastStatus && lastStatus.light) sendCommand("LIGHT_OFF");
   else sendCommand("LIGHT_ON");
+}
+
+function togglePulse(){
+  if(lastStatus && lastStatus.pulse) sendCommand("PULSE_OFF");
+  else sendCommand("PULSE_ON");
 }
 
 function sendSetting(key, value){
