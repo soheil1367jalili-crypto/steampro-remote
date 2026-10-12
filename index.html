@@ -522,14 +522,14 @@ function updateStatus(data){
 
   const pulseBtn = $("pulseControlBtn");
   if(pulseBtn){
-    if(data.pulse){
+    if(data.pulseManualActive){
       pulseBtn.style.background = "linear-gradient(145deg,#20d88d,#079a62)";
       pulseBtn.style.color = "#fff";
-      pulseBtn.innerText = "⚡ پالس روشن";
+      pulseBtn.innerText = "⚡ پالس دستی روشن";
     } else {
       pulseBtn.style.background = "var(--bg-2)";
       pulseBtn.style.color = "var(--text-2)";
-      pulseBtn.innerText = "⚡ پالس خاموش";
+      pulseBtn.innerText = "⚡ پالس دستی خاموش";
     }
   }
 
@@ -1064,7 +1064,7 @@ function toggleLight(){
 }
 
 function togglePulse(){
-  if(lastStatus && lastStatus.pulse) sendCommand("PULSE_OFF");
+  if(lastStatus && lastStatus.pulseManualActive) sendCommand("PULSE_OFF");
   else sendCommand("PULSE_ON");
 }
 
