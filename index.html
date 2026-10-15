@@ -358,6 +358,9 @@ const TOPIC_COMMAND     = "steampro/" + DEVICE_ID + "/command";
 const TOPIC_STATUS      = "steampro/" + DEVICE_ID + "/status";
 const TOPIC_TEMPERATURE = "steampro/" + DEVICE_ID + "/temperature";
 const TOPIC_SETTINGS    = "steampro/" + DEVICE_ID + "/settings";
+const TOPIC_AD_CONTROL  = "steampro/" + DEVICE_ID + "/ad/control";
+const TOPIC_AUTH_REQUEST = "steampro/" + DEVICE_ID + "/auth/request";
+const TOPIC_AUTH_RESPONSE = "steampro/" + DEVICE_ID + "/auth/response";
 
 document.getElementById("footerDevice").innerText = "DEVICE: " + DEVICE_ID;
 document.getElementById("infoDevice").innerText = DEVICE_ID;
@@ -383,7 +386,7 @@ let adTransferId = 0;
 let adCurrentTransfer = 0;
 let adRequestStartedAt = 0;
 let adRetryTimer = null;
-const AD_BROWSER_TIMEOUT_MS = 45000;
+const AD_BROWSER_TIMEOUT_MS = 20000;
 
 const MAX_LOG_LINES = 60;
 let logLines = [];
@@ -680,7 +683,7 @@ function startAdSlider(){
 // ============================================================
 function publishAdAck(message){
   if(!client || !client.connected) return;
-  client.publish(TOPIC_SETTINGS, message, { qos: 0, retain: false }, (err) => {
+  client.publish(TOPIC_AD_CONTROL, message, { qos: 0, retain: false }, (err) => {
     if(err) log("AD ACK FAILED: " + message, "err");
   });
 }
@@ -897,10 +900,18 @@ function doAuth(){
   const p = $("authInput").value.trim();
   if(!p){ $("authError").innerText = "رمز را وارد کنید"; return; }
   if(!client || !client.connected){ $("authError").innerText = "MQTT وصل نیست"; return; }
-  client.publish(TOPIC_SETTINGS, "AUTH:" + p);
-  log("TX: AUTH:***", "tx");
   $("authError").innerText = "در حال بررسی...";
   $("authError").style.color = "var(--text-2)";
+  client.publish(TOPIC_AUTH_REQUEST, "AUTH:" + p, { qos: 0, retain: false }, (err) => {
+    if(err){ $("authError").innerText = "ارسال رمز ناموفق بود؛ اتصال اینترنت را بررسی کنید"; }
+  });
+  log("TX: AUTH:***", "tx");
+  setTimeout(() => {
+    if($("authError").innerText === "در حال بررسی...") {
+      $("authError").innerText = "پاسخی از ماژول دریافت نشد؛ اتصال MQTT ماژول را بررسی کنید";
+      $("authError").style.color = "var(--danger)";
+    }
+  }, 10000);
 }
 
 function onAuthResult(ok){
@@ -952,7 +963,7 @@ function lockTech(){
     $("infoMqtt").innerText = "متصل";
     $("infoMqtt").className = "value on";
 
-    const AD_TOPICS = [TOPIC_STATUS, TOPIC_TEMPERATURE, TOPIC_SETTINGS];
+    const AD_TOPICS = [TOPIC_STATUS, TOPIC_TEMPERATURE, TOPIC_SETTINGS, TOPIC_AUTH_RESPONSE];
     AD_TOPICS.push("steampro/" + DEVICE_ID + "/ad/meta");
     for(let i = 0; i < 5; i++){
       AD_TOPICS.push("steampro/" + DEVICE_ID + "/ad/" + i);
@@ -981,6 +992,12 @@ function lockTech(){
     
     const shortTopic = topic.split("/").pop();
     log("RX: " + shortTopic, "rx");
+
+    if(topic === TOPIC_AUTH_RESPONSE){
+      if(text === "AUTH_OK") onAuthResult(true);
+      else if(text === "AUTH_FAIL") onAuthResult(false);
+      return;
+    }
     
     try {
       const data = JSON.parse(text);
@@ -1113,7 +1130,7 @@ function refreshAds(force = false){
   $("adImage").style.display = "none";
   $("adDots").style.display = "none";
 
-  client.publish(TOPIC_SETTINGS, "GET_ADS", (err) => {
+  client.publish(TOPIC_AD_CONTROL, "GET_ADS", (err) => {
     if(err){
       adsRequested = false;
       log("GET_ADS FAILED", "err");
