@@ -522,14 +522,14 @@ function updateStatus(data){
 
   const pulseBtn = $("pulseControlBtn");
   if(pulseBtn){
-    if(data.pulseManualActive){
+    if(data.pulse){
       pulseBtn.style.background = "linear-gradient(145deg,#20d88d,#079a62)";
       pulseBtn.style.color = "#fff";
-      pulseBtn.innerText = "⚡ پالس دستی روشن";
+      pulseBtn.innerText = "⚡ پالس روشن";
     } else {
       pulseBtn.style.background = "var(--bg-2)";
       pulseBtn.style.color = "var(--text-2)";
-      pulseBtn.innerText = "⚡ پالس دستی خاموش";
+      pulseBtn.innerText = "⚡ پالس خاموش";
     }
   }
 
@@ -734,6 +734,8 @@ function handleAdTopic(topic, text){
     if(count === 0){
       hideAdBanner();
       $("adLoading").style.display = "none";
+      adsRequested = false;
+      if(adRetryTimer){ clearTimeout(adRetryTimer); adRetryTimer = null; }
     } else {
       showAdBanner();
       $("adLoading").style.display = "flex";
@@ -1064,7 +1066,7 @@ function toggleLight(){
 }
 
 function togglePulse(){
-  if(lastStatus && lastStatus.pulseManualActive) sendCommand("PULSE_OFF");
+  if(lastStatus && lastStatus.pulse) sendCommand("PULSE_OFF");
   else sendCommand("PULSE_ON");
 }
 
