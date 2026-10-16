@@ -358,9 +358,9 @@ const TOPIC_COMMAND     = "steampro/" + DEVICE_ID + "/command";
 const TOPIC_STATUS      = "steampro/" + DEVICE_ID + "/status";
 const TOPIC_TEMPERATURE = "steampro/" + DEVICE_ID + "/temperature";
 const TOPIC_SETTINGS    = "steampro/" + DEVICE_ID + "/settings";
-const TOPIC_AD_CONTROL  = "steampro/" + DEVICE_ID + "/ad/control";
-const TOPIC_AUTH_REQUEST = "steampro/" + DEVICE_ID + "/auth/request";
-const TOPIC_AUTH_RESPONSE = "steampro/" + DEVICE_ID + "/auth/response";
+const TOPIC_AD_CONTROL  = TOPIC_SETTINGS; // Firmware handles ad requests and ACKs on /settings
+const TOPIC_AUTH_REQUEST = TOPIC_SETTINGS; // Firmware handles AUTH on /settings
+const TOPIC_AUTH_RESPONSE = TOPIC_SETTINGS;
 
 document.getElementById("footerDevice").innerText = "DEVICE: " + DEVICE_ID;
 document.getElementById("infoDevice").innerText = DEVICE_ID;
@@ -963,7 +963,7 @@ function lockTech(){
     $("infoMqtt").innerText = "متصل";
     $("infoMqtt").className = "value on";
 
-    const AD_TOPICS = [TOPIC_STATUS, TOPIC_TEMPERATURE, TOPIC_SETTINGS, TOPIC_AUTH_RESPONSE];
+    const AD_TOPICS = [TOPIC_STATUS, TOPIC_TEMPERATURE, TOPIC_SETTINGS];
     AD_TOPICS.push("steampro/" + DEVICE_ID + "/ad/meta");
     for(let i = 0; i < 5; i++){
       AD_TOPICS.push("steampro/" + DEVICE_ID + "/ad/" + i);
@@ -993,9 +993,8 @@ function lockTech(){
     const shortTopic = topic.split("/").pop();
     log("RX: " + shortTopic, "rx");
 
-    if(topic === TOPIC_AUTH_RESPONSE){
-      if(text === "AUTH_OK") onAuthResult(true);
-      else if(text === "AUTH_FAIL") onAuthResult(false);
+    if(topic === TOPIC_SETTINGS && (text === "AUTH_OK" || text === "AUTH_FAIL")){
+      onAuthResult(text === "AUTH_OK");
       return;
     }
     
