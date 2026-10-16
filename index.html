@@ -525,14 +525,14 @@ function updateStatus(data){
 
   const pulseBtn = $("pulseControlBtn");
   if(pulseBtn){
-    if(data.pulse){
+    if(data.pulseManual){
       pulseBtn.style.background = "linear-gradient(145deg,#20d88d,#079a62)";
       pulseBtn.style.color = "#fff";
-      pulseBtn.innerText = "⚡ پالس روشن";
+      pulseBtn.innerText = data.pulse ? "⚡ پالس دستی روشن · توقف" : "⚡ پالس دستی در زمان خاموش · توقف";
     } else {
       pulseBtn.style.background = "var(--bg-2)";
       pulseBtn.style.color = "var(--text-2)";
-      pulseBtn.innerText = "⚡ پالس خاموش";
+      pulseBtn.innerText = "⚡ شروع پالس دستی";
     }
   }
 
@@ -1082,7 +1082,9 @@ function toggleLight(){
 }
 
 function togglePulse(){
-  if(lastStatus && lastStatus.pulse) sendCommand("PULSE_OFF");
+  // Toggle the manual cycle mode, not the instantaneous relay state.
+  // During the timer's OFF phase the cycle remains active.
+  if(lastStatus && lastStatus.pulseManual) sendCommand("PULSE_OFF");
   else sendCommand("PULSE_ON");
 }
 
