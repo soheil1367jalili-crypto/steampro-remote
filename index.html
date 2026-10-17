@@ -1147,7 +1147,7 @@ function saveTechSettings(){
   const settings = [
     ["timer", $("t_timer").value], ["run", $("t_run").value],
     ["starget", $("t_starget").value], ["shyst", $("t_shyst").value],
-    ["dstart", $("t_dstart").value], ["dsec", $("t_dsec").value],
+    ["dstart", $("t_dstart").value], ["dsec", String(Math.max(1, Math.min(3600, Number($("t_dsec").value) || 300)))],
     ["maxw", $("t_maxw").value], ["fillto", $("t_fillto").value],
     ["volume", $("t_volume").value], ["pulse", $("t_pulse").value],
     ["pon", $("t_pon").value], ["poff", $("t_poff").value],
