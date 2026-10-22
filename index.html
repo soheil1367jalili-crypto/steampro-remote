@@ -298,6 +298,15 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
       </div>
 
       <div class="card">
+        <div class="section-title">صدای پایان تایمر</div>
+        <div class="form-group"><label>فایل صوتی (MP3/WAV/OGG، حداکثر 300 کیلوبایت)</label><input id="timerAudioFile" type="file" accept=".mp3,.wav,.ogg,audio/*"></div>
+        <div id="timerAudioInfo" style="font-size:12px;color:var(--text-2);line-height:1.8;margin:8px 0">فایلی انتخاب نشده است</div>
+        <button class="btn-secondary" onclick="uploadTimerAudio()">⬆️ ذخیره صدا در ماژول</button>
+        <button class="btn-secondary" onclick="enableTimerAudio()">🔊 فعال‌سازی صدای گوشی</button>
+        <button class="btn-danger" onclick="deleteTimerAudio()">🗑 حذف صدای پایان تایمر</button>
+        <div style="font-size:11px;color:var(--text-3);line-height:1.8;margin-top:8px">برای پخش خودکار، صفحه باید باز بماند. یک‌بار فعال‌سازی صدا را لمس کنید؛ پخش در پس‌زمینه ممکن است توسط گوشی محدود شود.</div>
+      </div>
+      <div class="card">
         <div class="section-title">ریست سرویس</div>
         <button class="btn-danger" onclick="resetService()">♻️ ریست شمارنده سرویس هیتر</button>
       </div>
@@ -387,6 +396,8 @@ let adCurrentTransfer = 0;
 let adRequestStartedAt = 0;
 let adRetryTimer = null;
 const AD_BROWSER_TIMEOUT_MS = 20000;
+let timerAudioBlob=null, timerAudioUrl=null, timerAudioAckWaiter=null;
+const TIMER_AUDIO_MAX_BYTES=300*1024, TIMER_AUDIO_CHUNK_BYTES=1200;
 
 const MAX_LOG_LINES = 60;
 let logLines = [];
@@ -478,6 +489,8 @@ function updateTemperature(data){
 // STATUS
 // ============================================================
 function updateStatus(data){
+  const oldStatus=lastStatus;
+  if(oldStatus && oldStatus.running && !data.running && Number(oldStatus.remainingSec)<=8 && Number(oldStatus.remainingSec)>=0 && !oldStatus.test) playTimerEndAudio();
   lastStatus = data;
   msgCount++;
   lastMsgTime = Date.now();
@@ -896,6 +909,25 @@ function handleAdTopic(topic, text){
 // ============================================================
 // AUTH
 // ============================================================
+// TIMER END AUDIO
+function openAudioDB(){return new Promise((resolve,reject)=>{const q=indexedDB.open("SteamProTimerAudio",1);q.onupgradeneeded=()=>q.result.createObjectStore("files");q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error);});}
+async function saveAudioLocal(blob){const db=await openAudioDB();await new Promise((res,rej)=>{const tx=db.transaction("files","readwrite");tx.objectStore("files").put(blob,"timer-end-audio");tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});db.close();}
+async function loadAudioLocal(){try{const db=await openAudioDB();const blob=await new Promise((res,rej)=>{const q=db.transaction("files","readonly").objectStore("files").get("timer-end-audio");q.onsuccess=()=>res(q.result||null);q.onerror=()=>rej(q.error);});db.close();if(blob){timerAudioBlob=blob;if(timerAudioUrl)URL.revokeObjectURL(timerAudioUrl);timerAudioUrl=URL.createObjectURL(blob);$("timerAudioInfo").innerText="صدای ذخیره‌شده روی گوشی آماده است ("+Math.round(blob.size/1024)+" کیلوبایت).";}}catch(e){}}
+function waitTimerAudioAck(expected,timeout=12000){return new Promise((resolve,reject)=>{const w={expected,ok:false};timerAudioAckWaiter=w;const start=Date.now();const poll=()=>{if(w.ok){if(timerAudioAckWaiter===w)timerAudioAckWaiter=null;resolve();}else if(Date.now()-start>timeout){if(timerAudioAckWaiter===w)timerAudioAckWaiter=null;reject(new Error("ACK timeout "+expected));}else setTimeout(poll,80);};poll();});}
+function base64FromBytes(bytes){let s="";for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,Math.min(i+8192,bytes.length)));return btoa(s);}
+async function enableTimerAudio(){try{if(!timerAudioBlob)await loadAudioLocal();if(!timerAudioBlob){toast("اول یک فایل صوتی انتخاب کنید","err");return;}const a=new Audio(timerAudioUrl);a.volume=.01;await a.play();a.pause();a.currentTime=0;toast("صدای گوشی فعال شد","ok");}catch(e){toast("دوباره این دکمه را لمس کنید تا گوشی اجازه پخش بدهد","err");}}
+function playTimerEndAudio(){if(!timerAudioUrl){log("TIMER ENDED: NO AUDIO ON PHONE","warn");return;}const a=new Audio(timerAudioUrl);a.play().then(()=>log("TIMER END AUDIO PLAYING","info")).catch(()=>log("PHONE BLOCKED AUDIO; TAP ENABLE AUDIO","err"));}
+async function uploadTimerAudio(){
+ if(!isAuthed){toast("ابتدا رمز تنظیمات فنی را وارد کنید","err");return;} if(!client||!client.connected){toast("MQTT وصل نیست","err");return;}
+ const file=$("timerAudioFile").files[0];if(!file){toast("فایل صوتی را انتخاب کنید","err");return;}if(file.size<1||file.size>TIMER_AUDIO_MAX_BYTES){toast("حجم فایل باید حداکثر 300 کیلوبایت باشد","err");return;}
+ try{timerAudioBlob=file;if(timerAudioUrl)URL.revokeObjectURL(timerAudioUrl);timerAudioUrl=URL.createObjectURL(file);await saveAudioLocal(file);const bytes=new Uint8Array(await file.arrayBuffer());
+ let ackWait=waitTimerAudioAck("BEGIN");client.publish(TOPIC_SETTINGS,"AUDIO_BEGIN:"+bytes.length);await ackWait;let idx=0;
+ for(let off=0;off<bytes.length;off+=TIMER_AUDIO_CHUNK_BYTES){const b64=base64FromBytes(bytes.subarray(off,Math.min(off+TIMER_AUDIO_CHUNK_BYTES,bytes.length)));ackWait=waitTimerAudioAck(String(idx));client.publish(TOPIC_SETTINGS,"AUDIO_CHUNK:"+idx+":"+b64);await ackWait;idx++;$("timerAudioInfo").innerText="در حال ذخیره در ماژول: "+Math.min(bytes.length,off+TIMER_AUDIO_CHUNK_BYTES)+" از "+bytes.length+" بایت";}
+ ackWait=waitTimerAudioAck("END");client.publish(TOPIC_SETTINGS,"AUDIO_END");await ackWait;$("timerAudioInfo").innerText="ذخیره شد: "+file.name;toast("صدا روی ماژول ذخیره شد","ok");log("TIMER AUDIO SAVED TO ESP32","info");
+ }catch(e){log("AUDIO UPLOAD FAILED: "+e.message,"err");toast("ذخیره صدا ناموفق بود؛ اتصال را بررسی کنید","err");}
+}
+async function deleteTimerAudio(){if(!isAuthed){toast("ابتدا رمز تنظیمات فنی را وارد کنید","err");return;}if(!client||!client.connected){toast("MQTT وصل نیست","err");return;}if(!confirm("صدای پایان تایمر حذف شود؟"))return;client.publish(TOPIC_SETTINGS,"AUDIO_DELETE");try{const db=await openAudioDB();await new Promise((res,rej)=>{const tx=db.transaction("files","readwrite");tx.objectStore("files").delete("timer-end-audio");tx.oncomplete=res;tx.onerror=()=>rej(tx.error);});db.close();}catch(e){}timerAudioBlob=null;if(timerAudioUrl)URL.revokeObjectURL(timerAudioUrl);timerAudioUrl=null;$("timerAudioInfo").innerText="صدای پایان تایمر حذف شد.";toast("درخواست حذف ارسال شد","ok");}
+
 function doAuth(){
   const p = $("authInput").value.trim();
   if(!p){ $("authError").innerText = "رمز را وارد کنید"; return; }
@@ -990,6 +1022,8 @@ function lockTech(){
       return;
     }
     
+    if(topic === TOPIC_SETTINGS && text.startsWith("AUDIO_ACK:")){const ack=text.substring(10);if(timerAudioAckWaiter&&timerAudioAckWaiter.expected===ack)timerAudioAckWaiter.ok=true;return;}
+    if(topic === TOPIC_SETTINGS && text.startsWith("AUDIO_ERROR:")){log(text,"err");return;}
     const shortTopic = topic.split("/").pop();
     log("RX: " + shortTopic, "rx");
 
@@ -1047,6 +1081,8 @@ setInterval(() => {
 }, 1000);
 
 setInterval(updateHeaterStats, 1000);
+loadAudioLocal();
+$("timerAudioFile").addEventListener("change",()=>{const f=$("timerAudioFile").files[0];if(f)$("timerAudioInfo").innerText=f.name+" · "+Math.round(f.size/1024)+" کیلوبایت";});
 
 // ============================================================
 // COMMANDS
