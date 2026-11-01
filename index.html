@@ -1199,14 +1199,24 @@ function loadCustomLabels(){
  if(b)b.value=window.steamProBrandName||"SteamPro";
  if(p)p.value=window.steamProPulseName||"رله پالس";
 }
-function saveCustomLabels(){
- if(!isAuthed){toast("ابتدا رمز را وارد کنید","err");return;}
+async function saveCustomLabels(){
+ if(!isAuthed){toast("ابتدا رمز تنظیمات فنی را وارد کنید","err");return;}
+ if(!client||!client.connected){toast("ارتباط اینترنتی با ماژول برقرار نیست","err");return;}
  const b=(document.getElementById("customBrandName").value||"SteamPro").trim().slice(0,24)||"SteamPro";
  const p=(document.getElementById("customPulseName").value||"رله پالس").trim().slice(0,24)||"رله پالس";
- sendSetting("brandName",b);
- setTimeout(()=>sendSetting("pulseName",p),180);
- window.steamProBrandName=b;window.steamProPulseName=p;applyCustomLabels();
- toast("درخواست ذخیره نام‌ها در حافظه ماژول ارسال شد","ok");
+ const publishSetting=(key,value)=>new Promise((resolve,reject)=>{
+   client.publish(TOPIC_SETTINGS,"SET:"+key+"="+value,{qos:1},err=>err?reject(err):resolve());
+ });
+ try{
+   await publishSetting("brandName",b);
+   await new Promise(r=>setTimeout(r,350));
+   await publishSetting("pulseName",p);
+   await new Promise(r=>setTimeout(r,500));
+   client.publish(TOPIC_SETTINGS,"GET_SETTINGS");
+   window.steamProBrandName=b;window.steamProPulseName=p;applyCustomLabels();
+   toast("نام‌ها ارسال شد؛ در حال بررسی ذخیره در حافظه ماژول...","ok");
+   log("Requested module label save and read-back verification","info");
+ }catch(e){toast("ارسال نام‌ها ناموفق بود؛ اتصال را بررسی کن","err");log("LABEL SAVE FAILED: "+e,"err");}
 }
 function applyCustomLabels(){
  const b=(window.steamProBrandName||"SteamPro").trim()||"SteamPro";
