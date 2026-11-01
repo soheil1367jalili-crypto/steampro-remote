@@ -280,7 +280,7 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
           <div class="form-group"><label>Timeout پر شدن (ثانیه)</label><input id="t_fillto" type="number" min="10" max="600"></div>
           <div class="form-group"><label>حجم صدا</label><input id="t_volume" type="number" min="0" max="30"></div>
         </div>
-        <div class="form-group"><label>رله پالس</label><select id="t_pulse"><option value="1">روشن</option><option value="0">خاموش</option></select></div>
+        <div class="form-group"><label id="t_pulse_label">رله پالس</label><select id="t_pulse"><option value="1">روشن</option><option value="0">خاموش</option></select></div>
         <div class="form-grid">
           <div class="form-group"><label>زمان ON پالس (دقیقه)</label><input id="t_pon" type="number" min="1" max="60"></div>
           <div class="form-group"><label>زمان OFF پالس (دقیقه)</label><input id="t_poff" type="number" min="1" max="60"></div>
@@ -289,6 +289,14 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
         <div class="form-group"><label>مدت هر عکس (ثانیه)</label><input id="t_adInterval" type="number" min="3" max="60"></div>
         <button class="btn-save" onclick="saveTechSettings()">💾 ذخیره</button>
         <button class="btn-secondary" onclick="loadSettings()">🔄 بارگذاری</button>
+      </div>
+
+      <div class="card">
+        <div class="section-title">📝 تغییر نوشته‌های صفحه</div>
+        <div class="form-group"><label for="customBrandName">عنوان بزرگ بالای صفحه</label><input id="customBrandName" maxlength="24" placeholder="مثلاً SteamPro"></div>
+        <div class="form-group"><label for="customPulseName">نام دلخواه رله پالس</label><input id="customPulseName" maxlength="24" placeholder="مثلاً فن تهویه"></div>
+        <button class="btn-secondary" onclick="saveCustomLabels()">💾 ذخیره نوشته‌ها</button>
+        <div style="font-size:11px;color:var(--text-3);line-height:1.8;margin-top:8px">این نوشته‌ها در حافظه دائمی ماژول ذخیره می‌شوند و پس از قطع برق باقی می‌مانند.</div>
       </div>
 
       <div class="card">
@@ -536,16 +544,17 @@ function updateStatus(data){
   if(data.light){ lightBtn.className = "btn-main btn-light"; lightBtn.innerText = "💡 چراغ روشن"; }
   else { lightBtn.className = "btn-main btn-light off"; lightBtn.innerText = "💡 چراغ خاموش"; }
 
+  const pulseName=(window.steamProPulseName||"رله پالس").trim()||"رله پالس";
   const pulseBtn = $("pulseControlBtn");
   if(pulseBtn){
     if(data.pulseManual){
       pulseBtn.style.background = "linear-gradient(145deg,#20d88d,#079a62)";
       pulseBtn.style.color = "#fff";
-      pulseBtn.innerText = data.pulse ? "⚡ پالس دستی روشن · توقف" : "⚡ پالس دستی در زمان خاموش · توقف";
+      pulseBtn.innerText = data.pulse ? "⚡ "+pulseName+" دستی روشن · توقف" : "⚡ "+pulseName+" دستی در زمان خاموش · توقف";
     } else {
       pulseBtn.style.background = "var(--bg-2)";
       pulseBtn.style.color = "var(--text-2)";
-      pulseBtn.innerText = "⚡ شروع پالس دستی";
+      pulseBtn.innerText = "⚡ شروع "+pulseName+" دستی";
     }
   }
 
@@ -554,6 +563,7 @@ function updateStatus(data){
   setVal("stDrain", onOff(data.drain), data.drain ? "on" : "off", "itemDrain");
   setVal("stLight", onOff(data.light), data.light ? "on" : "off", "itemLight");
   setVal("stPulse", onOff(data.pulse), data.pulse ? "on" : "off", "itemPulse");
+  const pl=document.querySelector("#itemPulse .label");if(pl)pl.textContent=pulseName;
   setVal("stTest", data.test ? "فعال" : "غیرفعال", data.test ? "warn" : "off", "itemTest");
   setVal("stHigh", highLow(data.high), data.high ? "on" : "off", "itemHigh");
   setVal("stLow", highLow(data.low), data.low ? "on" : "off", "itemLow");
@@ -610,6 +620,9 @@ function updateSettings(data){
   $("t_poff").value = data.poff ?? 1;
   $("t_adEnabled").value = data.adEnabled ? "1" : "0";
   $("t_adInterval").value = data.adInterval ?? 10;
+  if(data.brandName !== undefined) { $("customBrandName").value=data.brandName; window.steamProBrandName=data.brandName; }
+  if(data.pulseName !== undefined) { $("customPulseName").value=data.pulseName; window.steamProPulseName=data.pulseName; }
+  applyCustomLabels();
 
   const newEnabled = !!data.adEnabled;
   const newInterval = Number(data.adInterval) || 10;
@@ -956,6 +969,8 @@ function onAuthResult(ok){
     log("AUTH OK", "info");
     toast("دسترسی باز شد", "ok");
     loadSettings();
+    loadCustomLabels();
+    applyCustomLabels();
   } else {
     $("authError").innerText = "رمز اشتباه است";
     $("authError").style.color = "var(--danger)";
@@ -976,6 +991,7 @@ function lockTech(){
 // INIT
 // ============================================================
 (function init(){
+  applyCustomLabels();
   log("Connecting...", "info");
   log("Device: " + DEVICE_ID, "info");
 
@@ -1176,6 +1192,29 @@ function refreshAds(force = false){
       log("TX: GET_ADS", "tx");
     }
   });
+}
+
+function loadCustomLabels(){
+ const b=document.getElementById("customBrandName"),p=document.getElementById("customPulseName");
+ if(b)b.value=window.steamProBrandName||"SteamPro";
+ if(p)p.value=window.steamProPulseName||"رله پالس";
+}
+function saveCustomLabels(){
+ if(!isAuthed){toast("ابتدا رمز را وارد کنید","err");return;}
+ const b=(document.getElementById("customBrandName").value||"SteamPro").trim().slice(0,24)||"SteamPro";
+ const p=(document.getElementById("customPulseName").value||"رله پالس").trim().slice(0,24)||"رله پالس";
+ sendSetting("brandName",b);
+ setTimeout(()=>sendSetting("pulseName",p),180);
+ window.steamProBrandName=b;window.steamProPulseName=p;applyCustomLabels();
+ toast("درخواست ذخیره نام‌ها در حافظه ماژول ارسال شد","ok");
+}
+function applyCustomLabels(){
+ const b=(window.steamProBrandName||"SteamPro").trim()||"SteamPro";
+ const p=(window.steamProPulseName||"رله پالس").trim()||"رله پالس";
+ const brand=document.querySelector(".brand-name");if(brand)brand.textContent=b;
+ const pulseLabel=document.querySelector("#itemPulse .label");if(pulseLabel)pulseLabel.textContent=p;
+ const techPulse=document.getElementById("t_pulse_label");if(techPulse)techPulse.textContent=p;
+ const pulseBtn=document.getElementById("pulseControlBtn");if(pulseBtn)pulseBtn.textContent=pulseBtn.textContent.replace(/پالس|Pulse/gi,p);
 }
 
 function saveTechSettings(){
