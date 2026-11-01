@@ -476,8 +476,16 @@ function toast(msg, cls = ""){
 }
 
 function switchTab(name){
+  const target=document.getElementById("tab-"+name);
+  if(!target){ log("TAB NOT FOUND: "+name,"err"); return; }
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === name));
-  document.querySelectorAll(".tab-content").forEach(c => c.classList.toggle("active", c.id === "tab-" + name));
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.toggle("active", c === target));
+  if(name === "tech" && !isAuthed){
+    const locked=document.getElementById("techLocked");
+    const unlocked=document.getElementById("techUnlocked");
+    if(locked) locked.style.display="block";
+    if(unlocked) unlocked.style.display="none";
+  }
 }
 
 function drawTimerRing(remaining, total){
@@ -951,14 +959,16 @@ function doAuth(){
   if(!client || !client.connected){ $("authError").innerText = "MQTT وصل نیست"; return; }
   $("authError").innerText = "در حال بررسی...";
   $("authError").style.color = "var(--text-2)";
-  client.publish(TOPIC_AUTH_REQUEST, "AUTH:" + p, { qos: 0, retain: false }, (err) => {
-    if(err){ $("authError").innerText = "ارسال رمز ناموفق بود؛ اتصال اینترنت را بررسی کنید"; }
+  client.publish(TOPIC_AUTH_REQUEST, "AUTH:" + p, { qos: 1, retain: false }, (err) => {
+    if(err){ $("authError").innerText = "ارسال رمز ناموفق بود؛ اتصال اینترنت را بررسی کنید"; $("authError").style.color="var(--danger)"; }
   });
-  log("TX: AUTH:***", "tx");
+  log("TX: AUTH request sent to " + TOPIC_AUTH_REQUEST, "tx");
+  const authAttempt=Date.now();
   setTimeout(() => {
-    if($("authError").innerText === "در حال بررسی...") {
-      $("authError").innerText = "پاسخی از ماژول دریافت نشد؛ اتصال MQTT ماژول را بررسی کنید";
+    if(!isAuthed && $("authError").innerText === "در حال بررسی..." && Date.now()-authAttempt>=9900) {
+      $("authError").innerText = "پاسخ احراز هویت از ماژول نرسید؛ در گزارش پایین صفحه، پیام RX را بررسی کنید.";
       $("authError").style.color = "var(--danger)";
+      log("AUTH TIMEOUT; verify device ID, broker and settings-topic subscription", "err");
     }
   }, 10000);
 }
