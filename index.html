@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" class="labels-pending">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,6 +7,8 @@
 <title>SteamPro Remote</title>
 
 <style>
+/* Hide customizable labels until the ESP32 returns its saved NVS names. */
+html.labels-pending .brand-name,html.labels-pending #pulseControlBtn,html.labels-pending #itemPulse .label,html.labels-pending #t_pulse_label{visibility:hidden}
 :root{
   --bg-0:#0a0e14;--bg-1:#111823;--bg-2:#0f1722;--bg-3:#05080d;
   --border:rgba(255,255,255,.06);--border-2:rgba(255,255,255,.09);
@@ -623,6 +625,8 @@ function updateSettings(data){
   if(data.brandName !== undefined) { $("customBrandName").value=data.brandName; window.steamProBrandName=data.brandName; }
   if(data.pulseName !== undefined) { $("customPulseName").value=data.pulseName; window.steamProPulseName=data.pulseName; }
   applyCustomLabels();
+  // First settings packet contains the module-persisted names; reveal only after applying them.
+  document.documentElement.classList.remove("labels-pending");
 
   const newEnabled = !!data.adEnabled;
   const newInterval = Number(data.adInterval) || 10;
@@ -991,7 +995,7 @@ function lockTech(){
 // INIT
 // ============================================================
 (function init(){
-  applyCustomLabels();
+  // Do not flash fallback names on refresh; wait for GET_SETTINGS from the ESP32.
   log("Connecting...", "info");
   log("Device: " + DEVICE_ID, "info");
 
