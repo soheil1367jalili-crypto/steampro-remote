@@ -284,8 +284,8 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
         </div>
         <div class="form-group"><label id="t_pulse_label">رله پالس</label><select id="t_pulse"><option value="1">روشن</option><option value="0">خاموش</option></select></div>
         <div class="form-grid">
-          <div class="form-group"><label>زمان ON پالس (دقیقه)</label><input id="t_pon" type="number" min="1" max="60"></div>
-          <div class="form-group"><label>زمان OFF پالس (دقیقه)</label><input id="t_poff" type="number" min="1" max="60"></div>
+          <div class="form-group"><label id="t_pon_label">زمان ON پالس (دقیقه)</label><input id="t_pon" type="number" min="1" max="60"></div>
+          <div class="form-group"><label id="t_poff_label">زمان OFF پالس (دقیقه)</label><input id="t_poff" type="number" min="1" max="60"></div>
         </div>
         <div class="form-group"><label>فعال بودن تبلیغات</label><select id="t_adEnabled"><option value="1">روشن</option><option value="0">خاموش</option></select></div>
         <div class="form-group"><label>مدت هر عکس (ثانیه)</label><input id="t_adInterval" type="number" min="3" max="60"></div>
@@ -1226,9 +1226,18 @@ function applyCustomLabels(){
  const b=(window.steamProBrandName||"SteamPro").trim()||"SteamPro";
  const p=(window.steamProPulseName||"رله پالس").trim()||"رله پالس";
  const brand=document.querySelector(".brand-name");if(brand)brand.textContent=b;
+ document.title=b+" Remote";
+ const footer=document.querySelector(".footer");
+ if(footer && footer.firstChild) footer.firstChild.textContent=b+" Remote · MQTT ";
  const pulseLabel=document.querySelector("#itemPulse .label");if(pulseLabel)pulseLabel.textContent=p;
  const techPulse=document.getElementById("t_pulse_label");if(techPulse)techPulse.textContent=p;
- const pulseBtn=document.getElementById("pulseControlBtn");if(pulseBtn)pulseBtn.textContent=pulseBtn.textContent.replace(/پالس|Pulse/gi,p);
+ const pon=document.getElementById("t_pon_label");if(pon)pon.textContent="زمان ON "+p+" (دقیقه)";
+ const poff=document.getElementById("t_poff_label");if(poff)poff.textContent="زمان OFF "+p+" (دقیقه)";
+ const pulseBtn=document.getElementById("pulseControlBtn");
+ if(pulseBtn && lastStatus) {
+   const manual=!!lastStatus.pulseManual;
+   pulseBtn.textContent=manual?(lastStatus.pulse?"⚡ "+p+" دستی روشن · توقف":"⚡ "+p+" دستی در زمان خاموش · توقف"):"⚡ شروع "+p+" دستی";
+ }
 }
 
 function saveTechSettings(){
