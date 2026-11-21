@@ -142,6 +142,28 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
   .btn-main{height:70px;font-size:15px}
   .status-grid{grid-template-columns:repeat(2,1fr)}
 }
+
+/* STEAMPRO LUMINOUS GLASS CONTROLS — visual layer only */
+button{-webkit-appearance:none;appearance:none;position:relative;isolation:isolate;overflow:hidden;transform:translateZ(0)}
+button:focus-visible{outline:2px solid rgba(105,235,255,.95);outline-offset:4px}
+.btn-main,.btn-save,.btn-secondary,.btn-danger,.music-btn,.tab,.locked-overlay button{
+  border:1px solid rgba(255,255,255,.25)!important;
+  background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.25),transparent 45%),linear-gradient(145deg,#456b91 0%,#183958 48%,#0b1c31 100%)!important;
+  box-shadow:inset 0 2px 3px rgba(255,255,255,.32),inset 0 -7px 13px rgba(0,0,0,.36),0 7px 16px rgba(0,0,0,.32),0 0 0 1px rgba(104,210,255,.08)!important;
+  transition:transform .16s ease,filter .16s ease,box-shadow .18s ease;
+}
+.btn-main:before,.btn-save:before,.btn-secondary:before,.btn-danger:before,.music-btn:before,.tab:before,.locked-overlay button:before{content:"";position:absolute;inset:1px;border-radius:inherit;border-top:1px solid rgba(255,255,255,.42);pointer-events:none}
+.btn-main:after,.btn-save:after,.btn-danger:after{content:"";position:absolute;left:10%;top:3%;width:80%;height:34%;border-radius:50%;background:linear-gradient(180deg,rgba(255,255,255,.22),transparent);filter:blur(5px);pointer-events:none;z-index:0}
+.btn-main:active,.btn-save:active,.btn-secondary:active,.btn-danger:active,.music-btn:active,.tab:active,.locked-overlay button:active{transform:translateY(2px) scale(.975);filter:brightness(1.2)}
+.btn-main:disabled{filter:grayscale(.55);opacity:.45}
+.btn-start{background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.8),transparent 42%),linear-gradient(145deg,#8bffe0 0%,#16dca9 38%,#078b91 72%,#063f5b 100%)!important;color:#042b38!important;box-shadow:inset 0 2px 4px rgba(255,255,255,.8),inset 0 -8px 14px rgba(0,45,65,.38),0 0 0 1px rgba(115,255,231,.35),0 0 20px rgba(24,235,203,.48),0 0 46px rgba(0,185,255,.2),0 10px 22px rgba(0,0,0,.42)!important;text-shadow:0 1px 1px rgba(255,255,255,.28)}
+.btn-stop,.btn-danger{background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.68),transparent 42%),linear-gradient(145deg,#ffaaaa 0%,#ff526b 38%,#c91d4b 72%,#621433 100%)!important;color:#fff!important;box-shadow:inset 0 2px 4px rgba(255,255,255,.72),inset 0 -8px 14px rgba(70,0,25,.4),0 0 0 1px rgba(255,110,145,.32),0 0 20px rgba(255,45,95,.45),0 0 42px rgba(255,0,70,.18),0 10px 22px rgba(0,0,0,.42)!important}
+.btn-light:not(.off){background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.7),transparent 42%),linear-gradient(145deg,#c8aaff,#8761ff 45%,#3d2a9d)!important;color:#fff!important;box-shadow:inset 0 2px 4px rgba(255,255,255,.72),inset 0 -7px 13px rgba(20,0,75,.38),0 0 18px rgba(138,109,255,.45),0 8px 18px rgba(0,0,0,.4)!important}
+.btn-light.off{background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.18),transparent 45%),linear-gradient(145deg,#344d69,#101e32)!important;color:#a9bdd1!important}
+.music-btn.play{background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.72),transparent 42%),linear-gradient(145deg,#8bffe0,#16c993 48%,#075c68)!important;color:#042b38!important;box-shadow:inset 0 2px 3px rgba(255,255,255,.72),inset 0 -6px 11px rgba(0,45,55,.35),0 0 15px rgba(22,220,180,.42),0 7px 15px rgba(0,0,0,.35)!important}
+.music-btn.stop{background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.7),transparent 42%),linear-gradient(145deg,#ffaaaa,#ed405f 48%,#7b183c)!important;color:#fff!important;box-shadow:inset 0 2px 3px rgba(255,255,255,.7),inset 0 -6px 11px rgba(70,0,25,.35),0 0 15px rgba(255,55,100,.4),0 7px 15px rgba(0,0,0,.35)!important}
+.tab.active,.btn-save,.locked-overlay button{background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.62),transparent 42%),linear-gradient(145deg,#65eaff,#168ed4 48%,#123c80)!important;color:#fff!important;box-shadow:inset 0 2px 3px rgba(255,255,255,.68),inset 0 -6px 12px rgba(0,25,70,.38),0 0 16px rgba(35,170,255,.34),0 8px 18px rgba(0,0,0,.35)!important}
+@media(prefers-reduced-motion:reduce){button{transition:none!important}}
 </style>
 </head>
 
