@@ -289,6 +289,17 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
         </div>
         <div class="form-group"><label>فعال بودن تبلیغات</label><select id="t_adEnabled"><option value="1">روشن</option><option value="0">خاموش</option></select></div>
         <div class="form-group"><label>مدت هر عکس (ثانیه)</label><input id="t_adInterval" type="number" min="3" max="60"></div>
+        <div class="form-group" style="border-top:1px solid var(--border-2);padding-top:14px;margin-top:16px">
+          <div class="section-title">🔎 تشخیص عملکرد المنت</div>
+          <label>فعال بودن تشخیص</label><select id="t_heatEnabled"><option value="1">روشن</option><option value="0">خاموش</option></select>
+          <div class="form-grid">
+            <div class="form-group"><label>زمان بررسی اولیه (ثانیه)</label><input id="t_heatEarlySec" type="number" min="30" max="3600"></div>
+            <div class="form-group"><label>حداقل افزایش دما در بررسی اولیه (°C)</label><input id="t_heatEarlyRise" type="number" min="0.1" max="20" step="0.1"></div>
+            <div class="form-group"><label>زمان بررسی نهایی (ثانیه)</label><input id="t_heatFinalSec" type="number" min="60" max="7200"></div>
+            <div class="form-group"><label>حداقل افزایش دما تا بررسی نهایی (°C)</label><input id="t_heatFinalRise" type="number" min="0.1" max="30" step="0.1"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text-3);line-height:1.8">این قابلیت فقط هشدار می‌دهد و به دلیل کند گرم‌شدن، المنت را خاموش نمی‌کند.</div>
+        </div>
         <button class="btn-save" onclick="saveTechSettings()">💾 ذخیره</button>
         <button class="btn-secondary" onclick="loadSettings()">🔄 بارگذاری</button>
       </div>
@@ -338,6 +349,17 @@ button{font:inherit;cursor:pointer;border:none;color:inherit}
       <div class="heater-grid">
         <div class="heater-item"><div class="label">کل کارکرد</div><div class="value" id="heaterTotal">--:--</div><div class="unit">ساعت : دقیقه</div></div>
         <div class="heater-item"><div class="label">از آخرین سرویس</div><div class="value" id="heaterService">--:--</div><div class="unit">ساعت : دقیقه</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">تشخیص عملکرد المنت <select id="heatDiagLang" style="width:auto;padding:4px 8px;font-size:10px"><option value="fa">فارسی</option><option value="en">English</option></select></div>
+      <div class="status-grid" style="grid-template-columns:1fr 1fr">
+        <div class="status-item"><div class="label">وضعیت بررسی</div><div class="value" id="heatDiagState">--</div></div>
+        <div class="status-item"><div class="label">زمان روشن‌بودن در بررسی</div><div class="value" id="heatDiagElapsed">--</div></div>
+        <div class="status-item"><div class="label">دمای شروع</div><div class="value" id="heatDiagStart">--</div></div>
+        <div class="status-item"><div class="label">زمان بررسی اولیه</div><div class="value" id="heatDiagEarlyInfo">--</div></div>
+        <div class="status-item"><div class="label">زمان بررسی نهایی</div><div class="value" id="heatDiagFinalInfo">--</div></div>
+        <div class="status-item"><div class="label">آخرین خطا</div><div class="value" id="heatDiagErrorText">--</div></div>
       </div>
     </div>
     <div class="card">
@@ -594,6 +616,23 @@ function updateStatus(data){
   if(data.error && data.error.length > 0){ errBox.classList.add("show"); $("errorText").innerText = data.error; }
   else errBox.classList.remove("show");
 
+  const diagErr = Number(data.heatDiagError || 0);
+  const langControl = $("heatDiagLang");
+  if (langControl && !langControl.dataset.initialized) {
+    langControl.value = localStorage.getItem("steamProHeatDiagLang") || "fa";
+    langControl.dataset.initialized = "1";
+    langControl.addEventListener("change", () => { localStorage.setItem("steamProHeatDiagLang", langControl.value); if(lastStatus) updateStatus(lastStatus); });
+  }
+  const isEnglish = langControl ? langControl.value === "en" : false;
+  $("heatDiagState").innerText = !data.heatDiagEnabled ? (isEnglish ? "Disabled" : "غیرفعال") :
+    (data.heatDiagActive ? (isEnglish ? "Checking" : "در حال بررسی") : (data.heatDiagDone ? (isEnglish ? "Completed" : "پایان بررسی") : (diagErr ? (isEnglish ? "Warning" : "هشدار") : (isEnglish ? "Ready / Normal" : "آماده / طبیعی"))));
+  $("heatDiagElapsed").innerText = formatTime(data.heatDiagElapsedSec || 0);
+  $("heatDiagStart").innerText = Number(data.heatDiagStartTemp || 0).toFixed(1) + " °C";
+  $("heatDiagEarlyInfo").innerText = String(data.heatEarlySec || 180) + " s";
+  $("heatDiagFinalInfo").innerText = String(data.heatFinalSec || 600) + " s";
+  $("heatDiagErrorText").innerText = diagErr === 1 ? (isEnglish ? "Water temperature did not increase" : "دمای آب افزایش پیدا نکرد") :
+    diagErr === 2 ? (isEnglish ? "Low heating rate; possible heater scale buildup" : "سرعت گرم‌شدن پایین؛ احتمال رسوب المنت") : (isEnglish ? "None" : "بدون خطا");
+
   const newAdEnabled = !!data.adEnabled;
   const newAdInterval = data.adInterval || 10;
   if(newAdEnabled !== adEnabled || newAdInterval !== adInterval){
@@ -630,6 +669,11 @@ function updateSettings(data){
   $("t_poff").value = data.poff ?? 1;
   $("t_adEnabled").value = data.adEnabled ? "1" : "0";
   $("t_adInterval").value = data.adInterval ?? 10;
+  $("t_heatEnabled").value = data.heatDiagEnabled === false ? "0" : "1";
+  $("t_heatEarlySec").value = data.heatEarlySec ?? 180;
+  $("t_heatFinalSec").value = data.heatFinalSec ?? 600;
+  $("t_heatEarlyRise").value = data.heatEarlyRise ?? 1.0;
+  $("t_heatFinalRise").value = data.heatFinalRise ?? 3.0;
   if(data.brandName !== undefined) { $("customBrandName").value=data.brandName; window.steamProBrandName=data.brandName; }
   if(data.pulseName !== undefined) { $("customPulseName").value=data.pulseName; window.steamProPulseName=data.pulseName; }
   applyCustomLabels();
@@ -1259,7 +1303,10 @@ function saveTechSettings(){
     ["maxw", $("t_maxw").value], ["fillto", $("t_fillto").value],
     ["volume", $("t_volume").value], ["pulse", $("t_pulse").value],
     ["pon", $("t_pon").value], ["poff", $("t_poff").value],
-    ["adEnabled", $("t_adEnabled").value], ["adInterval", $("t_adInterval").value]
+    ["adEnabled", $("t_adEnabled").value], ["adInterval", $("t_adInterval").value],
+    ["heatDiagEnabled", $("t_heatEnabled").value],
+    ["heatEarlySec", $("t_heatEarlySec").value], ["heatFinalSec", $("t_heatFinalSec").value],
+    ["heatEarlyRise", $("t_heatEarlyRise").value], ["heatFinalRise", $("t_heatFinalRise").value]
   ];
   settings.forEach(([k, v], i) => setTimeout(() => sendSetting(k, v), i * 150));
   toast("تنظیمات ارسال شد", "ok");
