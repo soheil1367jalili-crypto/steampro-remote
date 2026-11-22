@@ -209,6 +209,36 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opac
 @media(max-width:400px){.container{padding:13px 11px 54px}.brand-name{font-size:26px}.card{padding:15px;border-radius:21px}.temp-card{padding:17px 8px}.temp-value{font-size:40px}.btn-main{height:72px;border-radius:19px}.tabs{border-radius:16px}.tab{padding:10px 9px;font-size:11px}}
 @media(prefers-reduced-motion:no-preference){.card{transition:border-color .25s,box-shadow .25s}.card:active{border-color:rgba(105,220,255,.3)}.conn-badge.ok .conn-dot{animation:pulse-dot 2s ease-in-out infinite}}
 
+
+/* STEAMPRO ELECTRIC CHARGING HALO BUTTONS — VISUAL ONLY */
+.btn-main,.music-btn,.btn-light,.btn-save,.btn-secondary,.btn-danger,.locked-overlay button{
+ position:relative;isolation:isolate;overflow:hidden;border-radius:22px!important;
+ background-color:#07152d!important;
+}
+/* Twin luminous arcs inspired by a premium fast-charging ring */
+.btn-main:before,.music-btn:before,.btn-light:before,.btn-save:before,.btn-secondary:before,.btn-danger:before,.locked-overlay button:before{
+ content:"";position:absolute;inset:-2px;border-radius:inherit;padding:2px;
+ background:conic-gradient(from 0deg,transparent 0 9%,rgba(64,179,255,.08) 14%,#3ceaff 22%,#6e62ff 31%,#d05bff 39%,transparent 48% 63%,#39eaff 73%,#69fff0 82%,transparent 91%);
+ -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+ filter:drop-shadow(0 0 5px rgba(54,177,255,.85)) drop-shadow(0 0 12px rgba(118,83,255,.5));
+ opacity:.95;animation:spChargeHalo 4.8s linear infinite;pointer-events:none;z-index:2
+}
+.btn-main:after,.music-btn:after,.btn-light:after,.btn-save:after,.btn-secondary:after,.btn-danger:after,.locked-overlay button:after{
+ content:"";position:absolute;inset:3px;border-radius:inherit;pointer-events:none;z-index:0;
+ background:radial-gradient(ellipse at 25% 0%,rgba(255,255,255,.34),transparent 42%),linear-gradient(145deg,rgba(46,102,166,.35),rgba(4,13,31,.15) 58%,rgba(53,39,130,.22));
+ box-shadow:inset 0 1px 3px rgba(255,255,255,.28),inset 0 -8px 16px rgba(0,0,0,.42)
+}
+.btn-main>* ,.music-btn>* ,.btn-light>* ,.btn-save>* ,.btn-secondary>* ,.btn-danger>*{position:relative;z-index:3}
+.btn-main{border:1px solid rgba(123,220,255,.52)!important;box-shadow:0 0 0 1px rgba(54,175,255,.12),0 0 22px rgba(50,154,255,.2),0 12px 26px rgba(0,0,0,.42)!important}
+.btn-start{background:radial-gradient(ellipse at 50% 0%,rgba(95,255,235,.35),transparent 48%),linear-gradient(145deg,#123d62,#071c38 58%,#10113c)!important;color:#aafff0!important;box-shadow:inset 0 0 22px rgba(42,222,255,.12),0 0 22px rgba(36,237,220,.3),0 0 44px rgba(55,111,255,.2),0 12px 26px rgba(0,0,0,.45)!important}
+.btn-stop,.btn-danger{background:radial-gradient(ellipse at 50% 0%,rgba(255,99,164,.32),transparent 48%),linear-gradient(145deg,#4b183c,#260e2b 58%,#120c28)!important;color:#ffd4e4!important;box-shadow:inset 0 0 22px rgba(255,57,142,.12),0 0 22px rgba(255,48,132,.3),0 0 44px rgba(138,39,120,.2),0 12px 26px rgba(0,0,0,.45)!important}
+.btn-light:not(.off),.music-btn.play{background:radial-gradient(ellipse at 50% 0%,rgba(186,141,255,.4),transparent 48%),linear-gradient(145deg,#302064,#17133c 58%,#0b1532)!important;color:#e5d7ff!important;box-shadow:inset 0 0 20px rgba(157,112,255,.16),0 0 22px rgba(151,91,255,.34),0 12px 24px rgba(0,0,0,.4)!important}
+.btn-light.off,.music-btn:not(.play):not(.stop),.btn-secondary{background:linear-gradient(145deg,#1c3554,#0a1a31 62%,#0b1028)!important;color:#b7d8ed!important;border-color:rgba(93,178,255,.28)!important}
+.music-btn.stop{background:linear-gradient(145deg,#501b3d,#210e2a)!important;color:#ffd5e4!important}
+.btn-save,.locked-overlay button{background:linear-gradient(145deg,#174b70,#102b58 58%,#17133e)!important;color:#e6faff!important;box-shadow:0 0 22px rgba(44,179,255,.25),0 10px 24px rgba(0,0,0,.4)!important}
+@keyframes spChargeHalo{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.btn-main:before,.music-btn:before,.btn-light:before,.btn-save:before,.btn-secondary:before,.btn-danger:before,.locked-overlay button:before{animation:none!important}}
+
 </style>
 </head>
 
