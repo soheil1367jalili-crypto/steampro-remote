@@ -164,6 +164,51 @@ button:focus-visible{outline:2px solid rgba(105,235,255,.95);outline-offset:4px}
 .music-btn.stop{background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.7),transparent 42%),linear-gradient(145deg,#ffaaaa,#ed405f 48%,#7b183c)!important;color:#fff!important;box-shadow:inset 0 2px 3px rgba(255,255,255,.7),inset 0 -6px 11px rgba(70,0,25,.35),0 0 15px rgba(255,55,100,.4),0 7px 15px rgba(0,0,0,.35)!important}
 .tab.active,.btn-save,.locked-overlay button{background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.62),transparent 42%),linear-gradient(145deg,#65eaff,#168ed4 48%,#123c80)!important;color:#fff!important;box-shadow:inset 0 2px 3px rgba(255,255,255,.68),inset 0 -6px 12px rgba(0,25,70,.38),0 0 16px rgba(35,170,255,.34),0 8px 18px rgba(0,0,0,.35)!important}
 @media(prefers-reduced-motion:reduce){button{transition:none!important}}
+/* STEAMPRO REMOTE — PREMIUM LUMINOUS CONTROL ROOM (CSS only) */
+:root{--bg-0:#050b16;--bg-1:rgba(13,27,46,.78);--bg-2:rgba(9,22,39,.88);--bg-3:#030914;--border:rgba(105,204,255,.17);--border-2:rgba(139,220,255,.26);--text:#effaff;--text-2:#a6c3d8;--text-3:#66849d;--accent:#52dcff;--accent-2:#4dffc0;--warn:#ffd36b;--danger:#ff6688;--purple:#ae8aff;--orange:#ffad79}
+html,body{background:#040916;color:var(--text)}
+body{background:radial-gradient(ellipse at 50% -12%,rgba(21,112,167,.34),transparent 43%),radial-gradient(ellipse at 0% 38%,rgba(34,83,160,.16),transparent 38%),radial-gradient(ellipse at 100% 70%,rgba(0,190,170,.12),transparent 34%),linear-gradient(145deg,#071426 0%,#040916 52%,#020610 100%);background-attachment:fixed}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.22;background-image:linear-gradient(rgba(95,190,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(95,190,255,.045) 1px,transparent 1px);background-size:36px 36px;mask-image:linear-gradient(to bottom,black,transparent 82%)}
+.container{position:relative;z-index:1;max-width:760px;padding:22px 16px 72px}
+.header{padding:12px 6px 20px;align-items:center}
+.brand-name{font-size:30px;letter-spacing:.3px;text-shadow:0 0 22px rgba(61,205,255,.32)}
+.brand-name span{color:#63e5ff;text-shadow:0 0 18px rgba(60,220,255,.7)}
+.brand-sub{color:#8eb4cb;font-size:11px;letter-spacing:1.2px}
+.conn-badge{padding:10px 15px;background:linear-gradient(145deg,rgba(30,65,91,.86),rgba(7,22,40,.9));border:1px solid rgba(108,208,255,.24);box-shadow:inset 0 1px rgba(255,255,255,.13),0 8px 24px rgba(0,0,0,.25);backdrop-filter:blur(14px);color:#b6d7e9}
+.conn-badge.ok{background:linear-gradient(145deg,rgba(13,99,91,.72),rgba(5,38,49,.9));border-color:rgba(70,255,196,.38);box-shadow:0 0 22px rgba(38,240,190,.12),inset 0 1px rgba(255,255,255,.16)}
+.tabs{gap:7px;padding:6px;background:rgba(7,19,35,.72);border:1px solid rgba(105,204,255,.19);border-radius:19px;box-shadow:inset 0 1px rgba(255,255,255,.07),0 12px 28px rgba(0,0,0,.22);backdrop-filter:blur(18px)}
+.tab{padding:12px 13px;color:#9bb8ce;border:1px solid transparent;border-radius:14px}
+.tab.active{background:radial-gradient(ellipse at 25% 0%,rgba(255,255,255,.42),transparent 50%),linear-gradient(135deg,#36c8ef,#167dbd 55%,#164b91);border-color:rgba(142,231,255,.48);box-shadow:inset 0 1px 2px rgba(255,255,255,.5),0 0 18px rgba(38,175,255,.3),0 7px 18px rgba(0,0,0,.35)}
+.card,.ad-banner{background:linear-gradient(145deg,rgba(19,42,66,.82),rgba(7,19,35,.88));border:1px solid rgba(105,204,255,.17);border-radius:25px;box-shadow:inset 0 1px rgba(255,255,255,.095),inset 0 -1px rgba(0,0,0,.35),0 18px 38px rgba(0,0,0,.28),0 0 28px rgba(22,131,190,.055);backdrop-filter:blur(18px)}
+.section-title{color:#a9c9dd;font-size:12px;letter-spacing:.45px}
+.badge-mini{background:rgba(49,123,159,.2);border:1px solid rgba(95,205,255,.17);color:#9edcf3}
+.temp-grid{gap:14px}
+.temp-card{background:radial-gradient(ellipse at 50% 0%,rgba(84,219,255,.19),transparent 66%),linear-gradient(145deg,rgba(12,53,79,.82),rgba(7,24,43,.9));border:1px solid rgba(79,213,255,.35);border-radius:23px;box-shadow:inset 0 1px rgba(255,255,255,.17),inset 0 -14px 24px rgba(0,0,0,.2),0 0 25px rgba(36,190,255,.11),0 12px 25px rgba(0,0,0,.22)}
+.temp-card.water{background:radial-gradient(ellipse at 50% 0%,rgba(64,255,194,.17),transparent 66%),linear-gradient(145deg,rgba(8,60,62,.8),rgba(5,27,39,.92));border-color:rgba(66,255,199,.3);box-shadow:inset 0 1px rgba(255,255,255,.15),0 0 25px rgba(45,255,193,.09),0 12px 25px rgba(0,0,0,.22)}
+.temp-label{color:#a9d1e4}.temp-value{text-shadow:0 0 20px rgba(71,210,255,.22)}.temp-card.water .temp-value{color:#aaffdf;text-shadow:0 0 22px rgba(56,255,192,.22)}
+.timer-card{padding:27px 18px 24px;background:radial-gradient(ellipse at 50% 0%,rgba(43,154,210,.14),transparent 65%),linear-gradient(145deg,rgba(16,37,61,.91),rgba(5,16,31,.95))}
+.timer-head{margin-bottom:19px}.timer-title{color:#b3d1e2}.state-badge{border:1px solid rgba(116,198,235,.18);background:rgba(5,18,33,.72)}
+.timer-ring{background:conic-gradient(from -90deg,#5be7ff 0deg,#258dff 125deg,#42ffc0 250deg,#5be7ff 360deg);box-shadow:0 0 0 1px rgba(120,224,255,.24),0 0 24px rgba(43,188,255,.25),0 0 58px rgba(34,146,255,.13),0 18px 38px rgba(0,0,0,.42)}
+.timer-ring:before{background:radial-gradient(circle at 35% 22%,#183955 0%,#09192d 48%,#061020 100%);box-shadow:inset 0 3px 12px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.13)}
+.timer-value{color:#f2fcff;text-shadow:0 0 24px rgba(80,213,255,.25)}.timer-hint{color:#85a9c1}
+.actions-grid{gap:14px}.btn-main{height:84px;border-radius:22px;font-size:18px;letter-spacing:.1px}
+.btn-start{background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.82),transparent 43%),linear-gradient(145deg,#a0ffe7 0%,#31edbd 38%,#079f9c 73%,#064a65 100%)!important;box-shadow:inset 0 2px 4px rgba(255,255,255,.8),inset 0 -9px 16px rgba(0,45,65,.35),0 0 0 1px rgba(115,255,231,.42),0 0 25px rgba(24,235,203,.46),0 0 55px rgba(0,185,255,.2),0 12px 25px rgba(0,0,0,.44)!important}
+.btn-stop{background:radial-gradient(ellipse at 24% 0%,rgba(255,255,255,.7),transparent 43%),linear-gradient(145deg,#ffb5c1 0%,#ff557b 40%,#c51f58 75%,#601737 100%)!important}
+.status-grid{gap:10px}.status-item{background:linear-gradient(145deg,rgba(20,49,73,.76),rgba(6,20,36,.9));border:1px solid rgba(107,195,232,.16);border-radius:17px;box-shadow:inset 0 1px rgba(255,255,255,.07),0 8px 17px rgba(0,0,0,.16)}
+.status-item.active-on{background:linear-gradient(145deg,rgba(13,93,80,.45),rgba(5,34,42,.9));border-color:rgba(68,255,195,.4);box-shadow:inset 0 1px rgba(255,255,255,.1),0 0 20px rgba(43,255,188,.1)}
+.status-item .label{color:#9abbd0}.status-item .value{color:#e6f8ff}.status-item .value.on{color:#68ffd0;text-shadow:0 0 12px rgba(66,255,190,.24)}
+.music-info-item,.heater-item{background:linear-gradient(145deg,rgba(17,48,69,.78),rgba(6,22,38,.9));border:1px solid rgba(99,195,235,.17);border-radius:16px;box-shadow:inset 0 1px rgba(255,255,255,.07)}
+.music-info-item .value{color:#68e6ff;text-shadow:0 0 14px rgba(70,220,255,.22)}
+.form-group input,.form-group select,.locked-overlay input{background:rgba(4,16,30,.86);border:1px solid rgba(106,198,238,.23);box-shadow:inset 0 2px 8px rgba(0,0,0,.25);color:#f0fbff}
+.form-group input:focus,.form-group select:focus,.locked-overlay input:focus{border-color:#55dfff;box-shadow:0 0 0 3px rgba(64,200,255,.12),0 0 18px rgba(50,185,255,.12)}
+.btn-secondary{background:linear-gradient(145deg,#355574,#142c49 60%,#091a30)!important;color:#e2f6ff!important}
+.log{background:rgba(2,10,21,.9);border-color:rgba(88,176,220,.18);box-shadow:inset 0 2px 12px rgba(0,0,0,.4)}
+.toast{background:rgba(10,29,48,.96);border-color:rgba(105,204,255,.3);backdrop-filter:blur(18px);box-shadow:0 14px 38px rgba(0,0,0,.45),0 0 22px rgba(35,175,255,.1)}
+.footer{color:#66859d}
+@media(min-width:600px){.container{padding-top:28px}.temp-grid{gap:18px}.temp-card{padding:25px 16px}.card{padding:21px}.timer-ring{width:226px;height:226px}}
+@media(max-width:400px){.container{padding:13px 11px 54px}.brand-name{font-size:26px}.card{padding:15px;border-radius:21px}.temp-card{padding:17px 8px}.temp-value{font-size:40px}.btn-main{height:72px;border-radius:19px}.tabs{border-radius:16px}.tab{padding:10px 9px;font-size:11px}}
+@media(prefers-reduced-motion:no-preference){.card{transition:border-color .25s,box-shadow .25s}.card:active{border-color:rgba(105,220,255,.3)}.conn-badge.ok .conn-dot{animation:pulse-dot 2s ease-in-out infinite}}
+
 </style>
 </head>
 
