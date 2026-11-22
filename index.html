@@ -210,18 +210,18 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opac
 @media(prefers-reduced-motion:no-preference){.card{transition:border-color .25s,box-shadow .25s}.card:active{border-color:rgba(105,220,255,.3)}.conn-badge.ok .conn-dot{animation:pulse-dot 2s ease-in-out infinite}}
 
 
-/* STEAMPRO ELECTRIC CHARGING HALO BUTTONS — VISUAL ONLY */
+/* STEAMPRO HEARTBEAT NEON EDGE — VISUAL ONLY */
 .btn-main,.music-btn,.btn-light,.btn-save,.btn-secondary,.btn-danger,.locked-overlay button{
  position:relative;isolation:isolate;overflow:hidden;border-radius:22px!important;
  background-color:#07152d!important;
 }
-/* Twin luminous arcs inspired by a premium fast-charging ring */
+/* ثابت ماندن حلقه روی حاشیه؛ فقط شدت نور مانند ضربان قلب بالا و پایین می‌رود */
 .btn-main:before,.music-btn:before,.btn-light:before,.btn-save:before,.btn-secondary:before,.btn-danger:before,.locked-overlay button:before{
- content:"";position:absolute;inset:-2px;border-radius:inherit;padding:2px;
- background:conic-gradient(from 0deg,transparent 0 9%,rgba(64,179,255,.08) 14%,#3ceaff 22%,#6e62ff 31%,#d05bff 39%,transparent 48% 63%,#39eaff 73%,#69fff0 82%,transparent 91%);
+ content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1.8px;
+ background:linear-gradient(115deg,#35eaff 0%,#7180ff 28%,#d36aff 52%,#53eaff 76%,#35eaff 100%);
  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
- filter:drop-shadow(0 0 5px rgba(54,177,255,.85)) drop-shadow(0 0 12px rgba(118,83,255,.5));
- opacity:.95;animation:spChargeHalo 4.8s linear infinite;pointer-events:none;z-index:2
+ filter:drop-shadow(0 0 4px rgba(54,207,255,.65)) drop-shadow(0 0 9px rgba(142,91,255,.38));
+ opacity:.52;animation:spHeartbeatEdge 1.65s ease-in-out infinite;pointer-events:none;z-index:2
 }
 .btn-main:after,.music-btn:after,.btn-light:after,.btn-save:after,.btn-secondary:after,.btn-danger:after,.locked-overlay button:after{
  content:"";position:absolute;inset:3px;border-radius:inherit;pointer-events:none;z-index:0;
@@ -236,8 +236,8 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opac
 .btn-light.off,.music-btn:not(.play):not(.stop),.btn-secondary{background:linear-gradient(145deg,#1c3554,#0a1a31 62%,#0b1028)!important;color:#b7d8ed!important;border-color:rgba(93,178,255,.28)!important}
 .music-btn.stop{background:linear-gradient(145deg,#501b3d,#210e2a)!important;color:#ffd5e4!important}
 .btn-save,.locked-overlay button{background:linear-gradient(145deg,#174b70,#102b58 58%,#17133e)!important;color:#e6faff!important;box-shadow:0 0 22px rgba(44,179,255,.25),0 10px 24px rgba(0,0,0,.4)!important}
-@keyframes spChargeHalo{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.btn-main:before,.music-btn:before,.btn-light:before,.btn-save:before,.btn-secondary:before,.btn-danger:before,.locked-overlay button:before{animation:none!important}}
+@keyframes spHeartbeatEdge{0%,100%{opacity:.42;filter:drop-shadow(0 0 3px rgba(54,207,255,.45)) drop-shadow(0 0 6px rgba(142,91,255,.25))}18%{opacity:.95;filter:drop-shadow(0 0 7px rgba(54,207,255,.95)) drop-shadow(0 0 15px rgba(142,91,255,.75))}31%{opacity:.58}44%{opacity:.88;filter:drop-shadow(0 0 6px rgba(54,207,255,.85)) drop-shadow(0 0 12px rgba(142,91,255,.65))}62%{opacity:.48}}
+@media(prefers-reduced-motion:reduce){.btn-main:before,.music-btn:before,.btn-light:before,.btn-save:before,.btn-secondary:before,.btn-danger:before,.locked-overlay button:before{animation:none!important;opacity:.78}}
 
 </style>
 </head>
