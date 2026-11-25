@@ -240,6 +240,19 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opac
 @media(prefers-reduced-motion:reduce){.btn-main:before,.music-btn:before,.btn-light:before,.btn-save:before,.btn-secondary:before,.btn-danger:before,.locked-overlay button:before{animation:none!important;opacity:.78}}
 
 </style>
+
+<style>
+.language-switch{display:flex;align-items:center;gap:3px;padding:4px;border-radius:999px;background:rgba(4,16,30,.82);border:1px solid rgba(105,204,255,.25);box-shadow:inset 0 1px 5px rgba(0,0,0,.35);flex-shrink:0}
+.lang-option{padding:7px 10px;border-radius:999px;background:transparent;color:#9bb8ce;font-size:11px;font-weight:900;min-width:34px;transition:all .2s}
+.lang-option.active{color:#fff;background:linear-gradient(135deg,#28bce8,#175a9c);box-shadow:0 0 12px rgba(45,190,255,.25),inset 0 1px rgba(255,255,255,.35)}
+html[dir="ltr"] body{text-align:left}
+html[dir="ltr"] .header,html[dir="ltr"] .timer-head{direction:ltr}
+html[dir="ltr"] .section-title{letter-spacing:.25px}
+html[dir="ltr"] .form-group label,html[dir="ltr"] .lock-title,html[dir="ltr"] .lock-sub{text-align:left}
+html[dir="ltr"] .log{direction:ltr;text-align:left}
+@media(max-width:430px){.language-switch{padding:3px}.lang-option{padding:6px 8px}}
+</style>
+
 </head>
 
 <body>
@@ -249,6 +262,10 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opac
     <div class="brand">
       <div class="brand-name">Steam<span>Pro</span></div>
       <div class="brand-sub">REMOTE CONTROL</div>
+    </div>
+    <div class="language-switch" aria-label="Language">
+      <button type="button" id="langFa" class="lang-option active" onclick="setRemoteLanguage('fa')">فارسی</button>
+      <button type="button" id="langEn" class="lang-option" onclick="setRemoteLanguage('en')">EN</button>
     </div>
     <div class="conn-badge wait" id="connBadge">
       <span class="conn-dot"></span>
@@ -449,7 +466,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opac
       </div>
     </div>
     <div class="card">
-      <div class="section-title">تشخیص عملکرد المنت <select id="heatDiagLang" style="width:auto;padding:4px 8px;font-size:10px"><option value="fa">فارسی</option><option value="en">English</option></select></div>
+      <div class="section-title">تشخیص عملکرد المنت</div>
       <div class="status-grid" style="grid-template-columns:1fr 1fr">
         <div class="status-item"><div class="label">وضعیت بررسی</div><div class="value" id="heatDiagState">--</div></div>
         <div class="status-item"><div class="label">زمان روشن‌بودن در بررسی</div><div class="value" id="heatDiagElapsed">--</div></div>
@@ -714,13 +731,7 @@ function updateStatus(data){
   else errBox.classList.remove("show");
 
   const diagErr = Number(data.heatDiagError || 0);
-  const langControl = $("heatDiagLang");
-  if (langControl && !langControl.dataset.initialized) {
-    langControl.value = localStorage.getItem("steamProHeatDiagLang") || "fa";
-    langControl.dataset.initialized = "1";
-    langControl.addEventListener("change", () => { localStorage.setItem("steamProHeatDiagLang", langControl.value); if(lastStatus) updateStatus(lastStatus); });
-  }
-  const isEnglish = langControl ? langControl.value === "en" : false;
+  const isEnglish = (window.steamProRemoteLanguage || "fa") === "en";
   $("heatDiagState").innerText = !data.heatDiagEnabled ? (isEnglish ? "Disabled" : "غیرفعال") :
     (data.heatDiagActive ? (isEnglish ? "Checking" : "در حال بررسی") : (data.heatDiagDone ? (isEnglish ? "Completed" : "پایان بررسی") : (diagErr ? (isEnglish ? "Warning" : "هشدار") : (isEnglish ? "Ready / Normal" : "آماده / طبیعی"))));
   $("heatDiagElapsed").innerText = formatTime(data.heatDiagElapsedSec || 0);
@@ -1428,5 +1439,110 @@ function resetService(){
   toast("ریست شد", "ok");
 }
 </script>
+
+<script>
+/* SteamPro Remote bilingual UI layer. UI-only: MQTT protocol, commands and payloads are untouched. */
+(function(){
+  const translations = {
+    "اتصال...":"Connecting...", "اتصال مجدد...":"Reconnecting...", "متصل":"Connected", "قطع":"Disconnected", "خطا":"Error", "خطا":"Error",
+    "📊 داشبورد":"📊 Dashboard", "🎵 پلیر":"🎵 Music", "🔧 فنی":"🔧 Settings", "ℹ️ اطلاعات":"ℹ️ Info",
+    "در حال دریافت تبلیغات...":"Loading advertisements...", "دمای سونا":"Sauna temperature", "دمای آب":"Water temperature",
+    "زمان باقی‌مانده":"Time remaining", "زمان باقی\u200cمانده":"Time remaining", "آماده":"Ready", "▶ شروع":"▶ Start", "■ توقف":"■ Stop", "💡 چراغ":"💡 Light",
+    "⚡ پالس خاموش":"⚡ Pulse OFF", "وضعیت دستگاه":"Device status", "هیتر":"Heater", "ورودی":"Inlet", "تخلیه":"Drain",
+    "چراغ":"Light", "پالس":"Pulse", "تست":"Test", "سطح بالا":"High level", "سطح پایین":"Low level", "حجم صدا":"Volume",
+    "پخش‌کننده موسیقی":"Music player", "پخش\u200cکننده موسیقی":"Music player", "آهنگ فعلی":"Current track", "کل آهنگ‌ها":"Total tracks", "کل آهنگ\u200cها":"Total tracks", "تنظیمات فنی قفل است":"Settings are locked",
+    "برای دسترسی، رمز منو را وارد کنید":"Enter the menu password to continue", "رمز":"Password", "ورود":"Unlock",
+    "تنظیمات فنی":"Technical settings", "فعال بودن تایمر":"Timer enabled", "روشن":"ON", "خاموش":"OFF",
+    "مدت کارکرد (دقیقه)":"Run time (minutes)", "دمای هدف سونا (°C)":"Sauna target temperature (°C)", "هیسترزیس (°C)":"Hysteresis (°C)",
+    "دمای شروع تخلیه (°C)":"Drain start temperature (°C)", "مدت تخلیه (ثانیه)":"Drain duration (seconds)", "حداکثر دمای آب (°C)":"Maximum water temperature (°C)",
+    "Timeout پر شدن (ثانیه)":"Fill timeout (seconds)", "رله پالس":"Pulse relay", "زمان ON پالس (دقیقه)":"Pulse ON time (minutes)", "زمان OFF پالس (دقیقه)":"Pulse OFF time (minutes)",
+    "فعال بودن تبلیغات":"Advertisements enabled", "مدت هر عکس (ثانیه)":"Image interval (seconds)", "🔎 تشخیص عملکرد المنت":"🔎 Heating element diagnostics",
+    "تشخیص عملکرد المنت":"Heating element diagnostics", "فعال بودن تشخیص":"Diagnostics enabled", "زمان بررسی اولیه (ثانیه)":"Initial check time (seconds)",
+    "حداقل افزایش دما در بررسی اولیه (°C)":"Minimum temperature rise in initial check (°C)", "زمان بررسی نهایی (ثانیه)":"Final check time (seconds)",
+    "حداقل افزایش دما تا بررسی نهایی (°C)":"Minimum temperature rise by final check (°C)",
+    "این قابلیت فقط هشدار می‌دهد و به دلیل کند گرم‌شدن، المنت را خاموش نمی‌کند.":"This feature only issues a warning. It will not turn off the heater because heating may be slow.",
+    "■ توقف":"■ Stop", "💾 ذخیره":"💾 Save", "🔄 بارگذاری":"🔄 Reload", "📝 تغییر نوشته‌های صفحه":"📝 Customize page labels", "📝 تغییر نوشته\u200cهای صفحه":"📝 Customize page labels", "عنوان بزرگ بالای صفحه":"Main page title",
+    "نام دلخواه رله پالس":"Custom pulse relay name", "💾 ذخیره نوشته‌ها":"💾 Save labels", "مثلاً SteamPro":"e.g. SteamPro", "مثلاً فن تهویه":"e.g. Ventilation fan",
+    "این نوشته‌ها در حافظه دائمی ماژول ذخیره می‌شوند و پس از قطع برق باقی می‌مانند.":"These labels are stored in the module's non-volatile memory and remain saved after power loss.",
+    "رمز منو":"Menu password", "رمز جدید (4 تا 12 کاراکتر)":"New password (4–12 characters)", "🔐 تغییر رمز":"🔐 Change password",
+    "صدای پایان تایمر":"Timer-end audio", "فایل صوتی (MP3/WAV/OGG، حداکثر 300 کیلوبایت)":"Audio file (MP3/WAV/OGG, max 300 KB)",
+    "فایلی انتخاب نشده است":"No file selected", "⬆️ ذخیره صدا در ماژول":"⬆️ Save audio to module", "🔊 فعال‌سازی صدای گوشی":"🔊 Enable phone audio",
+    "🗑 حذف صدای پایان تایمر":"🗑 Delete timer-end audio", "برای پخش خودکار، صفحه باید باز بماند. یک‌بار فعال‌سازی صدا را لمس کنید؛ پخش در پس‌زمینه ممکن است توسط گوشی محدود شود.":"Keep this page open for automatic playback. Tap Enable Audio once; background playback may be restricted by your phone.",
+    "ریست سرویس":"Service reset", "♻️ ریست شمارنده سرویس هیتر":"♻️ Reset heater service counter", "تبلیغات":"Advertisements", "🔄 بارگذاری مجدد تبلیغات از ESP":"🔄 Reload ads from ESP", "🔒 قفل کردن دوباره":"🔒 Lock settings",
+    "آمار کارکرد هیتر":"Heater operating statistics", "کل کارکرد":"Total runtime", "از آخرین سرویس":"Since last service", "ساعت : دقیقه":"Hours : minutes",
+    "وضعیت بررسی":"Diagnostic status", "زمان روشن‌بودن در بررسی":"Heating time during check", "دمای شروع":"Starting temperature", "زمان بررسی اولیه":"Initial check time", "زمان بررسی نهایی":"Final check time", "آخرین خطا":"Last error",
+    "اطلاعات اتصال":"Connection information", "پیام‌ها":"Messages", "آخرین":"Last", "گزارش":"Log", "پاک کردن":"Clear",
+    "در حال بررسی":"Checking", "پایان بررسی":"Check completed", "هشدار":"Warning", "آماده / طبیعی":"Ready / Normal", "غیرفعال":"Disabled", "فعال":"Active",
+    "باز":"Open", "بسته":"Closed", "پر":"Full", "کم":"Low", "در حال کار":"Running", "▶ تست":"▶ Test", "▶ در حال کار":"▶ Running",
+    "💡 چراغ روشن":"💡 Light ON", "💡 چراغ خاموش":"💡 Light OFF", "بدون خطا":"None", "دمای آب افزایش پیدا نکرد":"Water temperature did not increase",
+    "سرعت گرم‌شدن پایین؛ احتمال رسوب المنت":"Low heating rate; possible heater scale buildup", "در حال توقف...":"Stopping...", "دسترسی باز شد":"Access granted", "قفل شد":"Locked",
+    "ابتدا رمز تنظیمات فنی را وارد کنید":"Enter the technical settings password first", "ابتدا رمز را وارد کنید":"Enter the password first", "MQTT وصل نیست":"MQTT is not connected",
+    "ارتباط اینترنتی با ماژول برقرار نیست":"No internet connection to the module", "ارسال رمز ناموفق بود؛ اتصال اینترنت را بررسی کنید":"Password transmission failed; check your internet connection",
+    "پاسخ احراز هویت از ماژول نرسید؛ در گزارش پایین صفحه، پیام RX را بررسی کنید.":"No authentication response received from the module; check the RX message in the log below.",
+    "رمز اشتباه است":"Incorrect password", "رمز باید 4 تا 12 کاراکتر":"Password must be 4–12 characters", "رمز تغییر کرد":"Password changed",
+    "ریست شود؟":"Reset?", "ریست شد":"Reset", "تنظیمات ارسال شد":"Settings sent", "ذخیره نشد":"Not saved", "ذخیره صدا ناموفق بود؛ اتصال را بررسی کنید":"Audio save failed; check the connection",
+    "صدا روی ماژول ذخیره شد":"Audio saved to module", "درخواست حذف ارسال شد":"Delete request sent", "صدای پایان تایمر حذف شد.":"Timer-end audio deleted.", "صدای پایان تایمر حذف شود؟":"Delete timer-end audio?",
+    "صدای گوشی فعال شد":"Phone audio enabled", "دوباره این دکمه را لمس کنید تا گوشی اجازه پخش بدهد":"Tap this button again to allow audio playback",
+    "اول یک فایل صوتی انتخاب کنید":"Select an audio file first", "فایل صوتی را انتخاب کنید":"Select an audio file", "حجم فایل باید حداکثر 300 کیلوبایت باشد":"File size must not exceed 300 KB",
+    "دریافت تبلیغات ناموفق بود":"Failed to load advertisements", "نام‌ها ارسال شد؛ در حال بررسی ذخیره در حافظه ماژول...":"Labels sent; verifying that they were saved in module memory...",
+    "ارسال نام‌ها ناموفق بود؛ اتصال را بررسی کن":"Failed to send labels; check the connection", "در حال ذخیره در ماژول: ":"Saving to module: ", "صدای ذخیره‌شده روی گوشی آماده است (":"Saved phone audio is ready (", "ذخیره شد: ":"Saved: ",
+    "زمان باقی\u200cمانده":"Time remaining", "پخش\u200cکننده موسیقی":"Music player", "کل آهنگ\u200cها":"Total tracks",
+    "تغییر نوشته\u200cهای صفحه":"Customize page labels", "نوشته\u200cها":"Labels", "می\u200cشوند":"are saved", "می\u200cدهد":"issues", "گرم\u200cشدن":"heating",
+    "روشن\u200cبودن":"ON time", "پیام\u200cها":"Messages", "یک\u200cبار":"once", "پس\u200cزمینه":"background",
+    "در حال کار":"Running", "اتصال":"Connection", "DEVICE: ":"DEVICE: ", "زمان باقی‌مانده":"Time remaining", "OFF":"OFF", "TIMER DISABLED":"TIMER DISABLED", "SET RUN TIME":"SET RUN TIME", "TEST MODE":"TEST MODE", "TIME REMAINING":"TIME REMAINING",
+    "این قابلیت فقط هشدار می‌دهد و به دلیل کند گرم‌شدن، المنت را خاموش نمی‌کند.":"This feature only issues a warning. It will not turn off the heater because heating may be slow.",
+    "این قابلیت فقط هشدار می‌دهد و به دلیل کند گرم‌شدن، المنت را خاموش نمی‌کند.":"This feature only issues a warning. It will not turn off the heater because heating may be slow.",
+    "این نوشته‌ها در حافظه دائمی ماژول ذخیره می‌شوند و پس از قطع برق باقی می‌مانند.":"These labels are stored in the module's non-volatile memory and remain saved after power loss.",
+    "این نوشته‌ها در حافظه دائمی ماژول ذخیره می‌شوند و پس از قطع برق باقی می‌مانند.":"These labels are stored in the module's non-volatile memory and remain saved after power loss.",
+    "زمان روشن‌بودن در بررسی":"Heating time during check", "زمان روشن‌بودن در بررسی":"Heating time during check",
+    "پیام‌ها":"Messages", "پیام‌ها":"Messages"
+  };
+  const reverse = Object.fromEntries(Object.entries(translations).map(([fa,en])=>[en,fa]));
+  const sorted = Object.entries(translations).sort((a,b)=>b[0].length-a[0].length);
+  function translate(value, lang){
+    let out=String(value);
+    const pairs=lang==='en'?sorted: Object.entries(reverse).sort((a,b)=>b[0].length-a[0].length);
+    for(const [from,to] of pairs){
+      if(!out.includes(from)) continue;
+      // English words are replaced as whole words only (e.g. never alter CONNECTION via ON).
+      if(lang==='fa' && /^[A-Za-z][A-Za-z0-9 /_-]*$/.test(from)){
+        const escaped=from.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+        out=out.replace(new RegExp('(?<![A-Za-z])'+escaped+'(?![A-Za-z])','g'),to);
+      } else out=out.split(from).join(to);
+    }
+    return out;
+  }
+  window.steamProRemoteLanguage=localStorage.getItem('steamProRemoteLanguage')||'fa';
+  window.setRemoteLanguage=function(lang){
+    if(lang!=='fa'&&lang!=='en') return;
+    window.steamProRemoteLanguage=lang;
+    try{localStorage.setItem('steamProRemoteLanguage',lang)}catch(e){}
+    document.documentElement.lang=lang; document.documentElement.dir=lang==='fa'?'rtl':'ltr';
+    document.getElementById('langFa')?.classList.toggle('active',lang==='fa');
+    document.getElementById('langEn')?.classList.toggle('active',lang==='en');
+    translatePage();
+    if(typeof lastStatus!=='undefined' && lastStatus && typeof updateStatus==='function') updateStatus(lastStatus);
+  };
+  function translatePage(){
+    const lang=window.steamProRemoteLanguage;
+    const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+    let node; while((node=walker.nextNode())){ if(node.nodeValue.trim()) node.nodeValue=translate(node.nodeValue,lang); }
+    document.querySelectorAll('[placeholder],[title],[aria-label]').forEach(el=>{
+      for(const a of ['placeholder','title','aria-label']) if(el.hasAttribute(a)) el.setAttribute(a,translate(el.getAttribute(a),lang));
+    });
+  }
+  let scheduled=false;
+  const observer=new MutationObserver(()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;translatePage()})});
+  document.addEventListener('DOMContentLoaded',()=>{
+    setRemoteLanguage(window.steamProRemoteLanguage);
+    observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']});
+  });
+  if(document.readyState!=='loading'){
+    setRemoteLanguage(window.steamProRemoteLanguage);
+    observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['placeholder','title','aria-label']});
+  }
+})();
+</script>
+
 </body>
 </html>
